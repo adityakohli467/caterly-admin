@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+   output: 'standalone',
   // Optimize for faster navigation
   experimental: {
     optimizePackageImports: ['lucide-react', '@tanstack/react-query'],
