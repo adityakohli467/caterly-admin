@@ -1,17 +1,27 @@
 /** @type {import('next').NextConfig} */
+
+// Fallback is REQUIRED for Docker & CI builds
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'
+
 const nextConfig = {
   reactStrictMode: true,
 
-   output: 'standalone',
-  // Optimize for faster navigation
+  // Required for Docker standalone build
+  output: 'standalone',
+
+  // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@tanstack/react-query'],
   },
-  // Enable prefetching for faster navigation
+
+  // Faster dev navigation
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
+
+  // Image configuration
   images: {
     domains: ['localhost', 'caterly.com'],
     remotePatterns: [
@@ -33,15 +43,16 @@ const nextConfig = {
       },
     ],
   },
+
+  // API proxy (CRITICAL FIX)
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+        destination: `${API_URL}/:path*`,
       },
     ]
   },
 }
 
 module.exports = nextConfig
-
