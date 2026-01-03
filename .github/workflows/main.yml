@@ -1,27 +1,53 @@
-name: Deploy zenn admin
+name: Deploy Zenn Admin UI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
+    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
           script: |
+            set -e
+
+            echo "📁 Moving to project directory"
             cd /home/ubuntu/zenn/zenn_admin_ui
+
+            echo "🔄 Pulling latest code"
             git pull origin main
+
+            echo "🧹 Cleaning old build"
+            rm -rf .next
+
+            echo "📦 Installing dependencies"
             npm install
+
+            echo "🏗️ Building Next.js (standalone)"
             npm run build
+
+            echo "📂 Copying static & public files"
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/
+
+            echo "🚀 Restarting PM2 process"
             cd .next/standalone
-            pm2 restart zenn-admin
+            pm2 restart zenn-admin --update-env || pm2 start server.js --name zenn-admin
+
+            echo "💾 Saving PM2 state"
             pm2 save
+
+            echo "✅ Deployment completed successfully"
