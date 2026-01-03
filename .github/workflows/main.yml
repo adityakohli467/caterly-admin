@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo (for workflow context only)
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ SSH into EC2 and deploy
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -27,8 +29,8 @@ jobs:
             echo "📁 Moving to project directory"
             cd /home/ubuntu/zenn/zenn_admin_ui
 
-            echo "🔄 Pulling latest code"
-            git pull https://github.com/kaushikaspace/zenn_admin_ui.git
+            echo "🔄 Pulling latest code from GitHub using PAT"
+            git pull https://kaushikaspace:${{ secrets.GH_PAT }}@github.com/kaushikaspace/zenn_admin_ui.git main
 
             echo "🧹 Cleaning old build"
             rm -rf .next
@@ -47,7 +49,7 @@ jobs:
             cd .next/standalone
             pm2 restart zenn-admin --update-env || pm2 start server.js --name zenn-admin
 
-            echo "💾 Saving PM2 state"
+            echo "💾 Saving PM2 process list"
             pm2 save
 
             echo "✅ Deployment completed successfully"
