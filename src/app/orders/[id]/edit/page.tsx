@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
@@ -40,6 +40,7 @@ export interface OrderData {
   // Delivery Details
   delivery_date?: string
   delivery_time?: string
+  delivery_date_time?: string
   account_email?: string
   cost_center?: string
   delivery_contact?: string
@@ -51,6 +52,7 @@ export interface OrderData {
   coupon_type?: 'P' | 'F'
   coupon_discount?: number
   order_comments?: string
+  standing_order?: number // 0 = one-time order, 7 = weekly, 14 = bi-weekly, 30 = monthly
 }
 
 export default function EditOrderPage() {
@@ -160,6 +162,7 @@ export default function EditOrderPage() {
             delivery_contact: order.delivery_contact || '',
             delivery_details: order.delivery_details || '',
             delivery_method: order.delivery_method || 'pickup',
+            standing_order: order.standing_order || 0, // Include standing_order from order data
           }
           
           console.log('Setting order data:', mappedOrderData)
@@ -210,46 +213,58 @@ export default function EditOrderPage() {
     }
   }
 
-  const handleUpdateOrder = async () => {
+  const handleUpdateOrder = async (latestData?: Partial<OrderData>) => {
     try {
+      // Use latestData if provided (from DeliveryStep), otherwise use orderData state
+      // This ensures we have the latest delivery data even if state hasn't updated yet
+      const dataToUse = latestData ? { ...orderData, ...latestData } : orderData
+      
       // Validate required fields
-      if (!orderData.customer_id) {
+      if (!dataToUse.customer_id) {
         toast.error("Please select a customer")
         return
       }
 
-      if (!orderData.location_id) {
+      if (!dataToUse.location_id) {
         toast.error("Please select a location")
         return
       }
 
-      if (!orderData.products || orderData.products.length === 0) {
+      if (!dataToUse.products || dataToUse.products.length === 0) {
         toast.error("Please add at least one product")
         return
       }
 
-      // Combine delivery date and time - only set if both are provided (for future orders, leave as null)
-      const deliveryDateTime = orderData.delivery_date && orderData.delivery_time
-        ? `${orderData.delivery_date} ${orderData.delivery_time}:00`
-        : null
+      // Build delivery_date_time: allow date-only (with default time) or date+time
+      let deliveryDateTime: string | null = null;
+      if (dataToUse.delivery_date) {
+        if (dataToUse.delivery_time) {
+          // Both date and time provided
+          deliveryDateTime = `${dataToUse.delivery_date} ${dataToUse.delivery_time}:00`;
+        } else {
+          // Only date provided, use default time (start of day)
+          deliveryDateTime = `${dataToUse.delivery_date} 00:00:00`;
+        }
+      }
 
       // Transform data to match backend API format
       const orderPayload: any = {
-        customer_id: orderData.customer_id,
-        location_id: orderData.location_id,
-        delivery_date: orderData.delivery_date || null,
-        delivery_time: orderData.delivery_time || null,
+        customer_id: dataToUse.customer_id,
+        location_id: dataToUse.location_id,
+        delivery_date: dataToUse.delivery_date || null,
+        delivery_time: dataToUse.delivery_time || null,
         delivery_date_time: deliveryDateTime,
-        delivery_fee: parseFloat((orderData.delivery_fee || 0).toString()),
-        order_comments: orderData.order_comments || null,
-        coupon_code: orderData.coupon_code || null,
-        delivery_address: orderData.delivery_address || null,
-        delivery_method: orderData.delivery_method || null,
-        account_email: orderData.account_email || null,
-        cost_center: orderData.cost_center || null,
-        delivery_contact: orderData.delivery_contact || null,
-        delivery_details: orderData.delivery_details || null,
-        products: orderData.products.map(product => ({
+        delivery_fee: parseFloat((dataToUse.delivery_fee || 0).toString()),
+        order_comments: dataToUse.order_comments || null,
+        coupon_code: dataToUse.coupon_code || null,
+        delivery_address: (dataToUse.delivery_address !== undefined && dataToUse.delivery_address !== null && dataToUse.delivery_address !== '') ? dataToUse.delivery_address : null,
+        delivery_method: dataToUse.delivery_method || null,
+        account_email: dataToUse.account_email || null,
+        cost_center: dataToUse.cost_center || null,
+        delivery_contact: dataToUse.delivery_contact || null,
+        delivery_details: dataToUse.delivery_details || null,
+        standing_order: dataToUse.standing_order !== undefined ? dataToUse.standing_order : 0, // Include standing_order in update payload
+        products: dataToUse.products.map(product => ({
           product_id: product.product_id,
           quantity: product.quantity,
           price: product.price,

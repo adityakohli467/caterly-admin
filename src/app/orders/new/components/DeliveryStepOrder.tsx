@@ -158,11 +158,43 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       // Return empty - no default date/time for future orders/quotes
       return { date: "", time: "" }
     }
-    // Handle both "YYYY-MM-DD HH:MM:SS" and "YYYY-MM-DD" formats
-    const parts = dateTime.split(' ')
-    const date = parts[0] || ""
-    const time = parts[1] ? parts[1].substring(0, 5) : "" // Extract HH:MM from HH:MM:SS
-    return { date, time }
+    
+    try {
+      // Handle ISO format (e.g., "2026-01-03T18:30:00.000Z")
+      if (dateTime.includes('T')) {
+        const dateObj = new Date(dateTime)
+        if (!isNaN(dateObj.getTime())) {
+          // Extract date in YYYY-MM-DD format (use local date, not UTC)
+          const year = dateObj.getFullYear()
+          const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+          const day = dateObj.getDate().toString().padStart(2, '0')
+          const date = `${year}-${month}-${day}`
+          // Extract time in HH:MM format (use local time, not UTC)
+          const hours = dateObj.getHours().toString().padStart(2, '0')
+          const minutes = dateObj.getMinutes().toString().padStart(2, '0')
+          const time = `${hours}:${minutes}`
+          console.log('Parsed ISO dateTime:', dateTime, 'to date:', date, 'time:', time)
+          return { date, time }
+        }
+      }
+      
+      // Handle "YYYY-MM-DD HH:MM:SS" format
+      const parts = dateTime.split(' ')
+      if (parts.length >= 2) {
+        const date = parts[0] || ""
+        const time = parts[1] ? parts[1].substring(0, 5) : "" // Extract HH:MM from HH:MM:SS
+        return { date, time }
+      }
+      
+      // Handle "YYYY-MM-DD" format (date only)
+      if (dateTime.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return { date: dateTime, time: "" }
+      }
+    } catch (error) {
+      console.error('Error parsing delivery_date_time:', error, dateTime)
+    }
+    
+    return { date: "", time: "" }
   }
 
   const initialDeliveryContact = parseDeliveryContact(data.delivery_contact)
@@ -298,37 +330,71 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
 
   // Sync all fields when data prop changes (for edit mode)
   useEffect(() => {
+    console.log('DeliveryStep useEffect triggered - data:', {
+      delivery_date_time: data.delivery_date_time,
+      delivery_date: data.delivery_date,
+      delivery_time: data.delivery_time,
+    })
+    
     if (data.products) setProducts(data.products)
+    
+    // Handle delivery_date_time - prioritize this over separate date/time
     if (data.delivery_date_time) {
       const parsed = parseDeliveryDateTime(data.delivery_date_time)
-      setDeliveryDate(parsed.date)
-      setDeliveryTime(parsed.time)
-    } else if (data.delivery_time) {
-      setDeliveryTime(data.delivery_time)
+      console.log('Parsed delivery_date_time:', parsed, 'from:', data.delivery_date_time)
+      // Always set date and time from parsed result (even if empty strings)
+      console.log('Setting deliveryDate to:', parsed.date)
+      setDeliveryDate(parsed.date || "")
+      if (parsed.time) {
+        console.log('Setting deliveryTime to:', parsed.time)
+        setDeliveryTime(parsed.time)
+      } else {
+        // If no time in delivery_date_time, clear time field
+        setDeliveryTime("")
+      }
+    } else {
+      // Fallback to separate date/time fields if delivery_date_time is not available
+      if (data.delivery_date !== undefined) {
+        console.log('Setting deliveryDate from delivery_date:', data.delivery_date)
+        setDeliveryDate(data.delivery_date || "")
+      }
+      if (data.delivery_time !== undefined) {
+        console.log('Setting deliveryTime from delivery_time:', data.delivery_time)
+        setDeliveryTime(data.delivery_time || "")
+      }
     }
-    if (data.account_email !== undefined) setAccountEmail(data.account_email)
-    if (data.cost_center !== undefined) setCostCenter(data.cost_center)
-    if (data.delivery_method) setDeliveryMethod(data.delivery_method)
-    if (data.delivery_address !== undefined) setDeliveryAddress(data.delivery_address)
-    if (data.delivery_fee !== undefined) setDeliveryFee(data.delivery_fee)
-    if (data.coupon_code !== undefined) setCouponCode(data.coupon_code)
-    if (data.order_comments !== undefined) setOrderComments(data.order_comments)
-    if (data.email) setSendEmail(data.email)
-    if (data.location_id) {
-      setSelectedPickupLocation(data.location_id)
-      setSelectedLocation(data.location_id)
+    
+    if (data.account_email !== undefined) setAccountEmail(data.account_email || "")
+    if (data.cost_center !== undefined) setCostCenter(data.cost_center || "")
+    if (data.delivery_method !== undefined) setDeliveryMethod(data.delivery_method || "delivery")
+    if (data.delivery_address !== undefined) setDeliveryAddress(data.delivery_address || "")
+    if (data.delivery_fee !== undefined) setDeliveryFee(data.delivery_fee || 0)
+    if (data.coupon_code !== undefined) setCouponCode(data.coupon_code || "")
+    if (data.order_comments !== undefined) setOrderComments(data.order_comments || "")
+    if (data.email !== undefined) setSendEmail(data.email || "")
+    if (data.location_id !== undefined) {
+      setSelectedPickupLocation(data.location_id || 0)
+      setSelectedLocation(data.location_id || 0)
     }
     // Parse and set delivery contact
     if (data.delivery_contact !== undefined) {
-      const parsed = parseDeliveryContact(data.delivery_contact)
+      const parsed = parseDeliveryContact(data.delivery_contact || "")
       setDeliveryContactName(parsed.name)
       setDeliveryContactNumber(parsed.number)
     }
     // Parse and set delivery details (notes)
     if (data.delivery_details !== undefined) {
-      setDeliveryNotes(parseDeliveryDetails(data.delivery_details))
+      setDeliveryNotes(parseDeliveryDetails(data.delivery_details || ""))
     }
-  }, [data])
+    
+    // Log current deliveryDate state for debugging
+    console.log('Current deliveryDate state after useEffect:', deliveryDate)
+  }, [data, data.delivery_date_time, data.delivery_date, data.delivery_time])
+  
+  // Log deliveryDate whenever it changes
+  useEffect(() => {
+    console.log('deliveryDate state changed to:', deliveryDate)
+  }, [deliveryDate])
 
   const calculateSubtotal = () => {
     return products.reduce((sum, item) => {
@@ -401,6 +467,12 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   }
 
   const handleSaveOrder = () => {
+    // Validate delivery address for delivery method
+    if (deliveryMethod === 'delivery' && (!deliveryAddress || deliveryAddress.trim().length === 0)) {
+      toast.error('Delivery Address is required when delivery method is selected')
+      return
+    }
+
     // Build delivery_contact as "Name|Number"
     const deliveryContact = deliveryContactName 
       ? `${deliveryContactName}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
@@ -414,9 +486,20 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       ? locations.find((l: Location) => l.location_id === selectedPickupLocation)?.pickup_address || ''
       : deliveryAddress
 
-    const dateTime = deliveryDate && deliveryTime ? `${deliveryDate} ${deliveryTime}:00` : undefined
+    // Build delivery_date_time: allow date-only (with default time) or date+time
+    let dateTime: string | undefined = undefined;
+    if (deliveryDate) {
+      if (deliveryTime) {
+        // Both date and time provided
+        dateTime = `${deliveryDate} ${deliveryTime}:00`;
+      } else {
+        // Only date provided, use default time (start of day)
+        dateTime = `${deliveryDate} 00:00:00`;
+      }
+    }
     
-    onUpdate({
+    // Pass updateData to ensure coupon and delivery data are included even if state hasn't updated yet
+    const updateData: any = {
       delivery_date: deliveryDate || undefined,
       delivery_time: deliveryTime || undefined,
       delivery_date_time: dateTime,
@@ -425,27 +508,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       delivery_contact: deliveryContact,
       delivery_details: deliveryDetails,
       delivery_method: deliveryMethod,
-      delivery_address: finalDeliveryAddress,
-      delivery_fee: deliveryFee,
-      coupon_code: appliedCoupon?.coupon_code || undefined,
-      coupon_type: appliedCoupon?.type || undefined,
-      coupon_discount: appliedCoupon?.coupon_discount || undefined,
-      order_comments: orderComments,
-      standing_order: standingOrder,
-      location_id: selectedLocation || (deliveryMethod === 'pickup' ? selectedPickupLocation : undefined),
-    })
-    
-    // Pass updateData to ensure coupon is included even if state hasn't updated yet
-    const updateData: any = {
-      delivery_date: deliveryDate || undefined,
-      delivery_time: deliveryTime || undefined,
-      delivery_date_time: deliveryDate && deliveryTime ? `${deliveryDate} ${deliveryTime}:00` : undefined,
-      account_email: accountEmail,
-      cost_center: costCenter,
-      delivery_contact: deliveryContact,
-      delivery_details: deliveryDetails,
-      delivery_method: deliveryMethod,
-      delivery_address: finalDeliveryAddress,
+      delivery_address: (finalDeliveryAddress && finalDeliveryAddress.trim()) ? finalDeliveryAddress.trim() : undefined, // Pass address if provided and not empty
       delivery_fee: deliveryFee || 0,
       coupon_code: appliedCoupon?.coupon_code || undefined,
       coupon_type: appliedCoupon?.type || undefined,
@@ -454,6 +517,15 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       standing_order: standingOrder,
       location_id: selectedLocation || (deliveryMethod === 'pickup' ? selectedPickupLocation : undefined),
     }
+    
+    console.log('DeliveryStep handleSaveOrder - updateData:', updateData)
+    console.log('Delivery fields being saved:', {
+      delivery_date: updateData.delivery_date,
+      delivery_time: updateData.delivery_time,
+      delivery_date_time: updateData.delivery_date_time,
+      delivery_address: updateData.delivery_address,
+      delivery_method: updateData.delivery_method,
+    })
     
     onUpdate(updateData)
     onSave(updateData)
@@ -597,12 +669,14 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   Delivery Date
                 </Label>
                 <Input
+                  key={`delivery-date-${deliveryDate || 'empty'}-${data.delivery_date_time || 'no-dt'}`}
                   id="deliveryDate"
                   type="date"
-                  value={deliveryDate}
+                  value={deliveryDate || ""}
                   min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
                   onChange={(e) => {
                     const newDate = e.target.value
+                    console.log('Date changed to:', newDate)
                     setDeliveryDate(newDate)
                     const dateTime = newDate && deliveryTime ? `${newDate} ${deliveryTime}:00` : undefined
                     onUpdate({
@@ -857,9 +931,16 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   label="Delivery Address *"
                   placeholder="Enter Address"
                   value={deliveryAddress}
-                  validationRule={ValidationRules.order.delivery_address}
+                  validationRule={{
+                    ...ValidationRules.order.delivery_address,
+                    required: true
+                  }}
                   fieldName="Delivery Address"
-                  onChange={(value) => setDeliveryAddress(value)}
+                  onChange={(value) => {
+                    setDeliveryAddress(value)
+                    // Always include delivery_method to prevent it from being reset
+                    onUpdate({ delivery_address: value, delivery_method: deliveryMethod })
+                  }}
                   rows={3}
                   className="border-gray-300 resize-none md:col-span-2"
                 />

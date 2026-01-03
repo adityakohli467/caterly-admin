@@ -120,13 +120,16 @@ export default function OrdersPage() {
     const tab = searchParams?.get('tab')
     if (tab && tab !== selectedTab) {
       setSelectedTab(tab)
+      setPage(1) // Reset to first page when tab changes
+      // Invalidate queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
     }
     
     // If coming from order creation/update, invalidate queries to refresh
-    if (searchParams.get('success') === 'true' || searchParams.get('tab')) {
+    if (searchParams.get('success') === 'true') {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     }
-  }, [searchParams, queryClient, selectedTab])
+  }, [searchParams, queryClient])
 
   // Build query params
   const buildQueryParams = () => {
@@ -448,6 +451,10 @@ export default function OrdersPage() {
             onClick={() => {
               setSelectedTab(tab.key)
               setPage(1)
+              // Update URL to reflect tab change
+              router.push(`/orders?tab=${tab.key}`, { scroll: false })
+              // Invalidate queries to ensure fresh data
+              queryClient.invalidateQueries({ queryKey: ['orders'] })
             }}
             className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
               selectedTab === tab.key

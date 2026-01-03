@@ -300,14 +300,25 @@ export default function EditQuotePage() {
         }
       }
 
-      console.log("Updating quote:", quoteData)
+      // Use latestData if provided (from DeliveryStep), otherwise use quoteData state
+      // This ensures we have the latest delivery data even if state hasn't updated yet
+      const dataToUse = quoteData // Quotes sends entire object, so this is fine
+      
+      console.log("Updating quote:", dataToUse)
       console.log("Coupon data in update:", {
-        coupon_code: quoteData.coupon_code,
-        coupon_type: quoteData.coupon_type,
-        coupon_discount: quoteData.coupon_discount
+        coupon_code: dataToUse.coupon_code,
+        coupon_type: dataToUse.coupon_type,
+        coupon_discount: dataToUse.coupon_discount
+      })
+      console.log("Delivery fields:", {
+        delivery_date: dataToUse.delivery_date,
+        delivery_time: dataToUse.delivery_time,
+        delivery_date_time: dataToUse.delivery_date_time,
+        delivery_address: dataToUse.delivery_address,
+        delivery_method: dataToUse.delivery_method,
       })
       
-      const response = await api.put(`/admin/quotes/${quoteId}`, quoteData)
+      const response = await api.put(`/admin/quotes/${quoteId}`, dataToUse)
       
       if (response.data) {
         // Invalidate quotes query cache to refresh the list
