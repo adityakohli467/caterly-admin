@@ -42,6 +42,7 @@ export interface QuoteData {
   // Delivery Details
   delivery_date?: string
   delivery_time?: string
+  delivery_date_time?: string
   account_email?: string
   cost_center?: string
   delivery_contact?: string
