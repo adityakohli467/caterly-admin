@@ -515,6 +515,16 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       return
     }
 
+    // Validate location_id - must be present (from CustomerStep or pickup location)
+    const finalLocationId = deliveryMethod === 'pickup' && selectedPickupLocation > 0
+      ? selectedPickupLocation
+      : (data.location_id || selectedPickupLocation)
+    
+    if (!finalLocationId || finalLocationId === 0) {
+      toast.error("Location is required. Please go back and select a location.")
+      return
+    }
+
     // Validate delivery method
     if (deliveryMethod === 'pickup' && selectedPickupLocation === 0) {
       toast.error("Please select a pickup location")
@@ -551,6 +561,8 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       }
     }
 
+    // finalLocationId is already calculated and validated above
+
     const updateData: any = {
       delivery_date: deliveryDate || undefined,
       delivery_time: deliveryTime || undefined,
@@ -563,7 +575,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       delivery_address: (finalDeliveryAddress && finalDeliveryAddress.trim()) ? finalDeliveryAddress.trim() : undefined, // Pass address if provided and not empty
       delivery_fee: deliveryFee || 0,
       order_comments: orderComments,
-      location_id: deliveryMethod === 'pickup' ? selectedPickupLocation : undefined,
+      location_id: finalLocationId, // Always include location_id (from CustomerStep or pickup location)
     }
 
     // Always explicitly set coupon fields (even if null/undefined to clear them)
