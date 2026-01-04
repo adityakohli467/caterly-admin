@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Download, Send } from "lucide-react"
@@ -118,6 +118,7 @@ const sampleQuote: QuoteDetails = {
 export default function QuoteDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const quoteId = params?.id as string | undefined
   const [downloadingInvoice, setDownloadingInvoice] = useState(false)
   const [sendingQuoteEmail, setSendingQuoteEmail] = useState(false)
@@ -242,6 +243,10 @@ export default function QuoteDetailPage() {
       })
       
       if (response.data.success) {
+        // Invalidate quotes query cache to refresh the list
+        queryClient.invalidateQueries({ queryKey: ["quotes"] })
+        // Also invalidate the specific quote cache to refresh the detail page
+        queryClient.invalidateQueries({ queryKey: ["quote", quoteId] })
         toast.success("Quote email sent successfully!", {
           description: `Sent to: ${response.data.sent_to}. Customer can review and provide feedback via the link.`,
         })
