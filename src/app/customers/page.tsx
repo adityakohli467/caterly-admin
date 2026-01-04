@@ -31,7 +31,6 @@ interface Customer {
   customer_cost_centre?: string
   customer_notes?: string
   customer_image?: string
-  estimated_opening_date?: string
   discount_percentage?: number | null
   status: number
   archived: boolean
@@ -91,7 +90,6 @@ export default function CustomersPage() {
   const [costCentre, setCostCentre] = useState("")
   const [selectedCompany, setSelectedCompany] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState("")
-  const [estimatedOpeningDate, setEstimatedOpeningDate] = useState("")
   const [discountPercentage, setDiscountPercentage] = useState<string>("")
   
   // Validation errors
@@ -205,8 +203,12 @@ export default function CustomersPage() {
       const response = await api.post("/admin/customers", data)
       return response.data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customers"] })
+    onSuccess: async () => {
+      // Invalidate and refetch all customer-related queries
+      await queryClient.invalidateQueries({ queryKey: ["customers"] })
+      await queryClient.invalidateQueries({ queryKey: ["customers-count"] })
+      // Force refetch the current query
+      await queryClient.refetchQueries({ queryKey: ["customers", selectedType, activeTab, searchQuery] })
       toast.success("Customer created successfully!")
       setShowAddModal(false)
       resetForm()
@@ -329,7 +331,6 @@ export default function CustomersPage() {
     setCostCentre(customer.customer_cost_centre || "")
     setSelectedCompany(customer.company_id?.toString() || "")
     setSelectedDepartment(customer.department_id?.toString() || "")
-    setEstimatedOpeningDate(customer.estimated_opening_date || "")
     setDiscountPercentage(customer.discount_percentage?.toString() || "")
     setShowEditModal(true)
   }
@@ -407,9 +408,8 @@ export default function CustomersPage() {
       customer_type: customerType,
       customer_notes: additionalNotes.trim() || null,
       customer_cost_centre: costCentre.trim() || null,
-      company_id: selectedCompany ? Number(selectedCompany) : null,
-      department_id: selectedDepartment ? Number(selectedDepartment) : null,
-      estimated_opening_date: estimatedOpeningDate || null,
+      company_id: selectedCompany && selectedCompany.trim() !== '' && selectedCompany !== 'none' ? Number(selectedCompany) : null,
+      department_id: selectedDepartment && selectedDepartment.trim() !== '' && selectedDepartment !== 'none' ? Number(selectedDepartment) : null,
       discount_percentage: discountPercentage ? Number(discountPercentage) : null,
       status: 1,
       archived: false,
@@ -473,7 +473,6 @@ export default function CustomersPage() {
     setCostCentre("")
     setSelectedCompany("")
     setSelectedDepartment("")
-    setEstimatedOpeningDate("")
     setDiscountPercentage("")
     setErrors({})
   }
@@ -632,12 +631,10 @@ export default function CustomersPage() {
                   <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap hidden xl:table-cell" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                     Company
                   </th>
-                  {/* Department column - Hidden for kj3 */}
-                  {false && isWholesaleTypeSelected && (
-                    <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap hidden xl:table-cell" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                      Department
-                    </th>
-                  )}
+                  {/* Department column */}
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap hidden xl:table-cell" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                    Department
+                  </th>
                   <th className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                     Actions
                   </th>
@@ -646,13 +643,13 @@ export default function CustomersPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={false && isWholesaleTypeSelected ? 6 : 5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                     Loading customers...
                   </td>
                 </tr>
               ) : customers.length === 0 ? (
                 <tr>
-                  <td colSpan={false && isWholesaleTypeSelected ? 6 : 5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                     No customers found
                   </td>
                 </tr>
@@ -725,20 +722,18 @@ export default function CustomersPage() {
                         {customer.company?.company_name || '-'}
                       </span>
                     </td>
-                    {/* Department cell - Hidden for kj3 */}
-                    {false && isWholesaleTypeSelected && (
-                      <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
-                        <span className="text-gray-700 text-xs sm:text-sm" style={{ 
-                          fontFamily: 'Albert Sans',
-                          fontWeight: 400,
-                          fontStyle: 'normal',
-                          lineHeight: '20px',
-                          letterSpacing: '0%'
-                        }}>
-                          {customer.department?.department_name || '-'}
-                        </span>
-                      </td>
-                    )}
+                    {/* Department cell */}
+                    <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
+                      <span className="text-gray-700 text-xs sm:text-sm" style={{ 
+                        fontFamily: 'Albert Sans',
+                        fontWeight: 400,
+                        fontStyle: 'normal',
+                        lineHeight: '20px',
+                        letterSpacing: '0%'
+                      }}>
+                        {customer.department?.department_name || '-'}
+                      </span>
+                    </td>
                     <td className="px-3 sm:px-4 py-3 sm:py-4">
                       <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                         {activeTab === "Pending Approval" ? (
@@ -1019,79 +1014,85 @@ export default function CustomersPage() {
                     className="min-h-[80px] border-gray-300"
                   />
 
-                  {/* Wholesale specific fields - Hidden for kj3 */}
-                  {false && isWholesale && (
-                    <>
-                      {/* Company */}
-                      <div>
-                        <Label className="text-sm text-gray-600">Company</Label>
-                        <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                          <SelectTrigger className="h-11">
-                            <SelectValue placeholder="Select company" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {companies.map((company: Company) => (
-                              <SelectItem key={company.company_id} value={company.company_id.toString()}>
-                                {company.company_name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Department */}
-                      {selectedCompany && (
-                        <div>
-                          <Label className="text-sm text-gray-600">Department</Label>
-                          <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select department" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {departments.map((dept: Department) => (
-                                <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
-                                  {dept.department_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-
-                      {/* Cost Centre */}
-                      <ValidatedInput
-                        label="Cost Centre"
-                        placeholder="Cost Centre Code"
-                        value={costCentre}
-                        validationRule={ValidationRules.customer.customer_cost_centre}
-                        fieldName="Cost Centre"
-                        error={errors.customer_cost_centre}
-                        skipValidation={isClosingModal}
-                        onChange={(value, isValid) => {
-                          setCostCentre(value)
-                          if (isValid) {
-                            setErrors(prev => {
-                              const newErrors = { ...prev }
-                              delete newErrors.customer_cost_centre
-                              return newErrors
-                            })
+                  {/* Company */}
+                  <div>
+                    <Label className="text-sm text-gray-600">Company <span className="text-gray-400 text-xs">(optional)</span></Label>
+                    <Select 
+                      value={selectedCompany || undefined} 
+                      onValueChange={(value) => {
+                        if (value === "none") {
+                          setSelectedCompany("")
+                          setSelectedDepartment("")
+                        } else {
+                          setSelectedCompany(value)
+                          // Clear department when company is cleared
+                          if (!value) {
+                            setSelectedDepartment("")
                           }
-                        }}
-                        className="h-11 border-gray-300"
-                      />
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select company (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {companies.map((company: Company) => (
+                          <SelectItem key={company.company_id} value={company.company_id.toString()}>
+                            {company.company_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                      {/* Estimated Opening Date */}
-                      <div>
-                        <Label className="text-sm text-gray-600">Estimated Opening Date</Label>
-                        <Input
-                          type="date"
-                          value={estimatedOpeningDate}
-                          onChange={(e) => setEstimatedOpeningDate(e.target.value)}
-                          className="h-11 border-gray-300"
-                        />
-                      </div>
-                    </>
+                  {/* Department */}
+                  {selectedCompany && selectedCompany !== "" && (
+                    <div>
+                      <Label className="text-sm text-gray-600">Department <span className="text-gray-400 text-xs">(optional)</span></Label>
+                      <Select 
+                        value={selectedDepartment || undefined} 
+                        onValueChange={(value) => {
+                          setSelectedDepartment(value === "none" ? "" : value)
+                        }}
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select department (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {departments.map((dept: Department) => (
+                            <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
+                              {dept.department_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
+
+                  {/* Cost Centre */}
+                  <ValidatedInput
+                    label="Cost Centre"
+                    placeholder="Cost Centre Code (optional)"
+                    value={costCentre}
+                    validationRule={ValidationRules.customer.customer_cost_centre}
+                    fieldName="Cost Centre"
+                    error={errors.customer_cost_centre}
+                    skipValidation={isClosingModal}
+                    onChange={(value, isValid) => {
+                      setCostCentre(value)
+                      if (isValid) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev }
+                          delete newErrors.customer_cost_centre
+                          return newErrors
+                        })
+                      }
+                    }}
+                    className="h-11 border-gray-300"
+                  />
+
 
                   {/* Additional Notes */}
                   <ValidatedTextarea
@@ -1302,68 +1303,75 @@ export default function CustomersPage() {
                 />
               </div>
 
-              {/* Wholesale specific fields */}
-              {isWholesale && (
-                <>
-                  {/* Company */}
+              {/* Company and Department fields */}
+              <>
+                {/* Company */}
+                <div>
+                  <Label className="text-sm text-gray-600">Company <span className="text-gray-400 text-xs">(optional)</span></Label>
+                  <Select 
+                    value={selectedCompany || undefined} 
+                    onValueChange={(value) => {
+                      if (value === "none") {
+                        setSelectedCompany("")
+                        setSelectedDepartment("")
+                      } else {
+                        setSelectedCompany(value)
+                        if (!value) {
+                          setSelectedDepartment("")
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select company (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {companies.map((company: Company) => (
+                        <SelectItem key={company.company_id} value={company.company_id.toString()}>
+                          {company.company_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Department */}
+                {selectedCompany && selectedCompany !== "" && (
                   <div>
-                    <Label className="text-sm text-gray-600">Company</Label>
-                    <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                    <Label className="text-sm text-gray-600">Department <span className="text-gray-400 text-xs">(optional)</span></Label>
+                    <Select 
+                      value={selectedDepartment || undefined} 
+                      onValueChange={(value) => {
+                        setSelectedDepartment(value === "none" ? "" : value)
+                      }}
+                    >
                       <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Select company" />
+                        <SelectValue placeholder="Select department (optional)" />
                       </SelectTrigger>
                       <SelectContent>
-                        {companies.map((company: Company) => (
-                          <SelectItem key={company.company_id} value={company.company_id.toString()}>
-                            {company.company_name}
+                        <SelectItem value="none">None</SelectItem>
+                        {departments.map((dept: Department) => (
+                          <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
+                            {dept.department_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                )}
+              </>
 
-                  {/* Department */}
-                  {selectedCompany && (
-                    <div>
-                      <Label className="text-sm text-gray-600">Department</Label>
-                      <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Select department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {departments.map((dept: Department) => (
-                            <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
-                              {dept.department_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Cost Centre */}
-                  <div>
-                    <Label className="text-sm text-gray-600">Cost Centre</Label>
-                    <Input
-                      placeholder="Cost Centre Code"
-                      value={costCentre}
-                      onChange={(e) => setCostCentre(e.target.value)}
-                      className="h-11 border-gray-300"
-                    />
-                  </div>
-
-                  {/* Estimated Opening Date */}
-                  <div>
-                    <Label className="text-sm text-gray-600">Estimated Opening Date</Label>
-                    <Input
-                      type="date"
-                      value={estimatedOpeningDate}
-                      onChange={(e) => setEstimatedOpeningDate(e.target.value)}
-                      className="h-11 border-gray-300"
-                    />
-                  </div>
-                </>
-              )}
+              {/* Cost Centre */}
+              <div>
+                <Label className="text-sm text-gray-600">Cost Centre</Label>
+                <Input
+                  placeholder="Cost Centre Code"
+                  value={costCentre}
+                  onChange={(e) => setCostCentre(e.target.value)}
+                  className="h-11 border-gray-300"
+                />
+              </div>
 
               {/* Discount Percentage - Available for ALL customers */}
               <div>

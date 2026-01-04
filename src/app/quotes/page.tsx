@@ -96,7 +96,6 @@ export default function QuotesPage() {
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(20)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -148,18 +147,17 @@ export default function QuotesPage() {
   const totalCount = quotesData?.count || 0
   const totalPages = Math.ceil(totalCount / itemsPerPage)
 
-  // Check for success message from URL params and refetch quotes
+  // Check for success from URL params and refetch quotes (toast is shown in new quote page)
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
-      setShowSuccessMessage(true)
       // Invalidate quotes query cache - this will automatically trigger a refetch
       queryClient.invalidateQueries({ queryKey: ["quotes"] })
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-        router.replace('/quotes', { scroll: false })
-      }, 5000)
+      // Clean up URL params without causing re-render
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', '/quotes')
+      }
     }
-  }, [searchParams, router, queryClient])
+  }, [searchParams, queryClient])
 
   // Delete quote mutation
   const deleteQuoteMutation = useMutation({
@@ -249,16 +247,6 @@ export default function QuotesPage() {
 
   return (
     <div className="space-y-6 bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-          <p className="text-green-800 font-medium" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-            Added new quote successfully
-          </p>
-        </div>
-      )}
-
       {/* Header - Title and Add Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{ 

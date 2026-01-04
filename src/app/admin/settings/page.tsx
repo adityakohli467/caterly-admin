@@ -57,16 +57,15 @@ export default function SettingsPage() {
     refetchInterval: 30000, // Refetch every 30 seconds
   })
 
-  // Update settings when data loads
+  // Update settings when data loads (only if no local changes)
   useEffect(() => {
-    if (settingsData?.settings) {
+    if (settingsData?.settings && !hasChanges) {
       setSettings(settingsData.settings)
-      setHasChanges(false)
-    } else if (!isLoading && !settingsData) {
-      // Use defaults if no data loaded
+    } else if (!isLoading && !settingsData && !hasChanges) {
+      // Use defaults if no data loaded and no changes
       setSettings(defaultSettings)
     }
-  }, [settingsData, isLoading])
+  }, [settingsData, isLoading, hasChanges])
 
   // Helper function to convert hex to HSL
   const hexToHsl = (hex: string): { h: number; s: number; l: number } | null => {
@@ -220,8 +219,15 @@ export default function SettingsPage() {
     maintenanceMode: false,
   }
 
-  // Use default settings if loading fails or no data
-  const currentSettings = settingsData?.settings || (Object.keys(settings).length > 0 ? settings : defaultSettings)
+  // Initialize settings with defaults if empty
+  useEffect(() => {
+    if (Object.keys(settings).length === 0 && !isLoading) {
+      setSettings(settingsData?.settings || defaultSettings)
+    }
+  }, [])
+
+  // Use local settings state (which is initialized from fetched data or defaults)
+  const currentSettings = Object.keys(settings).length > 0 ? settings : (settingsData?.settings || defaultSettings)
 
   if (isLoading && !settingsData) {
     return (
