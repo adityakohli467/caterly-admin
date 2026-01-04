@@ -237,7 +237,20 @@ export default function ProductsPage() {
       setSelectedProduct(null)
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete product")
+      // Extract error message from various possible locations
+      const errorMessage = 
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        error.message || 
+        "Failed to delete product"
+      
+      // Show detailed error message to user
+      toast.error(errorMessage, {
+        duration: 5000, // Show for 5 seconds so user can read it
+      })
+      
+      // Keep modal open on error so user can see the message and try again if needed
+      // Only close modal on success (handled in onSuccess)
     },
   })
 
