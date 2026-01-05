@@ -412,7 +412,7 @@ export default function UsersPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
-            placeholder="Search Order ID, Customer ID, Status etc."
+            placeholder="Search users"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
