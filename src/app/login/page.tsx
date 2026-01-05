@@ -78,7 +78,6 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-medium">Username or Email</Label>
               <Input
                 id="username"
                 type="text"
@@ -93,7 +92,6 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -118,14 +116,6 @@ export default function LoginPage() {
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-500 bg-gray-50 p-3 rounded-md">
-            <p className="font-medium">Default credentials:</p>
-            <p className="font-mono text-xs mt-2">
-              superadmin / password123<br />
-              admin / password123
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

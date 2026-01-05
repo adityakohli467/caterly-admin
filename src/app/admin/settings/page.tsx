@@ -10,16 +10,13 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  Shield,
   Bell,
   Palette,
-  Database,
   Globe,
-  Lock,
   Save,
-  Upload,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  Database
 } from "lucide-react"
 import { toast } from "sonner"
 import { settingsAPI } from "@/lib/api"
@@ -36,10 +33,18 @@ export default function SettingsPage() {
     queryFn: async () => {
       try {
         const response = await settingsAPI.get()
-        return response.data
+        console.log("Settings API response:", response.data)
+        // Handle different response formats
+        if (response.data?.settings) {
+          return response.data
+        } else if (response.data && typeof response.data === 'object') {
+          // If response.data is the settings object directly
+          return { settings: response.data, settingsByCategory: {} }
+        }
+        return { settings: {}, settingsByCategory: {} }
       } catch (err: any) {
         console.error("Settings fetch error:", err)
-        // Return empty data instead of throwing
+        // Don't throw - return empty data so UI can still show defaults
         return { settings: {}, settingsByCategory: {} }
       }
     },
@@ -47,25 +52,27 @@ export default function SettingsPage() {
     refetchOnWindowFocus: true,
   })
 
-  // Fetch system health
-  const { data: systemHealthData, refetch: refetchHealth } = useQuery({
-    queryKey: ['system-health'],
-    queryFn: async () => {
-      const response = await settingsAPI.getSystemHealth()
-      return response.data
-    },
-    refetchInterval: 30000, // Refetch every 30 seconds
-  })
-
   // Update settings when data loads (only if no local changes)
   useEffect(() => {
-    if (settingsData?.settings && !hasChanges) {
+    if (settingsData?.settings && Object.keys(settingsData.settings).length > 0 && !hasChanges) {
+      // Only update if we have actual settings data and no local changes
       setSettings(settingsData.settings)
-    } else if (!isLoading && !settingsData && !hasChanges) {
+    } else if (!isLoading && (!settingsData || !settingsData.settings || Object.keys(settingsData.settings).length === 0) && !hasChanges) {
       // Use defaults if no data loaded and no changes
       setSettings(defaultSettings)
     }
   }, [settingsData, isLoading, hasChanges])
+
+  // Initialize settings on mount if empty
+  useEffect(() => {
+    if (Object.keys(settings).length === 0 && !isLoading) {
+      if (settingsData?.settings && Object.keys(settingsData.settings).length > 0) {
+        setSettings(settingsData.settings)
+      } else {
+        setSettings(defaultSettings)
+      }
+    }
+  }, [isLoading, settings, settingsData])
 
   // Helper function to convert hex to HSL
   const hexToHsl = (hex: string): { h: number; s: number; l: number } | null => {
@@ -145,20 +152,35 @@ export default function SettingsPage() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (updatedSettings: Record<string, any>) => {
-      return await settingsAPI.update(updatedSettings)
+      const response = await settingsAPI.update(updatedSettings)
+      console.log("Settings update response:", response.data)
+      return response
     },
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(['settings'], { settings: data.data.settings })
-      setSettings(data.data.settings)
+    onSuccess: (response, variables) => {
+      // Handle different response formats
+      const updatedSettings = response.data?.settings || response.data || variables
+      
+      // Update query cache
+      queryClient.setQueryData(['settings'], { 
+        settings: updatedSettings, 
+        settingsByCategory: response.data?.settingsByCategory || {} 
+      })
+      
+      // Update local state
+      setSettings(updatedSettings)
       setHasChanges(false)
       toast.success("Settings saved successfully!")
       
       // Apply appearance settings immediately after save
-      if (variables.theme || variables.primaryColor || variables.language) {
+      if (variables.primaryColor) {
         applyAppearanceSettings(variables)
       }
+      
+      // Refetch to ensure we have the latest data
+      refetch()
     },
     onError: (error: any) => {
+      console.error("Settings update error:", error)
       toast.error(error.response?.data?.message || "Failed to save settings")
     }
   })
@@ -219,15 +241,20 @@ export default function SettingsPage() {
     maintenanceMode: false,
   }
 
-  // Initialize settings with defaults if empty
-  useEffect(() => {
-    if (Object.keys(settings).length === 0 && !isLoading) {
-      setSettings(settingsData?.settings || defaultSettings)
-    }
-  }, [])
-
   // Use local settings state (which is initialized from fetched data or defaults)
-  const currentSettings = Object.keys(settings).length > 0 ? settings : (settingsData?.settings || defaultSettings)
+  // Merge with defaults to ensure all fields are available
+  const getCurrentSettings = () => {
+    const baseSettings = Object.keys(settings).length > 0 
+      ? settings 
+      : (settingsData?.settings && Object.keys(settingsData.settings).length > 0 
+        ? settingsData.settings 
+        : defaultSettings)
+    
+    // Merge with defaults to ensure all fields exist
+    return { ...defaultSettings, ...baseSettings }
+  }
+  
+  const currentSettings = getCurrentSettings()
 
   if (isLoading && !settingsData) {
     return (
@@ -318,7 +345,7 @@ export default function SettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             General
@@ -327,21 +354,9 @@ export default function SettingsPage() {
             <Bell className="h-4 w-4" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Security
-          </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             Appearance
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Payments
-          </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            System
           </TabsTrigger>
         </TabsList>
 
@@ -474,70 +489,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Security Settings */}
-        <TabsContent value="security" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Security Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Two-Factor Authentication</Label>
-                  <p className="text-sm text-gray-500">Add an extra layer of security</p>
-                </div>
-                <Switch
-                  checked={currentSettings.twoFactorAuth ?? false}
-                  onCheckedChange={(checked) => handleInputChange('twoFactorAuth', checked)}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
-                  <Select 
-                    value={currentSettings.sessionTimeout?.toString() || "30"} 
-                    onValueChange={(value) => handleInputChange('sessionTimeout', parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
-                      <SelectItem value="60">1 hour</SelectItem>
-                      <SelectItem value="120">2 hours</SelectItem>
-                      <SelectItem value="480">8 hours</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="passwordExpiry">Password Expiry (days)</Label>
-                  <Select 
-                    value={currentSettings.passwordExpiry?.toString() || "90"} 
-                    onValueChange={(value) => handleInputChange('passwordExpiry', parseInt(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 days</SelectItem>
-                      <SelectItem value="60">60 days</SelectItem>
-                      <SelectItem value="90">90 days</SelectItem>
-                      <SelectItem value="180">180 days</SelectItem>
-                      <SelectItem value="365">1 year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Appearance Settings */}
         <TabsContent value="appearance" className="space-y-6">
           <Card>
@@ -548,43 +499,6 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="theme">Theme</Label>
-                  <Select 
-                    value={currentSettings.theme || "light"} 
-                    onValueChange={(value) => handleInputChange('theme', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="auto">Auto (System)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="language">Language</Label>
-                  <Select 
-                    value={currentSettings.language || "en"} 
-                    onValueChange={(value) => handleInputChange('language', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               <div className="space-y-2">
                 <Label htmlFor="primaryColor">Primary Color</Label>
                 <div className="flex items-center gap-2">
@@ -607,229 +521,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Payment Settings */}
-        <TabsContent value="payments" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                PinPayments Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pinpaymentsSecretKey">Secret Key</Label>
-                  <Input
-                    id="pinpaymentsSecretKey"
-                    type="password"
-                    value={currentSettings.pinpaymentsSecretKey || ""}
-                    onChange={(e) => handleInputChange('pinpaymentsSecretKey', e.target.value)}
-                    placeholder="Enter your PinPayments secret key"
-                    style={{ fontFamily: 'Albert Sans' }}
-                  />
-                  <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
-                    Your PinPayments secret key (keep this secure)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pinpaymentsPublishableKey">Publishable Key</Label>
-                  <Input
-                    id="pinpaymentsPublishableKey"
-                    value={currentSettings.pinpaymentsPublishableKey || ""}
-                    onChange={(e) => handleInputChange('pinpaymentsPublishableKey', e.target.value)}
-                    placeholder="Enter your PinPayments publishable key"
-                    style={{ fontFamily: 'Albert Sans' }}
-                  />
-                  <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
-                    Your PinPayments publishable key (used in frontend)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pinpaymentsWebhookSecret">Webhook Secret</Label>
-                  <Input
-                    id="pinpaymentsWebhookSecret"
-                    type="password"
-                    value={currentSettings.pinpaymentsWebhookSecret || ""}
-                    onChange={(e) => handleInputChange('pinpaymentsWebhookSecret', e.target.value)}
-                    placeholder="Enter webhook secret for verification"
-                    style={{ fontFamily: 'Albert Sans' }}
-                  />
-                  <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
-                    Webhook secret for verifying PinPayments webhooks
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base">Test Mode</Label>
-                    <p className="text-sm text-gray-500">Use PinPayments test environment</p>
-                  </div>
-                  <Switch
-                    checked={currentSettings.pinpaymentsTestMode ?? true}
-                    onCheckedChange={(checked) => handleInputChange('pinpaymentsTestMode', checked)}
-                  />
-                </div>
-
-                <div className="pt-4 border-t">
-                  <h3 className="text-sm font-semibold mb-2" style={{ fontFamily: 'Albert Sans' }}>
-                    Webhook URL
-                  </h3>
-                  <div className="bg-gray-50 p-3 rounded border">
-                    <code className="text-xs break-all" style={{ fontFamily: 'monospace' }}>
-                      {typeof window !== 'undefined' 
-                        ? `${window.location.origin.replace(':3001', ':9000')}/admin/payments/webhook`
-                        : 'https://your-domain.com/admin/payments/webhook'}
-                    </code>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'Albert Sans' }}>
-                    Configure this URL in your PinPayments dashboard under Webhooks
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* System Settings */}
-        <TabsContent value="system" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                System Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                    Database
-                  </h3>
-                  <div className="space-y-2">
-                    <Label>Database Status</Label>
-                    <div className="flex items-center gap-2">
-                      {systemHealthData?.database?.connected ? (
-                        <>
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-sm text-green-600">Connected</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-2 h-2 bg-[#e7f1ff]0 rounded-full"></div>
-                          <span className="text-sm text-[#055160]">Disconnected</span>
-                        </>
-                      )}
-                    </div>
-                    {systemHealthData?.database?.currentTime && (
-                      <p className="text-xs text-gray-500">
-                        Last checked: {new Date(systemHealthData.database.currentTime).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => refetchHealth()}>
-                    <Database className="h-4 w-4 mr-2" />
-                    Refresh Status
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                    System Health
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ fontFamily: 'Albert Sans' }}>CPU Usage</span>
-                      <span className={`text-sm ${
-                        (systemHealthData?.system?.cpuUsage || 0) > 80 ? 'text-[#055160]' :
-                        (systemHealthData?.system?.cpuUsage || 0) > 60 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {systemHealthData?.system?.cpuUsage || 0}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ fontFamily: 'Albert Sans' }}>Memory Usage</span>
-                      <span className={`text-sm ${
-                        (systemHealthData?.system?.memoryUsage || 0) > 80 ? 'text-[#055160]' :
-                        (systemHealthData?.system?.memoryUsage || 0) > 60 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {systemHealthData?.system?.memoryUsage || 0}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm" style={{ fontFamily: 'Albert Sans' }}>Disk Usage</span>
-                      <span className={`text-sm ${
-                        (systemHealthData?.system?.diskUsage || 0) > 80 ? 'text-[#055160]' :
-                        (systemHealthData?.system?.diskUsage || 0) > 60 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {systemHealthData?.system?.diskUsage || 0}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {systemHealthData?.stats && (
-                <div className="pt-4 border-t">
-                  <h3 className="text-lg font-medium mb-4" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                    Statistics
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>Orders</p>
-                      <p className="text-lg font-semibold" style={{ fontFamily: 'Albert Sans' }}>
-                        {systemHealthData.stats.orders?.toLocaleString() || 0}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>Customers</p>
-                      <p className="text-lg font-semibold" style={{ fontFamily: 'Albert Sans' }}>
-                        {systemHealthData.stats.customers?.toLocaleString() || 0}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>Products</p>
-                      <p className="text-lg font-semibold" style={{ fontFamily: 'Albert Sans' }}>
-                        {systemHealthData.stats.products?.toLocaleString() || 0}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>Companies</p>
-                      <p className="text-lg font-semibold" style={{ fontFamily: 'Albert Sans' }}>
-                        {systemHealthData.stats.companies?.toLocaleString() || 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-4 border-t">
-                <h3 className="text-lg font-medium mb-4" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  System Actions
-                </h3>
-                <div className="flex flex-wrap gap-4">
-                  <Button variant="outline" onClick={handleClearCache}>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Clear Cache
-                  </Button>
-                  <Button variant="outline" onClick={handleExportLogs}>
-                    <Database className="h-4 w-4 mr-2" />
-                    Export Logs
-                  </Button>
-                  <Button 
-                    variant={currentSettings.maintenanceMode ? "destructive" : "outline"}
-                    onClick={handleMaintenanceMode}
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    {currentSettings.maintenanceMode ? "Disable Maintenance Mode" : "Enable Maintenance Mode"}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   )
