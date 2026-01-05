@@ -267,7 +267,7 @@ export default function ProductsPage() {
     setRoastLevel(product.roast_level || "")
     setShowSpecifications(product.show_specifications || false)
     setShowOtherInfo(product.show_other_info || false)
-    setProductPrice(product.product_price.toString())
+    setProductPrice(product.product_price ? product.product_price.toString() : "")
     setRetailPrice(product.retail_price?.toString() || "")
     setRetailDiscountPercentage(product.retail_discount_percentage?.toString() || "40")
     setCustomerTypeVisibility(product.customer_type_visibility || 'all')
@@ -333,15 +333,17 @@ export default function ProductsPage() {
       newErrors.productName = nameValidation.error || "Product name is required"
     }
     
-    // Validate product price (required, DECIMAL(15,4) per DB schema)
-    const priceValidation = validateNumber(productPrice, "Product price", {
-      required: true,
-      min: 0,
-      max: 999999999999.9999, // Max for DECIMAL(15,4)
-      allowDecimals: true
-    })
-    if (!priceValidation.valid) {
-      newErrors.productPrice = priceValidation.error || "Product price is required"
+    // Validate product price (optional, DECIMAL(15,4) per DB schema, defaults to 0)
+    if (productPrice && productPrice.trim() !== '') {
+      const priceValidation = validateNumber(productPrice, "Product price", {
+        required: false,
+        min: 0,
+        max: 999999999999.9999, // Max for DECIMAL(15,4)
+        allowDecimals: true
+      })
+      if (!priceValidation.valid) {
+        newErrors.productPrice = priceValidation.error || "Product price must be a valid number"
+      }
     }
     
     // Validate product description (optional, TEXT field - reasonable limit)
@@ -393,7 +395,7 @@ export default function ProductsPage() {
       roast_level: roastLevel || null,
       show_specifications: showSpecifications,
       show_other_info: showOtherInfo,
-      product_price: parseFloat(productPrice),
+      product_price: productPrice && productPrice.trim() ? parseFloat(productPrice) : 0,
       retail_price: finalRetailPrice,
       retail_discount_percentage: parseFloat(retailDiscountPercentage) || 40,
       customer_type_visibility: customerTypeVisibility,
@@ -1159,7 +1161,7 @@ export default function ProductsPage() {
                 step="0.01"
                 placeholder="0.00"
                 value={productPrice}
-                validationRule={ValidationRules.product.product_price}
+                validationRule={{ ...ValidationRules.product.product_price, required: false }}
                 fieldName="Product Price"
                 error={errors.productPrice}
                 onChange={(value, isValid) => {
@@ -1585,9 +1587,9 @@ export default function ProductsPage() {
                                 <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                                   {value.name}
                                 </span>
-                                {(standardPrice > 0 || wholesalePrice > 0) && (
+                                {standardPrice > 0 && (
                                   <span className="text-xs text-gray-500">
-                                    (Std: ${standardPrice.toFixed(2)}, Wholesale: ${wholesalePrice.toFixed(2)})
+                                    (Std: ${standardPrice.toFixed(2)})
                                   </span>
                                 )}
                               </label>
