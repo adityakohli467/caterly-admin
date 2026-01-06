@@ -416,7 +416,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
               </p>
               <p className="text-sm text-gray-700">
                 {order?.delivery_date_time 
-                  ? format(new Date(order.delivery_date_time), 'EEEE, do MMMM yyyy, hh:mm a')
+                  ? format(new Date(order.delivery_date_time), 'EEEE, do MMMM yyyy, HH:mm')
                   : 'N/A'}
               </p>
             </div>

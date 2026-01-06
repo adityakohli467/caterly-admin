@@ -638,7 +638,7 @@ export default function QuotesPage() {
                         letterSpacing: '0%'
                       }}>
                         {quote.delivery_date_time 
-                          ? format(new Date(quote.delivery_date_time), 'hh:mm a')
+                          ? format(new Date(quote.delivery_date_time), 'HH:mm')
                           : 'N/A'}
                       </span>
                     </td>

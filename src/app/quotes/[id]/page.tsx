@@ -145,10 +145,17 @@ export default function QuoteDetailPage() {
 
   const quote = quoteData?.quote || sampleQuote
   
-  // Ensure products array exists and is not null
+  // Ensure products array exists and filter out invalid products
   const safeQuote = {
     ...quote,
-    products: Array.isArray(quote?.products) ? quote.products : []
+    products: Array.isArray(quote?.products) 
+      ? quote.products.filter((product: QuoteProduct) => {
+          if (!product) return false
+          const productId = Number(product.product_id)
+          const productName = product.product_name?.trim() || ''
+          return productId > 0 && productName !== ''
+        })
+      : []
   }
 
   // Show loading state instead of blank page (check both isLoading and isFetching)
@@ -358,11 +365,13 @@ export default function QuoteDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(safeQuote.products || []).map((product: QuoteProduct, index: number) => (
-                    <tr key={index} className="border-b border-gray-100">
+                  {(safeQuote.products || []).map((product: QuoteProduct, index: number) => {
+                    const displayIndex = index + 1
+                    return (
+                    <tr key={product.product_id || index} className="border-b border-gray-100">
                       <td className="px-4 py-4 align-top">
                         <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {index + 1}
+                          {displayIndex}
                         </span>
                       </td>
                       <td className="px-4 py-4 align-top">
@@ -370,7 +379,7 @@ export default function QuoteDetailPage() {
                           <p className="text-sm font-medium text-gray-900 mb-1" style={{ fontFamily: 'Albert Sans' }}>
                             {product.product_name}
                           </p>
-                          {product.product_comment && (
+                          {product.product_comment && product.product_comment !== '0' && (
                             <p className="text-xs text-gray-600 italic mt-1" style={{ fontFamily: 'Albert Sans' }}>
                               Note: {product.product_comment}
                             </p>
@@ -391,7 +400,7 @@ export default function QuoteDetailPage() {
                       </td>
                       <td className="px-4 py-4 align-top">
                         <p className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {product.product_description || '-'}
+                          {product.product_description && product.product_description !== '0' ? product.product_description : '-'}
                         </p>
                       </td>
                       <td className="px-4 py-4 align-top text-center">
@@ -443,7 +452,8 @@ export default function QuoteDetailPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    )
+                  })}
 
                   {/* Totals */}
                   <tr className="border-b border-gray-100">
@@ -475,7 +485,7 @@ export default function QuoteDetailPage() {
                     </tr>
                   )}
 
-                  {(safeQuote.coupon_id || (safeQuote.coupon_discount && safeQuote.coupon_discount > 0)) && (
+                  {(safeQuote.coupon_id || (safeQuote.coupon_discount && safeQuote.coupon_discount > 0)) ? (
                     <tr className="border-b border-gray-100">
                       <td colSpan={5} className="px-4 py-3 text-right">
                         <div className="flex flex-col items-end">
@@ -500,20 +510,22 @@ export default function QuoteDetailPage() {
                         </span>
                       </td>
                     </tr>
-                  )}
+                  ) : null}
 
-                  <tr className="border-b border-gray-100">
-                    <td colSpan={5} className="px-4 py-3 text-right">
-                      <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                        Delivery Fee
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                        ${Number(safeQuote.delivery_fee || 0).toFixed(2)}
-                      </span>
-                    </td>
-                  </tr>
+                  {Number(safeQuote.delivery_fee || 0) > 0 && (
+                    <tr className="border-b border-gray-100">
+                      <td colSpan={5} className="px-4 py-3 text-right">
+                        <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                          Delivery Fee
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          ${Number(safeQuote.delivery_fee || 0).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
 
                   <tr className="border-b border-gray-100">
                     <td colSpan={5} className="px-4 py-3 text-right">
