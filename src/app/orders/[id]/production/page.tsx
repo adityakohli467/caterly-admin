@@ -6,8 +6,10 @@ import { useParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import api from "@/lib/api"
-import { ArrowLeft, Printer, ArrowUpDown, Edit, Mail } from "lucide-react"
+import { ArrowLeft, Printer, ArrowUpDown, Edit, Mail, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -35,6 +37,7 @@ interface OrderDetails {
   customer_order_telephone?: string
   delivery_date_time?: string
   shipping_method?: number
+  delivery_method?: string | number
   pickup_delivery_notes?: string
   delivery_phone?: string
   company_name?: string
@@ -56,6 +59,9 @@ export default function ProductionFormPage() {
   const [loading, setLoading] = useState(true)
   const [preparedItems, setPreparedItems] = useState<{ [key: number]: boolean }>({})
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false)
+  const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false)
+  const [paymentLinkEmail, setPaymentLinkEmail] = useState("")
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   useEffect(() => {
     if (orderId) {
@@ -103,25 +109,152 @@ export default function ProductionFormPage() {
   }
 
   const handlePrint = () => {
-    printTableData("Order Production")
+    if (!order) {
+      toast.error("Order data not available")
+      return
+    }
+    
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      printTableData("Order Production")
+      return
+    }
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Production Form - Order #${order.order_id}</title>
+          <style>
+            body { font-family: 'Albert Sans', Arial, sans-serif; padding: 20px; color: #212529; }
+            h1 { color: #212529; margin-bottom: 10px; font-size: 24px; font-weight: 600; }
+            h2 { color: #212529; margin-top: 20px; margin-bottom: 10px; font-size: 18px; font-weight: 600; }
+            .order-info { margin-bottom: 20px; }
+            .order-info div { margin-bottom: 5px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+            th { background-color: #f8f9fa; font-weight: 600; padding: 12px 8px; text-align: left; border: 1px solid #dee2e6; }
+            td { padding: 10px 8px; border: 1px solid #dee2e6; }
+            tr:nth-child(even) { background-color: #f8f9fa; }
+            .production-header { background-color: #fee2e2; color: #991b1b; text-align: center; font-weight: 600; }
+            .comments-header { background-color: #f3e8ff; color: #6b21a8; text-align: center; font-weight: 600; }
+            .prepared { color: #059669; font-weight: 600; }
+            @media print {
+              @page { margin: 1cm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Production Form</h1>
+          <p>Order #${order.order_id} - ${new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+          
+          <h2>Order Information</h2>
+          <div class="order-info">
+            <div><strong>Order ID:</strong> ${order.order_id}</div>
+            <div><strong>Name:</strong> ${order.customer_order_name || 'N/A'}</div>
+            ${order.customer_order_email ? `<div><strong>Email:</strong> ${order.customer_order_email}</div>` : ''}
+            ${order.customer_order_telephone ? `<div><strong>Phone:</strong> ${order.customer_order_telephone}</div>` : ''}
+            ${order.delivery_date_time ? `<div><strong>Delivery Date:</strong> ${new Date(order.delivery_date_time).toLocaleString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</div>` : ''}
+            <div><strong>Shipping Method:</strong> ${order.delivery_method === 1 || order.delivery_method === 'delivery' || order.shipping_method === 1 ? 'Delivery' : 'Pickup'}</div>
+            ${order.pickup_delivery_notes ? `<div><strong>Delivery Notes:</strong> ${order.pickup_delivery_notes}</div>` : ''}
+            ${order.delivery_phone ? `<div><strong>Delivery Contact:</strong> ${order.delivery_phone}</div>` : ''}
+          </div>
+
+          ${(order.company_name || order.customer_company_name) ? `
+          <h2>Company Information</h2>
+          <div class="order-info">
+            <div><strong>Company:</strong> ${order.customer_company_name || order.company_name || 'N/A'}</div>
+            ${order.customer_company_addr ? `<div><strong>Address:</strong> ${order.customer_company_addr}</div>` : ''}
+            ${order.delivery_address ? `<div><strong>Delivery Address:</strong> ${order.delivery_address.replace(/\n/g, '<br>')}</div>` : ''}
+            ${order.postcode ? `<div><strong>Postcode:</strong> ${order.postcode}</div>` : ''}
+          </div>
+          ` : ''}
+
+          <h2>Products</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Quantity</th>
+                <th>Product Name</th>
+                <th>Product Comments</th>
+                <th>Prepared</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.order_products && order.order_products.length > 0 ? order.order_products.map((product: OrderProduct) => `
+                <tr>
+                  <td>${product.quantity}</td>
+                  <td>
+                    <div><strong>${product.product_name}</strong></div>
+                    ${product.product_description ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">${product.product_description}</div>` : ''}
+                    ${product.options && product.options.length > 0 ? product.options.map((option: any) => `
+                      <div style="font-size: 11px; color: #6b7280; margin-top: 4px; border-left: 2px solid #d1d5db; padding-left: 8px;">
+                        <div><strong>Option:</strong> ${option.option_name}</div>
+                        <div><strong>Value:</strong> ${option.option_value}</div>
+                        <div><strong>Quantity:</strong> ${option.option_quantity}</div>
+                      </div>
+                    `).join('') : ''}
+                  </td>
+                  <td>${product.product_comment || '-'}</td>
+                  <td class="${preparedItems[product.order_product_id] ? 'prepared' : ''}">${preparedItems[product.order_product_id] ? '✓ Prepared' : 'Not Prepared'}</td>
+                </tr>
+              `).join('') : '<tr><td colSpan="4" style="text-align: center;">No products</td></tr>'}
+            </tbody>
+          </table>
+
+          ${order.order_comments ? `
+          <h2>Order Comments</h2>
+          <div class="order-info" style="white-space: pre-wrap;">${order.order_comments}</div>
+          ` : ''}
+        </body>
+      </html>
+    `
+    
+    printWindow.document.write(printContent)
+    printWindow.document.close()
+    printWindow.print()
+  }
+
+  const handleOpenPaymentLinkModal = () => {
+    // Pre-fill with customer email if available
+    setPaymentLinkEmail(order?.customer_order_email || "")
+    setShowPaymentLinkModal(true)
   }
 
   const handleSendPaymentLink = async () => {
     if (!orderId) return
     
     setSendingPaymentLink(true)
+    setShowPaymentLinkModal(false)
+    
     try {
-      const response = await api.post(`/admin/orders/${orderId}/send-payment-link`)
-      toast.success("Payment link email sent successfully", {
-        description: `Sent to: ${response.data.sent_to?.join(', ') || 'customer'}`,
+      const response = await api.post(`/admin/orders/${orderId}/send-payment-link`, {
+        email_payment: paymentLinkEmail || undefined
       })
+      
+      // Check if email was actually sent
+      if (response.data.email_sent) {
+        setShowSuccessModal(true)
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 2000)
+        toast.success("Payment link email sent successfully", {
+          description: `Sent to: ${response.data.sent_to?.join(', ') || 'customer'}`,
+        })
+      } else {
+        const errorMsg = response.data.error || response.data.message || "Email service not configured"
+        toast.error("Failed to send payment link email", {
+          description: errorMsg,
+        })
+      }
     } catch (error: any) {
       console.error("Failed to send payment link:", error)
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Please try again later"
       toast.error("Failed to send payment link", {
-        description: error.response?.data?.message || "Please try again later",
+        description: errorMsg,
       })
     } finally {
       setSendingPaymentLink(false)
+      setPaymentLinkEmail("")
     }
   }
 
@@ -177,7 +310,7 @@ export default function ProductionFormPage() {
           </Button>
           <Button 
             variant="default" 
-            onClick={handleSendPaymentLink}
+            onClick={handleOpenPaymentLinkModal}
             disabled={sendingPaymentLink}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             className="gap-2 bg-[#055160] hover:bg-[#04414d]"
@@ -238,9 +371,9 @@ export default function ProductionFormPage() {
                         <div>
                           <strong className="mr-2">Delivery Date:</strong>
                           <span>{new Date(order.delivery_date_time).toLocaleString('en-AU', { 
-                            hour: 'numeric', 
+                            hour: '2-digit', 
                             minute: '2-digit', 
-                            hour12: true,
+                            hour12: false,
                             weekday: 'long',
                             day: 'numeric',
                             month: 'short',
@@ -254,7 +387,11 @@ export default function ProductionFormPage() {
                     <div style={{ fontFamily: 'Albert Sans' }} className="space-y-2">
                       <div>
                         <strong className="mr-2">Shipping Method:</strong>
-                        <span>{order.shipping_method === 1 ? 'Delivery' : 'Pickup'}</span>
+                        <span>
+                          {order.delivery_method === 1 || order.delivery_method === 'delivery' || order.shipping_method === 1 
+                            ? 'Delivery' 
+                            : 'Pickup'}
+                        </span>
                       </div>
                       <hr className="my-2" />
                       {order.pickup_delivery_notes && (
@@ -455,7 +592,7 @@ export default function ProductionFormPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }} className="text-gray-700 whitespace-pre-line">
-                          {product.product_comment || 'Lorem ipsum dolor el emet.'}
+                          {product.product_comment || '-'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -574,6 +711,88 @@ export default function ProductionFormPage() {
           </Button>
         </div>
       </div>
+
+      {/* Send Payment Link Modal */}
+      {showPaymentLinkModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-[#e7f1ff] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-8 w-8 text-[#055160]" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
+                Send Payment Link
+              </h3>
+              <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
+                Enter Email ID to send payment link to customer
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <Label htmlFor="paymentLinkEmail" className="text-sm font-medium text-gray-700 mb-2 block">
+                Email
+              </Label>
+              <Input
+                id="paymentLinkEmail"
+                type="email"
+                placeholder="customer@example.com"
+                value={paymentLinkEmail}
+                onChange={(e) => setPaymentLinkEmail(e.target.value)}
+                className="h-11 border-gray-300"
+                style={{ fontFamily: 'Albert Sans' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleSendPaymentLink()
+                  }
+                }}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowPaymentLinkModal(false)
+                  setPaymentLinkEmail("")
+                }}
+                variant="outline"
+                className="flex-1 border-gray-300"
+                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                disabled={sendingPaymentLink}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendPaymentLink}
+                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                disabled={sendingPaymentLink || !paymentLinkEmail.trim()}
+              >
+                {sendingPaymentLink ? 'Sending...' : 'Yes, Send'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
+                Payment Link Sent Successfully
+              </h3>
+              <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
+                Payment link has been sent to {paymentLinkEmail || 'customer'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

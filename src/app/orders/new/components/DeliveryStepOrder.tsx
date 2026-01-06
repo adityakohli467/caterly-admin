@@ -755,12 +755,12 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
 
               {/* Email */}
               <ValidatedInput
-                label="Email"
+                label="Delivery contact email"
                 type="email"
                 placeholder="Enter"
                 value={accountEmail}
                 validationRule={ValidationRules.order.account_email}
-                fieldName="Email"
+                fieldName="Delivery contact email"
                 onChange={(value) => {
                   setAccountEmail(value)
                   onUpdate({ account_email: value })
@@ -790,7 +790,8 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 fieldName="Notes"
                 onChange={(value) => {
                   setDeliveryNotes(value)
-                  onUpdate({ delivery_details: value?.trim() || '' })
+                  // Preserve all spaces - only trim when saving, not on every keystroke
+                  onUpdate({ delivery_details: value || '' })
                 }}
                 rows={3}
                 className="border-gray-300 resize-none md:col-span-2"

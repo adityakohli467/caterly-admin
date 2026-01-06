@@ -254,7 +254,7 @@ export default function DashboardPage() {
                   <td>${order.customer_order_name || `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() || 'N/A'}</td>
                   <td>${order.customer?.telephone || 'N/A'}</td>
                   <td>${order.customer?.email || 'N/A'}</td>
-                  <td>${order.delivery_date_time ? format(new Date(order.delivery_date_time), 'hh:mm a') : 'N/A'}</td>
+                  <td>${order.delivery_date_time ? format(new Date(order.delivery_date_time), 'HH:mm') : 'N/A'}</td>
                   <td>${getStatusText(order.order_status)}</td>
                 </tr>
               `).join('')}
@@ -674,8 +674,8 @@ export default function DashboardPage() {
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
                           {order.delivery_date_time 
-                            ? format(new Date(order.delivery_date_time), 'hh:mm a')
-                            : '12:00 AM'}
+                            ? format(new Date(order.delivery_date_time), 'HH:mm')
+                            : '00:00'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
@@ -839,8 +839,8 @@ export default function DashboardPage() {
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
                           {order.delivery_date_time 
-                            ? format(new Date(order.delivery_date_time), 'hh:mm a')
-                            : '12:00 AM'}
+                            ? format(new Date(order.delivery_date_time), 'HH:mm')
+                            : '00:00'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">

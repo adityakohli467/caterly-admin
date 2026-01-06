@@ -373,7 +373,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Date & Time</p>
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
                           {order.delivery_date_time 
-                            ? format(new Date(order.delivery_date_time), 'dd MMM, yyyy hh:mm a')
+                            ? format(new Date(order.delivery_date_time), 'dd MMM, yyyy HH:mm')
                             : 'N/A'}
                         </p>
                       </div>

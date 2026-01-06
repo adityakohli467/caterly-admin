@@ -13,7 +13,7 @@ import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidatedTextarea } from "@/components/ui/validated-textarea"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Printer, Plus, Edit, Trash2, AlertCircle, X, Upload, Image as ImageIcon } from "lucide-react"
+import { Search, Printer, Plus, Edit, Trash2, AlertCircle, X, Upload, Image as ImageIcon, Power, PowerOff } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { validateRequired, validateNumber, validateURL } from "@/lib/validations"
@@ -53,6 +53,7 @@ interface Product {
   show_in_checkout?: boolean
   featured_1?: boolean
   featured_2?: boolean
+  show_in_storefront?: boolean
   roast_level?: string | null
   show_specifications?: boolean
   show_other_info?: boolean
@@ -72,6 +73,7 @@ export default function ProductsPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   // Form state
@@ -98,6 +100,7 @@ export default function ProductsPage() {
   const [showInCheckout, setShowInCheckout] = useState(false)
   const [featured1, setFeatured1] = useState(false)
   const [featured2, setFeatured2] = useState(false)
+  const [showInStorefront, setShowInStorefront] = useState(false)
   
   // Validation errors
   const [errors, setErrors] = useState<{
@@ -111,12 +114,13 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
 
-  // Fetch products
+  // Fetch products - only active products by default
   const { data: productsData, isLoading, error: productsError } = useQuery({
     queryKey: ["products-new", searchQuery, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (searchQuery) params.append("search", searchQuery)
+      params.append("status", "1") // Only active products
       params.append("limit", itemsPerPage.toString())
       params.append("offset", ((currentPage - 1) * itemsPerPage).toString())
       const response = await api.get(`/admin/products-new?${params.toString()}`)
@@ -254,6 +258,34 @@ export default function ProductsPage() {
     },
   })
 
+  // Toggle product status mutation
+  const toggleProductStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: number }) => {
+      const response = await api.put(`/admin/products-new/${id}/toggle-status`, { status })
+      return response.data
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["products-new"] })
+      queryClient.invalidateQueries({ queryKey: ["inactive-products"] })
+      toast.success(data.message || `Product ${variables.status === 1 ? 'activated' : 'deactivated'} successfully!`)
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update product status")
+    },
+  })
+
+  // Fetch inactive products
+  const { data: inactiveProductsData, isLoading: loadingInactive } = useQuery({
+    queryKey: ["inactive-products"],
+    queryFn: async () => {
+      const response = await api.get("/admin/products-new/inactive?limit=1000")
+      return response.data
+    },
+    enabled: showInactiveModal,
+  })
+
+  const inactiveProducts = inactiveProductsData?.products || []
+
   const handleAddProduct = () => {
     resetForm()
     setShowAddModal(true)
@@ -289,6 +321,7 @@ export default function ProductsPage() {
     setShowInCheckout(product.show_in_checkout || false)
     setFeatured1(product.featured_1 || false)
     setFeatured2(product.featured_2 || false)
+    setShowInStorefront(product.show_in_storefront || false)
     setSelectedOptions(
       product.options?.map(o => ({
         option_value_id: o.option_value_id,
@@ -322,6 +355,11 @@ export default function ProductsPage() {
   const handleDeleteProduct = (product: Product) => {
     setSelectedProduct(product)
     setShowDeleteModal(true)
+  }
+
+  const handleToggleProductStatus = (product: Product) => {
+    const newStatus = product.product_status === 1 ? 0 : 1
+    toggleProductStatusMutation.mutate({ id: product.product_id, status: newStatus })
   }
 
   const validateForm = (): boolean => {
@@ -408,6 +446,7 @@ export default function ProductsPage() {
       show_in_checkout: showInCheckout,
       featured_1: featured1,
       featured_2: featured2,
+      show_in_storefront: showInStorefront,
       options: JSON.stringify(selectedOptions.map(opt => ({
         option_value_id: opt.option_value_id,
         option_price: opt.option_price || 0,
@@ -448,6 +487,7 @@ export default function ProductsPage() {
         formData.append('show_in_checkout', showInCheckout.toString())
         formData.append('featured_1', featured1.toString())
         formData.append('featured_2', featured2.toString())
+        formData.append('show_in_storefront', showInStorefront.toString())
         formData.append('options', productData.options)
         
         // Add existing image URLs
@@ -480,6 +520,7 @@ export default function ProductsPage() {
             show_in_checkout: showInCheckout,
             featured_1: featured1,
             featured_2: featured2,
+            show_in_storefront: showInStorefront,
             options: selectedOptions.map(opt => ({
               option_value_id: opt.option_value_id,
               option_price: opt.option_price || 0,
@@ -774,6 +815,7 @@ export default function ProductsPage() {
     setShowInCheckout(false)
     setFeatured1(false)
     setFeatured2(false)
+    setShowInStorefront(false)
     setSelectedProduct(null)
     setErrors({})
     // Revoke all object URLs
@@ -801,25 +843,38 @@ export default function ProductsPage() {
         }}>
           Manage Products
         </h1>
-        <Button 
-          onClick={handleAddProduct}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
-          style={{ 
-            fontWeight: 600,
-            minWidth: '196px',
-            height: '54px',
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '4px',
-            borderRadius: '67px',
-            opacity: 1
-          }}
-        >
-          <Plus className="h-5 w-5" />
-          Add New Product
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => setShowInactiveModal(true)}
+            variant="outline"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+            style={{ 
+              fontWeight: 600,
+              height: '54px',
+            }}
+          >
+            View Inactive Products
+          </Button>
+          <Button 
+            onClick={handleAddProduct}
+            className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
+            style={{ 
+              fontWeight: 600,
+              minWidth: '196px',
+              height: '54px',
+              paddingTop: '8px',
+              paddingRight: '16px',
+              paddingBottom: '8px',
+              paddingLeft: '16px',
+              gap: '4px',
+              borderRadius: '67px',
+              opacity: 1
+            }}
+          >
+            <Plus className="h-5 w-5" />
+            Add New Product
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -1009,6 +1064,22 @@ export default function ProductsPage() {
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
+                              onClick={() => handleToggleProductStatus(product)}
+                              className={`p-1.5 rounded transition-colors ${
+                                product.product_status === 1
+                                  ? 'text-orange-600 hover:bg-orange-50'
+                                  : 'text-green-600 hover:bg-green-50'
+                              }`}
+                              title={product.product_status === 1 ? 'Deactivate' : 'Activate'}
+                              disabled={toggleProductStatusMutation.isPending}
+                            >
+                              {product.product_status === 1 ? (
+                                <PowerOff className="h-4 w-4" />
+                              ) : (
+                                <Power className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
                               onClick={() => handleDeleteProduct(product)}
                               className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
                               title="Delete"
@@ -1057,6 +1128,22 @@ export default function ProductsPage() {
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleToggleProductStatus(product)}
+                                className={`p-1.5 rounded transition-colors ${
+                                  product.product_status === 1
+                                    ? 'text-orange-600 hover:bg-orange-50'
+                                    : 'text-green-600 hover:bg-green-50'
+                                }`}
+                                title={product.product_status === 1 ? 'Deactivate' : 'Activate'}
+                                disabled={toggleProductStatusMutation.isPending}
+                              >
+                                {product.product_status === 1 ? (
+                                  <PowerOff className="h-4 w-4" />
+                                ) : (
+                                  <Power className="h-4 w-4" />
+                                )}
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(product)}
@@ -1675,6 +1762,17 @@ export default function ProductsPage() {
                     Featured 2 (Homepage Second Option)
                   </span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                  <input
+                    type="checkbox"
+                    checked={showInStorefront}
+                    onChange={(e) => setShowInStorefront(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                    Show in Storefront
+                  </span>
+                </label>
               </div>
             </div>
 
@@ -1702,6 +1800,84 @@ export default function ProductsPage() {
                   : selectedProduct ? "Update" : "Create"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Inactive Products Modal */}
+      <Dialog open={showInactiveModal} onOpenChange={setShowInactiveModal}>
+        <DialogContent className="w-[95vw] sm:w-full max-w-4xl bg-white max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" style={{ fontFamily: 'Albert Sans' }}>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              Inactive Products
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            {loadingInactive ? (
+              <div className="text-center py-8 text-gray-500">Loading inactive products...</div>
+            ) : inactiveProducts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No inactive products found.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Product Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Categories
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Price
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inactiveProducts.map((product: Product) => (
+                      <tr key={product.product_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          {product.product_name}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                          {product.categories && product.categories.length > 0 
+                            ? product.categories.map((c: any) => c.category_name).join(", ")
+                            : "N/A"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          ${parseFloat(product.product_price.toString()).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => {
+                              toggleProductStatusMutation.mutate({ id: product.product_id, status: 1 })
+                            }}
+                            className="px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded transition-colors flex items-center gap-1"
+                            disabled={toggleProductStatusMutation.isPending}
+                          >
+                            <Power className="h-4 w-4" />
+                            Reactivate
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowInactiveModal(false)}
+            >
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
