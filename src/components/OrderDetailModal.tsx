@@ -50,6 +50,7 @@ interface OrderDetails {
   subtotal?: string
   wholesale_discount?: string | number
   delivery_fee?: string
+  late_fee?: string | number
   coupon_discount?: string
   coupon_code?: string
   gst?: string
@@ -299,6 +300,14 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                             ${Number(order.delivery_fee || 0).toFixed(2)}
                           </span>
                         </div>
+                        {Number(order.late_fee || 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">Late Fee</span>
+                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
+                              ${Number(order.late_fee || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex justify-between">
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">GST (10%)</span>
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">

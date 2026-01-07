@@ -62,6 +62,7 @@ interface OrderDetails {
   subtotal?: number
   wholesale_discount?: number
   delivery_fee?: number
+  late_fee?: number
   coupon_discount?: number
   total_discount?: number
   coupon_code?: string
@@ -365,6 +366,7 @@ export default function OrderDetailPage() {
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
   const couponDiscount = typeof order.coupon_discount === 'number' ? order.coupon_discount : parseFloat(String(order.coupon_discount || '0'))
   const deliveryFee = parseFloat(String(order.delivery_fee || '0'))
+  const lateFee = parseFloat(String(order.late_fee || '0'))
   const gst = typeof order.gst === 'number' ? order.gst : parseFloat(String(order.gst || '0'))
   const total = typeof order.calculated_total === 'number' ? order.calculated_total : parseFloat(String(order.calculated_total || order.order_total || '0'))
 
@@ -646,6 +648,21 @@ export default function OrderDetailPage() {
                       </span>
                     </td>
                   </tr>
+
+                  {lateFee > 0 && (
+                    <tr className="border-b border-gray-100">
+                      <td colSpan={5} className="px-4 py-3 text-right">
+                        <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                          Late Fee
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          ${lateFee.toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
 
                   <tr className="border-b border-gray-100">
                     <td colSpan={5} className="px-4 py-3 text-right">
