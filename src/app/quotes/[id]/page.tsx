@@ -668,7 +668,7 @@ export default function QuoteDetailPage() {
                       Delivery Date
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {format(new Date(safeQuote.delivery_date_time), 'dd/MM/yyyy')}
+                      {format(new Date(safeQuote.delivery_date_time), 'MMMM d, yyyy')}
                     </p>
                   </div>
                   <div>
@@ -676,7 +676,27 @@ export default function QuoteDetailPage() {
                       Delivery Time
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {safeQuote.delivery_time || format(new Date(safeQuote.delivery_date_time), 'HH:mm')}
+                      {(() => {
+                        // Format time in 12-hour format with AM/PM
+                        let timeToFormat = safeQuote.delivery_time
+                        if (!timeToFormat && safeQuote.delivery_date_time) {
+                          // Extract time from delivery_date_time if delivery_time is not available
+                          const date = new Date(safeQuote.delivery_date_time)
+                          const hours = date.getHours()
+                          const minutes = date.getMinutes()
+                          timeToFormat = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+                        }
+                        if (timeToFormat) {
+                          // Parse HH:mm format and convert to 12-hour format
+                          const [hours, minutes] = timeToFormat.split(':').map(Number)
+                          if (!isNaN(hours) && !isNaN(minutes)) {
+                            const hour12 = hours % 12 || 12
+                            const ampm = hours >= 12 ? 'PM' : 'AM'
+                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
+                          }
+                        }
+                        return timeToFormat || 'N/A'
+                      })()}
                     </p>
                   </div>
                 </>
@@ -693,7 +713,7 @@ export default function QuoteDetailPage() {
                 </div>
               )}
 
-              {safeQuote.delivery_contact && (
+              {safeQuote.delivery_contact ? (
                 <>
                   {(() => {
                     const parts = safeQuote.delivery_contact.split('|')
@@ -725,18 +745,25 @@ export default function QuoteDetailPage() {
                     )
                   })()}
                 </>
-              )}
-
-              {safeQuote.delivery_details && (
+              ) : (
                 <div>
                   <p className="text-xs font-medium text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>
-                    Delivery Notes
+                    Delivery Contact
                   </p>
-                  <p className="text-sm text-gray-900 whitespace-pre-line" style={{ fontFamily: 'Albert Sans' }}>
-                    {safeQuote.delivery_details}
+                  <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                    N/A
                   </p>
                 </div>
               )}
+
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>
+                  Delivery Notes
+                </p>
+                <p className="text-sm text-gray-900 whitespace-pre-line" style={{ fontFamily: 'Albert Sans' }}>
+                  {safeQuote.delivery_details || 'N/A'}
+                </p>
+              </div>
             </div>
           </Card>
         </div>

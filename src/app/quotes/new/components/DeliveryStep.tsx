@@ -492,8 +492,9 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   }
 
   const afterDiscount = afterWholesaleDiscount - couponDiscount
-  const gst = afterDiscount * 0.1 // 10% GST on amount after discount
-  const total = afterDiscount + gst + deliveryFee
+  // GST is inclusive: calculate as 11% but display as 10%
+  const total = afterDiscount + deliveryFee // Total is inclusive of GST
+  const gst = total * (11 / 111) // Calculate GST as 11% but display as 10%
 
   const handleApplyCoupon = () => {
     if (couponCode.trim()) {
