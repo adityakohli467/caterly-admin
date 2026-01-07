@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, AlertCircle, CheckCircle2, ArrowRight, MapPin, GripVertical, MoreVertical } from "lucide-react"
+import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, AlertCircle, CheckCircle2, ArrowRight, MapPin, ArrowUpDown, MoreVertical } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import DatePicker from "react-datepicker"
@@ -96,6 +96,8 @@ export default function QuotesPage() {
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(20)
+  const [sortField, setSortField] = useState<string | null>(null)
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -126,7 +128,7 @@ export default function QuotesPage() {
 
   // Fetch quotes
   const { data: quotesData, isLoading, refetch } = useQuery({
-    queryKey: ['quotes', searchQuery, selectedLocation, selectedStatus, startDate, endDate, currentPage],
+    queryKey: ['quotes', searchQuery, selectedLocation, selectedStatus, startDate, endDate, currentPage, sortField, sortDirection],
     queryFn: async () => {
       const params = new URLSearchParams()
       params.append('limit', itemsPerPage.toString())
@@ -137,6 +139,10 @@ export default function QuotesPage() {
       if (selectedStatus) params.append('status', selectedStatus)
       if (startDate) params.append('date_from', format(startDate, 'yyyy-MM-dd'))
       if (endDate) params.append('date_to', format(endDate, 'yyyy-MM-dd'))
+      if (sortField) {
+        params.append('sort_field', sortField)
+        params.append('sort_direction', sortDirection)
+      }
       
       const response = await api.get(`/admin/quotes?${params.toString()}`)
       return response.data
@@ -195,6 +201,37 @@ export default function QuotesPage() {
       toast.error(error.response?.data?.message || "Failed to convert quote")
     },
   })
+
+  // Email quote mutation
+  const emailQuoteMutation = useMutation({
+    mutationFn: async ({ quoteId, recipientEmail }: { quoteId: number; recipientEmail?: string }) => {
+      const response = await api.post(`/admin/quotes/${quoteId}/send-email`, {
+        recipient_email: recipientEmail,
+        custom_message: ""
+      })
+      return response.data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["quotes"] })
+      if (data.success) {
+        toast.success("Quote email sent successfully!", {
+          description: data.sent_to ? `Sent to: ${data.sent_to}` : "Email sent to customer"
+        })
+      } else {
+        toast.info(data.message || "Email prepared (email service not configured)")
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to send quote email")
+    },
+  })
+
+  const handleEmailQuote = (quote: Quote) => {
+    emailQuoteMutation.mutate({
+      quoteId: quote.order_id,
+      recipientEmail: quote.email
+    })
+  }
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -483,52 +520,140 @@ export default function QuotesPage() {
                     className="h-5 w-5"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'order_id') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('order_id')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Order ID
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'customer_name') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('customer_name')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Customer Name
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'company_name') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('company_name')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Company
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'department_name') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('department_name')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Department
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'delivery_date_time') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('delivery_date_time')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Delivery Date
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'delivery_time') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('delivery_time')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Delivery Time
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'order_total') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('order_total')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Amount
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th 
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={() => {
+                    if (sortField === 'order_status') {
+                      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+                    } else {
+                      setSortField('order_status')
+                      setSortDirection('asc')
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     Status
-                    <GripVertical className="h-4 w-4 text-gray-400 rotate-90" />
+                    <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
@@ -660,7 +785,7 @@ export default function QuotesPage() {
                           <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                         ) : (
                           <div className={`w-1.5 h-1.5 rounded-full ${
-                            quote.order_status === 5 || quote.order_status === 8 ? 'bg-[#e7f1ff]0' :  // Cancelled/Rejected - red
+                            quote.order_status === 5 || quote.order_status === 8 ? 'bg-red-500' :  // Cancelled/Rejected - red
                             quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
                             quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
                             'bg-[#055160]'  // New (status 1) - teal
@@ -702,6 +827,14 @@ export default function QuotesPage() {
                                 <ArrowRight className="h-3 w-3 mr-1" />
                                 <span>Convert to Order</span>
                               </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleEmailQuote(quote)}
+                              disabled={emailQuoteMutation.isPending}
+                              className="cursor-pointer"
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              {emailQuoteMutation.isPending ? "Sending..." : "Email Quote"}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={handleRefresh}
