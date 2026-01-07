@@ -682,7 +682,7 @@ export default function DashboardPage() {
                         {getStatusBadge(order)}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-nowrap">
                           <Link href={`/orders/${order.order_id}/production`} prefetch={true}>
                             <button
                               style={{
@@ -702,7 +702,7 @@ export default function DashboardPage() {
                                 gap: '4px',
                                 padding: 0,
                               }}
-                              className="hover:opacity-80 transition-opacity"
+                              className="hover:opacity-80 transition-opacity whitespace-nowrap"
                             >
                               <span>Products</span>
                               <ArrowRight className="h-3 w-3" />
@@ -727,7 +727,7 @@ export default function DashboardPage() {
                                 gap: '4px',
                                 padding: 0,
                               }}
-                              className="hover:opacity-80 transition-opacity"
+                              className="hover:opacity-80 transition-opacity whitespace-nowrap"
                             >
                               <span>Prepare</span>
                               <ArrowRight className="h-3 w-3" />
@@ -740,12 +740,12 @@ export default function DashboardPage() {
                               style={{ 
                                 fontFamily: 'Albert Sans', 
                                 fontWeight: 600,
-                                fontSize: '14px',
-                                lineHeight: '20px',
+                                fontSize: '12px',
+                                lineHeight: '16px',
                               }}
-                              className="h-9 px-4 text-sm bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+                              className="h-8 px-2.5 text-xs bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap shrink-0"
                             >
-                              Mark as Complete
+                              Complete
                             </Button>
                           )}
                         </div>

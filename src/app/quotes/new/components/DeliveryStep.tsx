@@ -204,8 +204,27 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   const initialDeliveryDetails = parseDeliveryDetails(data.delivery_details)
   const initialDeliveryDateTime = parseDeliveryDateTime(data.delivery_date_time)
 
+  // Normalize delivery_time to HH:mm format
+  const normalizeTime = (time: string | undefined): string => {
+    if (!time) return ""
+    // If already in HH:mm format, return as is
+    if (/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
+      return time
+    }
+    // Try to extract HH:mm from various formats
+    const timeMatch = time.match(/(\d{1,2}):(\d{2})/)
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]).toString().padStart(2, '0')
+      const minutes = timeMatch[2]
+      return `${hours}:${minutes}`
+    }
+    return ""
+  }
+
   const [deliveryDate, setDeliveryDate] = useState(initialDeliveryDateTime.date || "")
-  const [deliveryTime, setDeliveryTime] = useState(data.delivery_time || initialDeliveryDateTime.time || "")
+  const [deliveryTime, setDeliveryTime] = useState(
+    normalizeTime(data.delivery_time) || initialDeliveryDateTime.time || ""
+  )
   const [accountEmail, setAccountEmail] = useState(data.account_email || "")
   const [costCenter, setCostCenter] = useState(data.cost_center || "")
   const [deliveryContactName, setDeliveryContactName] = useState(initialDeliveryContact.name)
@@ -398,7 +417,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       }
       if (data.delivery_time !== undefined) {
         console.log('Setting deliveryTime from delivery_time:', data.delivery_time)
-        setDeliveryTime(data.delivery_time || "")
+        setDeliveryTime(normalizeTime(data.delivery_time) || "")
       }
     }
     
@@ -795,22 +814,205 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 </Label>
                 <Input
                   id="deliveryTime"
-                  type="time"
+                  type="text"
+                  placeholder="HH:mm (e.g., 14:30)"
                   value={deliveryTime}
+                  maxLength={5}
                   onChange={(e) => {
-                    const newTime = e.target.value
-                    setDeliveryTime(newTime)
-                    const dateTime = deliveryDate && newTime ? `${deliveryDate} ${newTime}:00` : undefined
-                    onUpdate({ 
-                      delivery_date: deliveryDate || undefined,
-                      delivery_time: newTime || undefined,
-                      delivery_date_time: dateTime,
-                      delivery_method: deliveryMethod 
-                    })
+                    const input = e.target.value
+                    const cursorPos = e.target.selectionStart || 0
+                    const oldValue = deliveryTime
+                    
+                    // Allow empty input
+                    if (input === '') {
+                      setDeliveryTime('')
+                      onUpdate({ 
+                        delivery_date: deliveryDate || undefined,
+                        delivery_time: undefined,
+                        delivery_date_time: undefined,
+                        delivery_method: deliveryMethod 
+                      })
+                      return
+                    }
+                    
+                    // Extract only digits
+                    const digits = input.replace(/\D/g, '')
+                    
+                    // If user is deleting (input is shorter), allow it
+                    if (input.length < oldValue.length) {
+                      // Check if colon was deleted
+                      if (oldValue.includes(':') && !input.includes(':')) {
+                        // User deleted colon, allow partial input
+                        setDeliveryTime(digits)
+                        return
+                      }
+                      // Normal deletion - allow
+                      setDeliveryTime(input)
+                      return
+                    }
+                    
+                    // Limit to 4 digits
+                    if (digits.length > 4) {
+                      return // Don't update if exceeds limit
+                    }
+                    
+                    let formatted = ''
+                    
+                    if (digits.length === 0) {
+                      formatted = ''
+                    } else if (digits.length === 1) {
+                      // Single digit - allow editing
+                      const num = parseInt(digits)
+                      formatted = num > 2 ? '2' : digits
+                    } else if (digits.length === 2) {
+                      // Two digits - check if valid hour
+                      const hours = parseInt(digits)
+                      if (hours > 23) {
+                        formatted = '23'
+                      } else {
+                        formatted = digits
+                      }
+                    } else if (digits.length === 3) {
+                      // Three digits - format as H:MM
+                      const hours = parseInt(digits[0])
+                      const minutes = parseInt(digits.slice(1, 3))
+                      const validHours = Math.min(hours, 2)
+                      const validMinutes = Math.min(minutes, 59)
+                      formatted = `${validHours}:${String(validMinutes).padStart(2, '0')}`
+                    } else if (digits.length === 4) {
+                      // Four digits - format as HH:mm
+                      const hours = parseInt(digits.slice(0, 2))
+                      const minutes = parseInt(digits.slice(2, 4))
+                      const validHours = Math.min(hours, 23)
+                      const validMinutes = Math.min(minutes, 59)
+                      formatted = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
+                    }
+                    
+                    setDeliveryTime(formatted)
+                    
+                    // Update parent if we have a complete time
+                    if (formatted.length === 5) {
+                      const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+                      if (timePattern.test(formatted)) {
+                        const dateTime = deliveryDate && formatted ? `${deliveryDate} ${formatted}:00` : undefined
+                        onUpdate({ 
+                          delivery_date: deliveryDate || undefined,
+                          delivery_time: formatted || undefined,
+                          delivery_date_time: dateTime,
+                          delivery_method: deliveryMethod 
+                        })
+                      }
+                    }
+                    
+                    // Smart cursor positioning
+                    setTimeout(() => {
+                      const inputEl = e.target as HTMLInputElement
+                      if (inputEl) {
+                        let newPos = cursorPos
+                        
+                        // If colon was added, adjust position
+                        if (formatted.includes(':') && !oldValue.includes(':')) {
+                          const colonIndex = formatted.indexOf(':')
+                          if (cursorPos <= colonIndex) {
+                            newPos = Math.min(cursorPos, colonIndex)
+                          } else {
+                            newPos = Math.min(cursorPos + 1, formatted.length)
+                          }
+                        } else if (formatted.length === 5 && oldValue.length < 5) {
+                          // Complete time entered, position at end
+                          newPos = formatted.length
+                        } else {
+                          // Normal editing, maintain relative position
+                          newPos = Math.min(cursorPos, formatted.length)
+                        }
+                        
+                        inputEl.setSelectionRange(newPos, newPos)
+                      }
+                    }, 0)
+                  }}
+                  onKeyDown={(e) => {
+                    // Allow backspace, delete, arrow keys, tab, etc.
+                    if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'].includes(e.key)) {
+                      return // Allow default behavior
+                    }
+                    
+                    // Allow Ctrl/Cmd + A, C, V, X
+                    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+                      return // Allow default behavior
+                    }
+                    
+                    // Block non-digit characters
+                    if (!/[0-9]/.test(e.key) && !['Enter', 'Escape'].includes(e.key)) {
+                      e.preventDefault()
+                    }
+                  }}
+                  onBlur={(e) => {
+                    let timeValue = e.target.value.trim()
+                    
+                    // If empty, clear
+                    if (!timeValue) {
+                      setDeliveryTime('')
+                      onUpdate({ 
+                        delivery_date: deliveryDate || undefined,
+                        delivery_time: undefined,
+                        delivery_date_time: undefined,
+                        delivery_method: deliveryMethod 
+                      })
+                      return
+                    }
+                    
+                    // Extract digits
+                    const digits = timeValue.replace(/\D/g, '')
+                    
+                    // Complete partial entries
+                    if (digits.length === 1) {
+                      // Single digit - pad to HH:00
+                      const hours = parseInt(digits) || 0
+                      const validHours = Math.min(hours, 23)
+                      timeValue = `${String(validHours).padStart(2, '0')}:00`
+                    } else if (digits.length === 2) {
+                      // Two digits - check if valid hour, then add :00
+                      const hours = parseInt(digits) || 0
+                      const validHours = Math.min(hours, 23)
+                      timeValue = `${String(validHours).padStart(2, '0')}:00`
+                    } else if (digits.length === 3) {
+                      // Three digits - format as HH:MM
+                      const hours = parseInt(digits[0]) || 0
+                      const minutes = parseInt(digits.slice(1, 3)) || 0
+                      const validHours = Math.min(hours, 2)
+                      const validMinutes = Math.min(minutes, 59)
+                      timeValue = `${validHours}:${String(validMinutes).padStart(2, '0')}`
+                    } else if (digits.length === 4) {
+                      // Four digits - format as HH:mm
+                      const hours = parseInt(digits.slice(0, 2)) || 0
+                      const minutes = parseInt(digits.slice(2, 4)) || 0
+                      const validHours = Math.min(hours, 23)
+                      const validMinutes = Math.min(minutes, 59)
+                      timeValue = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
+                    }
+                    
+                    // Validate final format
+                    const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+                    if (timePattern.test(timeValue)) {
+                      setDeliveryTime(timeValue)
+                      const dateTime = deliveryDate && timeValue ? `${deliveryDate} ${timeValue}:00` : undefined
+                      onUpdate({ 
+                        delivery_date: deliveryDate || undefined,
+                        delivery_time: timeValue || undefined,
+                        delivery_date_time: dateTime,
+                        delivery_method: deliveryMethod 
+                      })
+                    } else if (timeValue.length > 0) {
+                      // Invalid format - try to fix or clear
+                      setDeliveryTime('')
+                    }
                   }}
                   className="h-11 border-gray-300"
                   style={{ fontFamily: 'Albert Sans' }}
                 />
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
+                  24-hour format (HH:mm), e.g., 09:00, 14:30, 23:59
+                </p>
               </div>
 
               {/* Delivery Contact Name */}

@@ -86,6 +86,7 @@ export default function OrdersPage() {
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
   const [dateTo, setDateTo] = useState<Date | null>(null)
   const [amountFilter, setAmountFilter] = useState("")
+  const [lateFeeAmount, setLateFeeAmount] = useState("")
   
   // UI state
   const [selectedOrders, setSelectedOrders] = useState<number[]>([])
@@ -217,7 +218,10 @@ export default function OrdersPage() {
 
   const handleSelectOrder = (orderId: number, checked: boolean) => {
     if (checked) {
-      setSelectedOrders([...selectedOrders, orderId])
+      // Prevent duplicates
+      if (!selectedOrders.includes(orderId)) {
+        setSelectedOrders([...selectedOrders, orderId])
+      }
     } else {
       setSelectedOrders(selectedOrders.filter(id => id !== orderId))
     }
@@ -240,7 +244,56 @@ export default function OrdersPage() {
     setDateFrom(null)
     setDateTo(null)
     setAmountFilter("")
+    setLateFeeAmount("")
     setPage(1)
+  }
+
+  // Late fee mutation
+  const updateLateFeeMutation = useMutation({
+    mutationFn: async ({ orderIds, lateFee }: { orderIds: number[]; lateFee: number }) => {
+      return await api.post('/admin/orders/update-late-fees', {
+        order_ids: orderIds,
+        late_fee: lateFee
+      })
+    },
+    onSuccess: (data) => {
+      const updatedCount = data.data?.updated_orders || data.data?.orders?.length || selectedOrders.length
+      toast.success(data.data.message || `Late fee applied to ${updatedCount} order(s)`)
+      setSelectedOrders([])
+      setLateFeeAmount("")
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update late fees")
+    }
+  })
+
+  const handleApplyLateFee = () => {
+    if (selectedOrders.length === 0) {
+      toast.error("Please select at least one order")
+      return
+    }
+
+    const lateFee = parseFloat(lateFeeAmount)
+    if (isNaN(lateFee) || lateFee < 0) {
+      toast.error("Please enter a valid late fee amount")
+      return
+    }
+
+    // Remove duplicates and ensure valid order IDs
+    const uniqueOrderIds = [...new Set(selectedOrders.filter(id => id && !isNaN(Number(id))))]
+    
+    if (uniqueOrderIds.length === 0) {
+      toast.error("No valid orders selected")
+      return
+    }
+
+    console.log('Applying late fee to orders:', uniqueOrderIds)
+
+    updateLateFeeMutation.mutate({
+      orderIds: uniqueOrderIds,
+      lateFee: lateFee
+    })
   }
 
   const handlePrint = () => {
@@ -646,21 +699,20 @@ export default function OrdersPage() {
               <DollarSign className="h-5 w-5 text-gray-500" />
               <input
                 type="text"
-                value={amountFilter}
+                value={lateFeeAmount}
                 onChange={(e) => {
                   const value = e.target.value.replace(/[^0-9.]/g, '')
-                  setAmountFilter(value)
+                  setLateFeeAmount(value)
                 }}
-                placeholder="56.00"
+                placeholder="Enter Late Fee"
                 className="outline-none text-sm flex-1 bg-transparent text-gray-700"
                 style={{ fontFamily: 'Albert Sans' }}
               />
             </div>
             <Button 
-              onClick={() => {
-                queryClient.invalidateQueries({ queryKey: ['orders'] })
-              }}
-              className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap rounded-full hover:text-white"
+              onClick={handleApplyLateFee}
+              disabled={updateLateFeeMutation.isPending || selectedOrders.length === 0}
+              className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap rounded-full hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontFamily: 'Albert Sans', 
                 fontWeight: 600,
@@ -673,7 +725,7 @@ export default function OrdersPage() {
                 borderWidth: '0px'
               }}
             >
-              Submit
+              {updateLateFeeMutation.isPending ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </div>
