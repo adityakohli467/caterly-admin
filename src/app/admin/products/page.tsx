@@ -90,7 +90,7 @@ export default function ProductsPage() {
   const [productStatus, setProductStatus] = useState(1)
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null)
-  const [selectedOptions, setSelectedOptions] = useState<Array<{ option_value_id: number; option_price: number; discount_percentage?: number }>>([])
+  const [selectedOptions, setSelectedOptions] = useState<Array<{ option_value_id: number; option_price: number | string; discount_percentage?: number }>>([])
   const [productImageUrls, setProductImageUrls] = useState<string[]>([])
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
   const [imagePreviews, setImagePreviews] = useState<Array<{ url: string; file?: File; id: string }>>([])
@@ -101,7 +101,7 @@ export default function ProductsPage() {
   const [featured1, setFeatured1] = useState(false)
   const [featured2, setFeatured2] = useState(false)
   const [showInStorefront, setShowInStorefront] = useState(false)
-  
+
   // Validation errors
   const [errors, setErrors] = useState<{
     productName?: string
@@ -158,7 +158,7 @@ export default function ProductsPage() {
   // Separate main categories and subcategories
   const mainCategories = categories.filter((cat: any) => !cat.parent_category_id)
   const subCategories = categories.filter((cat: any) => cat.parent_category_id)
-  
+
   // Get subcategories filtered by selected main categories (for better UX)
   const getFilteredSubcategories = () => {
     if (selectedCategories.length === 0) {
@@ -166,7 +166,7 @@ export default function ProductsPage() {
       return subCategories
     }
     // Only show subcategories whose parent is in the selected main categories
-    return subCategories.filter((subCat: any) => 
+    return subCategories.filter((subCat: any) =>
       selectedCategories.includes(subCat.parent_category_id)
     )
   }
@@ -208,12 +208,12 @@ export default function ProductsPage() {
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, formData, productData }: any) => {
       // If formData is provided, use it (for file uploads), otherwise use productData (JSON)
-      const response = formData 
+      const response = formData
         ? await api.put(`/admin/products-new/${id}`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
         : await api.put(`/admin/products-new/${id}`, productData)
       return response.data
     },
@@ -242,17 +242,17 @@ export default function ProductsPage() {
     },
     onError: (error: any) => {
       // Extract error message from various possible locations
-      const errorMessage = 
-        error.response?.data?.message || 
-        error.response?.data?.error || 
-        error.message || 
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
         "Failed to delete product"
-      
+
       // Show detailed error message to user
       toast.error(errorMessage, {
         duration: 5000, // Show for 5 seconds so user can read it
       })
-      
+
       // Keep modal open on error so user can see the message and try again if needed
       // Only close modal on success (handled in onSuccess)
     },
@@ -305,7 +305,7 @@ export default function ProductsPage() {
     setCustomerTypeVisibility(product.customer_type_visibility || 'all')
     setProductStatus(product.product_status)
     const productCategoryIds = product.categories?.map(c => c.category_id) || []
-    
+
     // If product has a subcategory, ensure its parent category is also selected
     if (product.subcategory?.category_id) {
       const subCat = subCategories.find((sc: any) => sc.category_id === product.subcategory?.category_id)
@@ -313,7 +313,7 @@ export default function ProductsPage() {
         productCategoryIds.push(subCat.parent_category_id)
       }
     }
-    
+
     setSelectedCategories(productCategoryIds)
     setSelectedSubcategory(product.subcategory?.category_id || null)
     setMinQuantity(product.min_quantity?.toString() || "1")
@@ -332,7 +332,7 @@ export default function ProductsPage() {
     // Load product images - prefer product_images array, fallback to product_image_url
     const productImages = (product as any).product_images || []
     const existingImageUrl = (product as any).product_image_url || ""
-    
+
     if (productImages && Array.isArray(productImages) && productImages.length > 0) {
       // Use product_images array if available
       const imageUrls = productImages.map((img: any) => img.image_url || img)
@@ -364,13 +364,13 @@ export default function ProductsPage() {
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {}
-    
+
     // Validate product name (required, max 255 chars per DB schema)
     const nameValidation = validateRequired(productName, "Product name", 255)
     if (!nameValidation.valid) {
       newErrors.productName = nameValidation.error || "Product name is required"
     }
-    
+
     // Validate product price (optional, DECIMAL(15,4) per DB schema, defaults to 0)
     if (productPrice && productPrice.trim() !== '') {
       const priceValidation = validateNumber(productPrice, "Product price", {
@@ -383,12 +383,12 @@ export default function ProductsPage() {
         newErrors.productPrice = priceValidation.error || "Product price must be a valid number"
       }
     }
-    
+
     // Validate product description (optional, TEXT field - reasonable limit)
     if (productDescription && productDescription.length > 10000) {
       newErrors.productDescription = "Product description must be 10,000 characters or less"
     }
-    
+
     // Validate product image URL (optional, max 500 chars per migration, must be valid URL)
     if (productImageUrls && productImageUrls.length > 0 && productImageUrls[0]) {
       const urlValidation = validateURL(productImageUrls[0], 500)
@@ -396,7 +396,7 @@ export default function ProductsPage() {
         newErrors.productImage = urlValidation.error || "Please enter a valid image URL"
       }
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -411,7 +411,7 @@ export default function ProductsPage() {
     const imageFiles = imagePreviews
       .filter(preview => preview.file) // Only files that haven't been uploaded yet
       .map(preview => preview.file!)
-    
+
     // Collect existing image URLs (already uploaded)
     const existingImageUrls = imagePreviews
       .filter(preview => !preview.file && preview.url && !preview.url.startsWith('blob:'))
@@ -449,7 +449,7 @@ export default function ProductsPage() {
       show_in_storefront: showInStorefront,
       options: JSON.stringify(selectedOptions.map(opt => ({
         option_value_id: opt.option_value_id,
-        option_price: opt.option_price || 0,
+        option_price: Number(opt.option_price || 0),
         option_price_prefix: '+',
         option_required: 0,
         discount_percentage: opt.discount_percentage || 0
@@ -466,7 +466,7 @@ export default function ProductsPage() {
       // For update, send FormData if there are new image files, otherwise send JSON
       if (imageFiles.length > 0) {
         const formData = new FormData()
-        
+
         // Add product data as form fields
         formData.append('product_name', productData.product_name)
         formData.append('product_description', productData.product_description || '')
@@ -489,18 +489,18 @@ export default function ProductsPage() {
         formData.append('featured_2', featured2.toString())
         formData.append('show_in_storefront', showInStorefront.toString())
         formData.append('options', productData.options)
-        
+
         // Add existing image URLs
         if (existingImageUrls.length > 0) {
           formData.append('product_images', JSON.stringify(existingImageUrls))
           formData.append('product_image_url', existingImageUrls[0])
         }
-        
+
         // Add new image files
         imageFiles.forEach((file) => {
           formData.append('images', file)
         })
-        
+
         updateProductMutation.mutate({
           id: selectedProduct.product_id,
           formData,
@@ -523,7 +523,7 @@ export default function ProductsPage() {
             show_in_storefront: showInStorefront,
             options: selectedOptions.map(opt => ({
               option_value_id: opt.option_value_id,
-              option_price: opt.option_price || 0,
+              option_price: Number(opt.option_price || 0),
               option_price_prefix: '+',
               option_required: 0,
               discount_percentage: opt.discount_percentage || 0
@@ -536,7 +536,7 @@ export default function ProductsPage() {
       // For create, send as FormData with images
       if (imageFiles.length > 0) {
         const formData = new FormData()
-        
+
         // Add product data as form fields
         Object.keys(productData).forEach(key => {
           if (key === 'categories' || key === 'options') {
@@ -547,12 +547,12 @@ export default function ProductsPage() {
             formData.append(key, productData[key] || '')
           }
         })
-        
+
         // Add image files
         imageFiles.forEach((file, index) => {
           formData.append('images', file)
         })
-        
+
         // Create product with images
         try {
           const response = await api.post("/admin/products-new", formData, {
@@ -580,7 +580,7 @@ export default function ProductsPage() {
           featured_2: featured2,
           options: selectedOptions.map(opt => ({
             option_value_id: opt.option_value_id,
-            option_price: opt.option_price || 0,
+            option_price: Number(opt.option_price || 0),
             option_price_prefix: '+',
             option_required: 0,
             discount_percentage: opt.discount_percentage || 0
@@ -599,12 +599,12 @@ export default function ProductsPage() {
 
   const handleCategoryToggle = (categoryId: number) => {
     const isDeselecting = selectedCategories.includes(categoryId)
-    
+
     setSelectedCategories(prev => {
       const newCategories = isDeselecting
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
-      
+
       // If deselecting a category, check if selected subcategory's parent is being removed
       if (isDeselecting && selectedSubcategory) {
         const selectedSubCat = subCategories.find((sc: any) => sc.category_id === selectedSubcategory)
@@ -613,7 +613,7 @@ export default function ProductsPage() {
           setSelectedSubcategory(null)
         }
       }
-      
+
       return newCategories
     })
   }
@@ -633,7 +633,7 @@ export default function ProductsPage() {
     setSelectedOptions(prev =>
       prev.map(o =>
         o.option_value_id === optionValueId
-          ? { ...o, option_price: price === '' ? 0 : parseFloat(price) || 0 }
+          ? { ...o, option_price: price }
           : o
       )
     )
@@ -730,7 +730,7 @@ export default function ProductsPage() {
 
     // Create previews immediately (don't upload yet - will upload when saving product)
     const newPreviews: Array<{ url: string; file: File; id: string }> = []
-    
+
     fileArray.forEach((file) => {
       const validationError = validateFile(file)
       if (validationError) {
@@ -740,7 +740,7 @@ export default function ProductsPage() {
 
       const previewId = `preview-${Date.now()}-${Math.random()}`
       const previewUrl = URL.createObjectURL(file)
-      
+
       newPreviews.push({
         url: previewUrl,
         file,
@@ -834,7 +834,7 @@ export default function ProductsPage() {
     <div className="bg-gray-50 min-h-screen" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{ 
+        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
@@ -844,21 +844,21 @@ export default function ProductsPage() {
           Manage Products
         </h1>
         <div className="flex gap-3">
-          <Button 
+          <Button
             onClick={() => setShowInactiveModal(true)}
             variant="outline"
             className="border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-            style={{ 
+            style={{
               fontWeight: 600,
               height: '54px',
             }}
           >
             View Inactive Products
           </Button>
-          <Button 
+          <Button
             onClick={handleAddProduct}
             className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
-            style={{ 
+            style={{
               fontWeight: 600,
               minWidth: '196px',
               height: '54px',
@@ -915,11 +915,11 @@ export default function ProductsPage() {
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
-        <Button 
+        <Button
           onClick={() => printTableData("Products")}
           className="gap-2 whitespace-nowrap border-0 shadow-none"
-          style={{ 
-            fontFamily: 'Albert Sans', 
+          style={{
+            fontFamily: 'Albert Sans',
             fontWeight: 600,
             fontStyle: 'normal',
             fontSize: '16px',
@@ -992,7 +992,7 @@ export default function ProductsPage() {
                   if (productOptions.length === 0) {
                     return (
                       <tr key={product.product_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-900" style={{ 
+                        <td className="px-4 py-3 text-gray-900" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1002,7 +1002,7 @@ export default function ProductsPage() {
                         }}>
                           {product.product_name}
                         </td>
-                        <td className="px-4 py-3 text-gray-700" style={{ 
+                        <td className="px-4 py-3 text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1010,11 +1010,11 @@ export default function ProductsPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {product.categories && product.categories.length > 0 
+                          {product.categories && product.categories.length > 0
                             ? product.categories.map((c: any) => c.category_name).join(", ")
                             : "N/A"}
                         </td>
-                        <td className="px-4 py-3 text-gray-700" style={{ 
+                        <td className="px-4 py-3 text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1024,7 +1024,7 @@ export default function ProductsPage() {
                         }}>
                           {product.subcategory?.category_name || "-"}
                         </td>
-                        <td className="px-4 py-3 text-gray-700" style={{ 
+                        <td className="px-4 py-3 text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1034,7 +1034,7 @@ export default function ProductsPage() {
                         }}>
                           -
                         </td>
-                        <td className="px-4 py-3 text-gray-700" style={{ 
+                        <td className="px-4 py-3 text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1044,7 +1044,7 @@ export default function ProductsPage() {
                         }}>
                           -
                         </td>
-                        <td className="px-4 py-3 text-gray-900" style={{ 
+                        <td className="px-4 py-3 text-gray-900" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -1065,11 +1065,10 @@ export default function ProductsPage() {
                             </button>
                             <button
                               onClick={() => handleToggleProductStatus(product)}
-                              className={`p-1.5 rounded transition-colors ${
-                                product.product_status === 1
-                                  ? 'text-orange-600 hover:bg-orange-50'
-                                  : 'text-green-600 hover:bg-green-50'
-                              }`}
+                              className={`p-1.5 rounded transition-colors ${product.product_status === 1
+                                ? 'text-orange-600 hover:bg-orange-50'
+                                : 'text-green-600 hover:bg-green-50'
+                                }`}
                               title={product.product_status === 1 ? 'Deactivate' : 'Activate'}
                               disabled={toggleProductStatusMutation.isPending}
                             >
@@ -1100,7 +1099,7 @@ export default function ProductsPage() {
                             {product.product_name}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700" rowSpan={rowSpan} style={{ fontFamily: 'Albert Sans' }}>
-                            {product.categories && product.categories.length > 0 
+                            {product.categories && product.categories.length > 0
                               ? product.categories.map((c: any) => c.category_name).join(", ")
                               : "N/A"}
                           </td>
@@ -1131,11 +1130,10 @@ export default function ProductsPage() {
                               </button>
                               <button
                                 onClick={() => handleToggleProductStatus(product)}
-                                className={`p-1.5 rounded transition-colors ${
-                                  product.product_status === 1
-                                    ? 'text-orange-600 hover:bg-orange-50'
-                                    : 'text-green-600 hover:bg-green-50'
-                                }`}
+                                className={`p-1.5 rounded transition-colors ${product.product_status === 1
+                                  ? 'text-orange-600 hover:bg-orange-50'
+                                  : 'text-green-600 hover:bg-green-50'
+                                  }`}
                                 title={product.product_status === 1 ? 'Deactivate' : 'Activate'}
                                 disabled={toggleProductStatusMutation.isPending}
                               >
@@ -1171,24 +1169,24 @@ export default function ProductsPage() {
           Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} Entries
         </p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             Prev
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-[#055160] hover:bg-[#04414d] text-white"
           >
             {currentPage}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages || totalPages === 0}
@@ -1275,58 +1273,58 @@ export default function ProductsPage() {
                 }}
                 className="h-11 border-gray-300 bg-white"
               />
-              
+
               {/* Wholesale fields - Hidden for kj3 */}
               {false && (
                 <>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Wholesale Discount Percentage (%)
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                  placeholder="40.00"
-                  value={retailDiscountPercentage}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                      setRetailDiscountPercentage(value)
-                      // Recalculate wholesale price when discount percentage changes
-                      if (productPrice && !isNaN(parseFloat(productPrice))) {
-                        const retailPrice = parseFloat(productPrice)
-                        const discount = parseFloat(value) || 40
-                        const calculatedWholesalePrice = retailPrice * (1 - discount / 100)
-                        setRetailPrice(calculatedWholesalePrice.toFixed(2))
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Wholesale Discount Percentage (%)
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      placeholder="40.00"
+                      value={retailDiscountPercentage}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          setRetailDiscountPercentage(value)
+                          // Recalculate wholesale price when discount percentage changes
+                          if (productPrice && !isNaN(parseFloat(productPrice))) {
+                            const retailPrice = parseFloat(productPrice)
+                            const discount = parseFloat(value) || 40
+                            const calculatedWholesalePrice = retailPrice * (1 - discount / 100)
+                            setRetailPrice(calculatedWholesalePrice.toFixed(2))
+                          }
+                        }
+                      }}
+                      className="h-11 border-gray-300 bg-white"
+                    />
+                    <p className="text-xs text-gray-500">Default: 40% discount applied to retail price to calculate wholesale price</p>
+                  </div>
+
+                  <ValidatedInput
+                    label="Wholesale Price (Auto-calculated)"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={retailPrice}
+                    fieldName="Wholesale Price"
+                    onChange={(value) => {
+                      // Allow manual override of wholesale price
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        setRetailPrice(value)
                       }
-                    }
-                  }}
-                  className="h-11 border-gray-300 bg-white"
-                />
-                <p className="text-xs text-gray-500">Default: 40% discount applied to retail price to calculate wholesale price</p>
-              </div>
-              
-              <ValidatedInput
-                label="Wholesale Price (Auto-calculated)"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={retailPrice}
-                fieldName="Wholesale Price"
-                onChange={(value) => {
-                  // Allow manual override of wholesale price
-                  if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                    setRetailPrice(value)
-                  }
-                }}
-                className="h-11 border-gray-300 bg-white bg-gray-50"
-                disabled={false}
-              />
+                    }}
+                    className="h-11 border-gray-300 bg-white bg-gray-50"
+                    disabled={false}
+                  />
                 </>
               )}
-              
+
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Product Visibility
@@ -1356,17 +1354,17 @@ export default function ProductsPage() {
                   </label>
                   {/* Wholesalers option - Hidden for kj3 */}
                   {false && (
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="customerTypeVisibility"
-                      value="wholesalers"
-                      checked={customerTypeVisibility === 'wholesalers'}
-                      onChange={(e) => setCustomerTypeVisibility(e.target.value as 'all' | 'retailers' | 'wholesalers')}
-                      className="w-4 h-4 text-[#055160] focus:ring-[#055160]"
-                    />
-                    <span className="text-sm text-gray-700">Only Wholesalers</span>
-                  </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="customerTypeVisibility"
+                        value="wholesalers"
+                        checked={customerTypeVisibility === 'wholesalers'}
+                        onChange={(e) => setCustomerTypeVisibility(e.target.value as 'all' | 'retailers' | 'wholesalers')}
+                        className="w-4 h-4 text-[#055160] focus:ring-[#055160]"
+                      />
+                      <span className="text-sm text-gray-700">Only Wholesalers</span>
+                    </label>
                   )}
                 </div>
                 <p className="text-xs text-gray-500">Select which customer types can see this product</p>
@@ -1470,7 +1468,7 @@ export default function ProductsPage() {
               <p className="text-xs text-gray-500 -mt-2" style={{ fontFamily: 'Albert Sans' }}>
                 Images are optional. You can add products without images and add them later when S3 is ready.
               </p>
-              
+
               {/* Image Previews Grid */}
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
@@ -1512,11 +1510,10 @@ export default function ProductsPage() {
               {/* Upload Area */}
               {imagePreviews.length < 10 && (
                 <label
-                  className={`flex flex-col items-center justify-center w-full min-h-[180px] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${
-                    dragActive
-                      ? "border-[#055160] bg-[#e7f1ff] scale-[1.02] shadow-lg"
-                      : "border-gray-300 bg-gray-50 hover:border-[#055160] hover:bg-[#e7f1ff]/50 hover:shadow-md"
-                  } ${uploadingImages.size > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`flex flex-col items-center justify-center w-full min-h-[180px] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${dragActive
+                    ? "border-[#055160] bg-[#e7f1ff] scale-[1.02] shadow-lg"
+                    : "border-gray-300 bg-gray-50 hover:border-[#055160] hover:bg-[#e7f1ff]/50 hover:shadow-md"
+                    } ${uploadingImages.size > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
@@ -1595,8 +1592,8 @@ export default function ProductsPage() {
                 disabled={selectedCategories.length === 0}
               >
                 <option value="">
-                  {selectedCategories.length === 0 
-                    ? "Select main categories first" 
+                  {selectedCategories.length === 0
+                    ? "Select main categories first"
                     : "Select Sub Category (Optional)"}
                 </option>
                 {filteredSubcategories.map((subCat: any) => {
@@ -1609,7 +1606,7 @@ export default function ProductsPage() {
                 })}
               </select>
               <p className="text-xs text-gray-500">
-                {selectedCategories.length === 0 
+                {selectedCategories.length === 0
                   ? "Please select at least one main category to see available subcategories"
                   : "Subcategories are child categories linked to the selected main categories"}
               </p>
@@ -1643,7 +1640,7 @@ export default function ProductsPage() {
                 {options.map((option: any) => {
                   const optionType = option.option_type || 'dropdown'
                   const optionTypeLabel = optionType.charAt(0).toUpperCase() + optionType.slice(1)
-                  
+
                   return (
                     <div key={option.option_id} className="mb-4 last:mb-0 border-b border-gray-200 pb-3 last:border-b-0">
                       <div className="flex items-center justify-between mb-2">
@@ -1689,7 +1686,7 @@ export default function ProductsPage() {
                                       step="0.01"
                                       min="0"
                                       placeholder={standardPrice > 0 ? standardPrice.toFixed(2) : "0.00"}
-                                      value={selectedOption.option_price === 0 ? '' : selectedOption.option_price}
+                                      value={selectedOption.option_price}
                                       onChange={(e) => {
                                         const val = e.target.value
                                         if (val === '' || /^\d*\.?\d*$/.test(val)) {
@@ -1795,8 +1792,8 @@ export default function ProductsPage() {
                 className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
-                {createProductMutation.isPending || updateProductMutation.isPending 
-                  ? "Saving..." 
+                {createProductMutation.isPending || updateProductMutation.isPending
+                  ? "Saving..."
                   : selectedProduct ? "Update" : "Create"}
               </Button>
             </div>
@@ -1812,7 +1809,7 @@ export default function ProductsPage() {
               Inactive Products
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="mt-4">
             {loadingInactive ? (
               <div className="text-center py-8 text-gray-500">Loading inactive products...</div>
@@ -1844,7 +1841,7 @@ export default function ProductsPage() {
                           {product.product_name}
                         </td>
                         <td className="px-4 py-3 text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {product.categories && product.categories.length > 0 
+                          {product.categories && product.categories.length > 0
                             ? product.categories.map((c: any) => c.category_name).join(", ")
                             : "N/A"}
                         </td>

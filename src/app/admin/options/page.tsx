@@ -19,8 +19,8 @@ interface OptionValue {
   option_value_id?: number
   name: string
   sort_order: number
-  standard_price?: number
-  wholesale_price?: number
+  standard_price?: number | string
+  wholesale_price?: number | string
 }
 
 interface Option {
@@ -147,7 +147,7 @@ export default function OptionsPage() {
 
   const handleSaveOption = () => {
     const newErrors: typeof errors = {}
-    
+
     // Validate option name (required, reasonable max length)
     const nameValidation = validateRequired(optionName, "Option name", 255)
     if (!nameValidation.valid) {
@@ -156,11 +156,11 @@ export default function OptionsPage() {
 
     // Filter out empty values
     const validValues = optionValues.filter(v => v.name.trim())
-    
+
     if (validValues.length === 0) {
       newErrors.option_values = "At least one option value is required"
     }
-    
+
     // Validate each option value name length
     for (let i = 0; i < validValues.length; i++) {
       if (validValues[i].name.length > 255) {
@@ -168,9 +168,9 @@ export default function OptionsPage() {
         break
       }
     }
-    
+
     setErrors(newErrors)
-    
+
     if (Object.keys(newErrors).length > 0) {
       const firstError = Object.values(newErrors)[0]
       if (firstError) toast.error(firstError)
@@ -183,8 +183,8 @@ export default function OptionsPage() {
       values: validValues.map(v => ({
         ...v,
         name: v.name.trim(),
-        standard_price: v.standard_price || 0,
-        wholesale_price: v.wholesale_price || (v.standard_price || 0) * 0.9
+        standard_price: Number(v.standard_price || 0),
+        wholesale_price: Number(v.wholesale_price || (Number(v.standard_price || 0) * 0.9))
       }))
     }
 
@@ -234,7 +234,7 @@ export default function OptionsPage() {
     <div className="bg-gray-50 min-h-screen" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-gray-900" style={{ 
+        <h1 className="text-gray-900" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
@@ -244,10 +244,10 @@ export default function OptionsPage() {
         }}>
           Manage Options
         </h1>
-        <Button 
+        <Button
           onClick={handleAddOption}
           className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
-          style={{ 
+          style={{
             fontWeight: 600,
             width: '196px',
             height: '54px',
@@ -303,11 +303,11 @@ export default function OptionsPage() {
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
-        <Button 
+        <Button
           onClick={() => printTableData("Options")}
           className="gap-2 whitespace-nowrap border-0 shadow-none"
-          style={{ 
-            fontFamily: 'Albert Sans', 
+          style={{
+            fontFamily: 'Albert Sans',
             fontWeight: 600,
             fontStyle: 'normal',
             fontSize: '16px',
@@ -428,24 +428,24 @@ export default function OptionsPage() {
           Showing 1-{options.length} of {totalCount} Entries
         </p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             Prev
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-[#055160] hover:bg-[#04414d] text-white"
           >
             {currentPage}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages || totalPages === 0}
@@ -565,14 +565,16 @@ export default function OptionsPage() {
                           step="0.01"
                           min="0"
                           placeholder="0.00"
-                          value={value.standard_price === 0 ? '' : value.standard_price}
+                          value={value.standard_price}
                           onChange={(e) => {
                             const newValues = [...optionValues]
                             const val = e.target.value
                             if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                              newValues[index].standard_price = val === '' ? 0 : parseFloat(val) || 0
+                              newValues[index].standard_price = val
                               // Auto-calculate wholesale price (90% of standard)
-                              newValues[index].wholesale_price = newValues[index].standard_price * 0.9
+                              if (val && !isNaN(parseFloat(val))) {
+                                newValues[index].wholesale_price = (parseFloat(val) * 0.9).toFixed(2)
+                              }
                               setOptionValues(newValues)
                             }
                           }}
@@ -582,26 +584,26 @@ export default function OptionsPage() {
                       </div>
                       {/* Wholesale Price - Hidden for kj3 */}
                       {false && (
-                      <div>
-                        <Label className="text-xs text-gray-600">Wholesale Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          value={value.wholesale_price === 0 ? '' : value.wholesale_price}
-                          onChange={(e) => {
-                            const newValues = [...optionValues]
-                            const val = e.target.value
-                            if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                              newValues[index].wholesale_price = val === '' ? 0 : parseFloat(val) || 0
-                              setOptionValues(newValues)
-                            }
-                          }}
-                          className="h-8 text-sm border-gray-300 bg-white"
-                          style={{ fontFamily: 'Albert Sans' }}
-                        />
-                      </div>
+                        <div>
+                          <Label className="text-xs text-gray-600">Wholesale Price</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            value={value.wholesale_price}
+                            onChange={(e) => {
+                              const newValues = [...optionValues]
+                              const val = e.target.value
+                              if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                newValues[index].wholesale_price = val
+                                setOptionValues(newValues)
+                              }
+                            }}
+                            className="h-8 text-sm border-gray-300 bg-white"
+                            style={{ fontFamily: 'Albert Sans' }}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -628,8 +630,8 @@ export default function OptionsPage() {
                 className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
-                {createOptionMutation.isPending || updateOptionMutation.isPending 
-                  ? "Saving..." 
+                {createOptionMutation.isPending || updateOptionMutation.isPending
+                  ? "Saving..."
                   : selectedOption ? "Update" : "Create"}
               </Button>
             </div>
