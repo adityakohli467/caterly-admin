@@ -91,7 +91,10 @@ export default function NewQuotePage() {
       // Use latestData if provided (from DeliveryStep), otherwise use quoteData state
       // This ensures we have the latest coupon data even if state hasn't updated yet
       const dataToUse = latestData ? { ...quoteData, ...latestData } : quoteData
-      
+
+      // Check if we need to send email (passed from DeliveryStep)
+      const sendToEmail = (latestData as any)?.send_to_email
+
       // Transform products to use base_price for backend calculation
       // Backend will apply additional customer-specific discounts
       const transformedProducts = dataToUse.products?.map(product => ({
@@ -102,12 +105,17 @@ export default function NewQuotePage() {
           price: (addon as any).base_price || addon.price, // Use base_price if available
         })) || []
       })) || []
-      
+
       const quotePayload = {
         ...dataToUse,
         products: transformedProducts
       }
-      
+
+      // Remove temporary fields not for backend
+      if ('send_to_email' in quotePayload) {
+        delete (quotePayload as any).send_to_email
+      }
+
       // API call to save quote
       console.log("Saving quote:", quotePayload)
       console.log("Coupon data:", {
@@ -115,13 +123,30 @@ export default function NewQuotePage() {
         coupon_type: quotePayload.coupon_type,
         coupon_discount: quotePayload.coupon_discount
       })
-      
+
       const response = await api.post("/admin/quotes", quotePayload)
-      
+
       if (response.data) {
+        const quoteId = response.data.quote?.order_id
+
+        // If email requested and we have a quote ID
+        if (sendToEmail && quoteId) {
+          try {
+            console.log(`Sending email to ${sendToEmail} for quote ${quoteId}`)
+            await api.post(`/admin/quotes/${quoteId}/send-email`, {
+              recipient_email: sendToEmail
+            })
+            toast.success(`Quote saved and email sent to ${sendToEmail}`)
+          } catch (emailError) {
+            console.error("Error sending email:", emailError)
+            toast.error("Quote saved but failed to send email")
+          }
+        } else {
+          toast.success("Quote saved successfully!")
+        }
+
         // Invalidate quotes query cache to refresh the list
         queryClient.invalidateQueries({ queryKey: ["quotes"] })
-        toast.success("Quote saved successfully!")
         router.push("/quotes?success=true")
       }
     } catch (error: any) {
@@ -145,7 +170,7 @@ export default function NewQuotePage() {
           </p>
         </div>
         {currentStep === 1 && (
-          <Button 
+          <Button
             onClick={() => setShowAddCustomerModal(true)}
             className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
@@ -155,7 +180,7 @@ export default function NewQuotePage() {
           </Button>
         )}
         {currentStep === 2 && (
-          <Button 
+          <Button
             className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
@@ -171,13 +196,12 @@ export default function NewQuotePage() {
           <div key={step.number} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  currentStep === step.number
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep === step.number
                     ? "bg-[#055160] text-white"
                     : currentStep > step.number
-                    ? "bg-[#055160] text-white"
-                    : "bg-gray-300 text-gray-600"
-                }`}
+                      ? "bg-[#055160] text-white"
+                      : "bg-gray-300 text-gray-600"
+                  }`}
               >
                 {currentStep > step.number ? (
                   <Check className="h-5 w-5" />
@@ -186,9 +210,8 @@ export default function NewQuotePage() {
                 )}
               </div>
               <span
-                className={`text-xs mt-2 whitespace-nowrap ${
-                  currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
-                }`}
+                className={`text-xs mt-2 whitespace-nowrap ${currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
+                  }`}
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 {step.label}
@@ -196,9 +219,8 @@ export default function NewQuotePage() {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`w-24 h-0.5 mx-2 mt-[-20px] ${
-                  currentStep > step.number ? "bg-[#055160]" : "bg-gray-300"
-                }`}
+                className={`w-24 h-0.5 mx-2 mt-[-20px] ${currentStep > step.number ? "bg-[#055160]" : "bg-gray-300"
+                  }`}
               />
             )}
           </div>

@@ -104,7 +104,7 @@ function SortableProductItem({ product, index, onReorder }: {
 
 export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepProps) {
   const [products, setProducts] = useState(data.products || [])
-  
+
   // Use a ref to prevent infinite loops when updating
   const isUpdatingRef = useRef(false)
 
@@ -141,7 +141,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     const timeMatch = details.match(/Time:\s*(.+)/i)
     const locationMatch = details.match(/Location:\s*(.+)/i)
     const nameMatch = details.match(/Name:\s*(.+)/i)
-    
+
     // If it matches old format, combine into notes
     if (timeMatch || locationMatch || nameMatch) {
       const parts = []
@@ -150,7 +150,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       if (nameMatch) parts.push(`Name: ${nameMatch[1].trim()}`)
       return parts.join('\n')
     }
-    
+
     // Otherwise return as-is (new format)
     return details
   }
@@ -161,7 +161,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       // Return empty - no default date/time for future orders/quotes
       return { date: "", time: "" }
     }
-    
+
     try {
       // Handle ISO format (e.g., "2026-01-03T18:30:00.000Z")
       if (dateTime.includes('T')) {
@@ -180,7 +180,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
           return { date, time }
         }
       }
-      
+
       // Handle "YYYY-MM-DD HH:MM:SS" format
       const parts = dateTime.split(' ')
       if (parts.length >= 2) {
@@ -188,7 +188,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         const time = parts[1] ? parts[1].substring(0, 5) : "" // Extract HH:MM from HH:MM:SS
         return { date, time }
       }
-      
+
       // Handle "YYYY-MM-DD" format (date only)
       if (dateTime.match(/^\d{4}-\d{2}-\d{2}$/)) {
         return { date: dateTime, time: "" }
@@ -196,7 +196,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     } catch (error) {
       console.error('Error parsing delivery_date_time:', error, dateTime)
     }
-    
+
     return { date: "", time: "" }
   }
 
@@ -328,10 +328,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   useEffect(() => {
     if (data.coupon_code) {
       // First try to find in active coupons
-      const coupon = activeCoupons.find((c: Coupon) => 
+      const coupon = activeCoupons.find((c: Coupon) =>
         c.coupon_code.toLowerCase() === data.coupon_code?.toLowerCase()
       )
-      
+
       if (coupon) {
         // Only update if the coupon code changed or coupon is not applied
         if (!appliedCoupon || appliedCoupon.coupon_code.toLowerCase() !== coupon.coupon_code.toLowerCase()) {
@@ -374,7 +374,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         setDeliveryContactName(data.delivery_contact)
       }
     }
-    
+
     // Parse delivery_details (now just notes)
     if (data.delivery_details !== undefined) {
       setDeliveryNotes(parseDeliveryDetails(data.delivery_details))
@@ -386,15 +386,15 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   useEffect(() => {
     // Skip if we're in the middle of an update
     if (isUpdatingRef.current) return
-    
+
     console.log('DeliveryStep useEffect triggered - data:', {
       delivery_date_time: data.delivery_date_time,
       delivery_date: data.delivery_date,
       delivery_time: data.delivery_time,
     })
-    
+
     if (data.products) setProducts(data.products)
-    
+
     // Handle delivery_date_time - prioritize this over separate date/time
     if (data.delivery_date_time) {
       const parsed = parseDeliveryDateTime(data.delivery_date_time)
@@ -420,7 +420,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         setDeliveryTime(normalizeTime(data.delivery_time) || "")
       }
     }
-    
+
     if (data.account_email !== undefined) setAccountEmail(data.account_email || "")
     if (data.cost_center !== undefined) setCostCenter(data.cost_center || "")
     // Only update delivery_method if it's explicitly provided and different from current
@@ -435,23 +435,23 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     if (data.location_id !== undefined) {
       setSelectedPickupLocation(data.location_id || 0)
     }
-    
+
     // Parse and set delivery contact
     if (data.delivery_contact !== undefined) {
       const parsed = parseDeliveryContact(data.delivery_contact || "")
       setDeliveryContactName(parsed.name)
       setDeliveryContactNumber(parsed.number)
     }
-    
+
     // Parse and set delivery details (notes)
     if (data.delivery_details !== undefined) {
       setDeliveryNotes(parseDeliveryDetails(data.delivery_details || ""))
     }
-    
+
     // Log current deliveryDate state for debugging
     console.log('Current deliveryDate state after useEffect:', deliveryDate)
   }, [data, data.delivery_date_time, data.delivery_date, data.delivery_time])
-  
+
   // Log deliveryDate whenever it changes
   useEffect(() => {
     console.log('deliveryDate state changed to:', deliveryDate)
@@ -466,19 +466,19 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   }
 
   const subtotal = calculateSubtotal()
-  
+
   // Calculate wholesale discount if applicable
   let wholesaleDiscount = 0
   const customerType = data.customer_type || ''
   const isWholesale = customerType && (customerType.includes('Wholesale') || customerType.includes('Wholesaler'))
-  
+
   if (isWholesale) {
     const discountPercentage = customerType.includes('Full Service') ? 15 : 10
     wholesaleDiscount = subtotal * (discountPercentage / 100)
   }
-  
+
   const afterWholesaleDiscount = subtotal - wholesaleDiscount
-  
+
   // Calculate coupon discount (applied after wholesale discount)
   let couponDiscount = 0
   if (appliedCoupon) {
@@ -499,10 +499,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   const handleApplyCoupon = () => {
     if (couponCode.trim()) {
       // Find coupon from list
-      const coupon = activeCoupons.find((c: Coupon) => 
+      const coupon = activeCoupons.find((c: Coupon) =>
         c.coupon_code.toLowerCase() === couponCode.toLowerCase()
       )
-      
+
       if (coupon) {
         setAppliedCoupon(coupon)
         toast.success(`Coupon "${coupon.coupon_code}" applied successfully!`)
@@ -539,7 +539,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     const finalLocationId = deliveryMethod === 'pickup' && selectedPickupLocation > 0
       ? selectedPickupLocation
       : (data.location_id || selectedPickupLocation)
-    
+
     if (!finalLocationId || finalLocationId === 0) {
       toast.error("Location is required. Please go back and select a location.")
       return
@@ -557,10 +557,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     }
 
     // Build delivery_contact as "Name|Number"
-    const deliveryContact = deliveryContactName 
+    const deliveryContact = deliveryContactName
       ? `${deliveryContactName}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
       : ''
-    
+
     // Build delivery_details from notes
     const deliveryDetails = deliveryNotes?.trim() || ''
 
@@ -618,12 +618,12 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
 
     // Update state first
     onUpdate(updateData)
-    
+
     // Reset updating flag after a short delay
     setTimeout(() => {
       isUpdatingRef.current = false
     }, 100)
-    
+
     // Save with the latest data including coupon info
     // Pass updateData to ensure coupon is included even if state hasn't updated yet
     onSave(updateData)
@@ -631,10 +631,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
 
   const handleSendToCustomer = () => {
     // Build delivery_contact as "Name|Number"
-    const deliveryContact = deliveryContactName 
+    const deliveryContact = deliveryContactName
       ? `${deliveryContactName}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
       : ''
-    
+
     // Build delivery_details from notes
     const deliveryDetails = deliveryNotes?.trim() || ''
 
@@ -654,7 +654,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         dateTime = `${deliveryDate} 00:00:00`;
       }
     }
-    
+
     onUpdate({
       delivery_date: deliveryDate || undefined,
       delivery_time: deliveryTime || undefined,
@@ -672,7 +672,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       order_comments: orderComments,
       location_id: deliveryMethod === 'pickup' ? selectedPickupLocation : undefined,
     })
-    
+
     setShowSendModal(true)
   }
 
@@ -680,16 +680,16 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     // In real implementation, send email via API
     setShowSendModal(false)
     setShowSuccessModal(true)
-    
+
     // Build updateData with latest coupon info
-    const deliveryContact = deliveryContactName 
+    const deliveryContact = deliveryContactName
       ? `${deliveryContactName}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
       : ''
     const deliveryDetails = deliveryNotes?.trim() || ''
     const finalDeliveryAddress = deliveryMethod === 'pickup' && selectedPickupLocation > 0
       ? locations.find((l: Location) => l.location_id === selectedPickupLocation)?.pickup_address || ''
       : deliveryAddress
-    
+
     // Build delivery_date_time: allow date-only (with default time) or date+time
     let dateTime: string | undefined = undefined;
     if (deliveryDate) {
@@ -701,7 +701,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         dateTime = `${deliveryDate} 00:00:00`;
       }
     }
-    
+
     const updateData: any = {
       delivery_date: deliveryDate || undefined,
       delivery_time: deliveryTime || undefined,
@@ -718,8 +718,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       coupon_discount: appliedCoupon?.coupon_discount || undefined,
       order_comments: orderComments,
       location_id: deliveryMethod === 'pickup' ? selectedPickupLocation : undefined,
+      // Pass the email to send to
+      send_to_email: sendEmail
     }
-    
+
     setTimeout(() => {
       setShowSuccessModal(false)
       onSave(updateData)
@@ -796,11 +798,11 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                     const newDate = e.target.value
                     setDeliveryDate(newDate)
                     const dateTime = newDate && deliveryTime ? `${newDate} ${deliveryTime}:00` : undefined
-                    onUpdate({ 
+                    onUpdate({
                       delivery_date: newDate || undefined,
                       delivery_time: deliveryTime || undefined,
                       delivery_date_time: dateTime,
-                      delivery_method: deliveryMethod 
+                      delivery_method: deliveryMethod
                     })
                   }}
                   className="h-11 border-gray-300"
@@ -823,22 +825,22 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                     const input = e.target.value
                     const cursorPos = e.target.selectionStart || 0
                     const oldValue = deliveryTime
-                    
+
                     // Allow empty input
                     if (input === '') {
                       setDeliveryTime('')
-                      onUpdate({ 
+                      onUpdate({
                         delivery_date: deliveryDate || undefined,
                         delivery_time: undefined,
                         delivery_date_time: undefined,
-                        delivery_method: deliveryMethod 
+                        delivery_method: deliveryMethod
                       })
                       return
                     }
-                    
+
                     // Extract only digits
                     const digits = input.replace(/\D/g, '')
-                    
+
                     // If user is deleting (input is shorter), allow it
                     if (input.length < oldValue.length) {
                       // Check if colon was deleted
@@ -851,14 +853,14 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                       setDeliveryTime(input)
                       return
                     }
-                    
+
                     // Limit to 4 digits
                     if (digits.length > 4) {
                       return // Don't update if exceeds limit
                     }
-                    
+
                     let formatted = ''
-                    
+
                     if (digits.length === 0) {
                       formatted = ''
                     } else if (digits.length === 1) {
@@ -888,29 +890,29 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                       const validMinutes = Math.min(minutes, 59)
                       formatted = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
                     }
-                    
+
                     setDeliveryTime(formatted)
-                    
+
                     // Update parent if we have a complete time
                     if (formatted.length === 5) {
                       const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
                       if (timePattern.test(formatted)) {
                         const dateTime = deliveryDate && formatted ? `${deliveryDate} ${formatted}:00` : undefined
-                        onUpdate({ 
+                        onUpdate({
                           delivery_date: deliveryDate || undefined,
                           delivery_time: formatted || undefined,
                           delivery_date_time: dateTime,
-                          delivery_method: deliveryMethod 
+                          delivery_method: deliveryMethod
                         })
                       }
                     }
-                    
+
                     // Smart cursor positioning
                     setTimeout(() => {
                       const inputEl = e.target as HTMLInputElement
                       if (inputEl) {
                         let newPos = cursorPos
-                        
+
                         // If colon was added, adjust position
                         if (formatted.includes(':') && !oldValue.includes(':')) {
                           const colonIndex = formatted.indexOf(':')
@@ -926,7 +928,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                           // Normal editing, maintain relative position
                           newPos = Math.min(cursorPos, formatted.length)
                         }
-                        
+
                         inputEl.setSelectionRange(newPos, newPos)
                       }
                     }, 0)
@@ -936,12 +938,12 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                     if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'].includes(e.key)) {
                       return // Allow default behavior
                     }
-                    
+
                     // Allow Ctrl/Cmd + A, C, V, X
                     if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
                       return // Allow default behavior
                     }
-                    
+
                     // Block non-digit characters
                     if (!/[0-9]/.test(e.key) && !['Enter', 'Escape'].includes(e.key)) {
                       e.preventDefault()
@@ -949,22 +951,22 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   }}
                   onBlur={(e) => {
                     let timeValue = e.target.value.trim()
-                    
+
                     // If empty, clear
                     if (!timeValue) {
                       setDeliveryTime('')
-                      onUpdate({ 
+                      onUpdate({
                         delivery_date: deliveryDate || undefined,
                         delivery_time: undefined,
                         delivery_date_time: undefined,
-                        delivery_method: deliveryMethod 
+                        delivery_method: deliveryMethod
                       })
                       return
                     }
-                    
+
                     // Extract digits
                     const digits = timeValue.replace(/\D/g, '')
-                    
+
                     // Complete partial entries
                     if (digits.length === 1) {
                       // Single digit - pad to HH:00
@@ -991,17 +993,17 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                       const validMinutes = Math.min(minutes, 59)
                       timeValue = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
                     }
-                    
+
                     // Validate final format
                     const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
                     if (timePattern.test(timeValue)) {
                       setDeliveryTime(timeValue)
                       const dateTime = deliveryDate && timeValue ? `${deliveryDate} ${timeValue}:00` : undefined
-                      onUpdate({ 
+                      onUpdate({
                         delivery_date: deliveryDate || undefined,
                         delivery_time: timeValue || undefined,
                         delivery_date_time: dateTime,
-                        delivery_method: deliveryMethod 
+                        delivery_method: deliveryMethod
                       })
                     } else if (timeValue.length > 0) {
                       // Invalid format - try to fix or clear
@@ -1026,7 +1028,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 onChange={(value) => {
                   setDeliveryContactName(value)
                   // Update delivery_contact in parent immediately
-                  const deliveryContact = value 
+                  const deliveryContact = value
                     ? `${value}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
                     : ''
                   onUpdate({ delivery_contact: deliveryContact, delivery_method: deliveryMethod })
@@ -1045,7 +1047,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 onChange={(value) => {
                   setDeliveryContactNumber(value)
                   // Update delivery_contact in parent immediately
-                  const deliveryContact = deliveryContactName 
+                  const deliveryContact = deliveryContactName
                     ? `${deliveryContactName}${value ? `|${value}` : ''}`
                     : ''
                   onUpdate({ delivery_contact: deliveryContact, delivery_method: deliveryMethod })
@@ -1299,9 +1301,9 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   </span>
                 </div>
               )}
-              <button 
+              <button
                 onClick={() => setShowCouponList(true)}
-                className="text-sm text-[#055160] hover:underline flex items-center gap-1" 
+                className="text-sm text-[#055160] hover:underline flex items-center gap-1"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 <Tag className="h-3 w-3" />
@@ -1426,8 +1428,8 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                               {coupon.coupon_code}
                             </span>
                             <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                              {coupon.type === 'P' 
-                                ? `${coupon.coupon_discount}% OFF` 
+                              {coupon.type === 'P'
+                                ? `${coupon.coupon_discount}% OFF`
                                 : `$${coupon.coupon_discount} OFF`}
                             </span>
                           </div>
