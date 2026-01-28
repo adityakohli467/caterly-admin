@@ -56,18 +56,14 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'rgba(5, 81, 96, 1)' }}>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-4 text-center pb-8">
-          <div className="flex justify-center">
-            <span 
-              className="text-3xl font-bold"
-              style={{ 
-                color: 'rgba(5, 81, 96, 1)',
-                fontFamily: "'Albert Sans', sans-serif",
-                letterSpacing: '0.5px'
-              }}
-            >
-              ZENN
-            </span>
-          </div>
+        <div className="flex justify-center">
+  <img
+    src="/assets/cat_logo.png"
+    alt="Caterly Logo"
+    className="h-20 w-auto"
+  />
+</div>
+
           <div>
             <CardTitle className="text-3xl font-bold text-gray-800">Admin Portal</CardTitle>
             <CardDescription className="text-base mt-2">

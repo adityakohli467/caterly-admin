@@ -223,7 +223,7 @@ export default function SettingsPage() {
 
   // Default settings if API fails or table doesn't exist
   const defaultSettings = {
-    companyName: "ZENN",
+    companyName: "Caterly",
     companyEmail: "admin@stdreuxcoffee.com",
     companyPhone: "+61 3 1234 5678",
     companyAbn: "ABN: 12 345 678 901",

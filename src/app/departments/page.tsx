@@ -34,7 +34,7 @@ const sampleDepartments: Department[] = [
   { department_id: 5, department_name: "Human Resources", company_name: "Swiggy", company_id: 5 },
   { department_id: 6, department_name: "Customer Servive", company_name: "Microsoft", company_id: 6 },
   { department_id: 7, department_name: "Customer Servive", company_name: "Accenture", company_id: 7 },
-  { department_id: 8, department_name: "Customer Servive", company_name: "Zenn", company_id: 8 },
+  { department_id: 8, department_name: "Customer Servive", company_name: "Caterly", company_id: 8 },
 ]
 
 const sampleCompanies = [
@@ -45,7 +45,7 @@ const sampleCompanies = [
   { company_id: 5, company_name: "Swiggy" },
   { company_id: 6, company_name: "Microsoft" },
   { company_id: 7, company_name: "Accenture" },
-  { company_id: 8, company_name: "Zenn" },
+  { company_id: 8, company_name: "Caterly" },
 ]
 
 export default function DepartmentsPage() {

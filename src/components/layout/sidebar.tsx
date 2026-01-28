@@ -38,7 +38,7 @@ export function Sidebar() {
               letterSpacing: '0.5px'
             }}
           >
-            ZENN
+            Caterly
           </span>
         </Link>
         <div className="mt-8 flex-grow flex flex-col">
