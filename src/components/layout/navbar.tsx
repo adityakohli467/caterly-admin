@@ -261,18 +261,15 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" prefetch={true} className="flex items-center justify-center flex-shrink-0">
-            <span 
-              className="text-2xl sm:text-3xl font-bold"
-              style={{ 
-                color: 'rgba(5, 81, 96, 1)',
-                fontFamily: "'Albert Sans', sans-serif",
-                letterSpacing: '0.5px'
-              }}
-            >
-              ZENN
-            </span>
-          </Link>
+<Link href="/" prefetch={true} className="flex items-center justify-center flex-shrink-0">
+  <img
+    src="/assets/cat_logo.png"
+    alt="Caterly Logo"
+    className="h-15 w-auto"
+  />
+</Link>
+
+
 
           {/* Navigation Items - Hidden on mobile, shown on lg+ */}
           <div className="hidden lg:flex flex-row items-center gap-1 flex-1 overflow-x-auto scrollbar-hide">

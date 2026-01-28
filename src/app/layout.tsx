@@ -14,10 +14,10 @@ const albertSans = Albert_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "ZENN",
-    template: "%s | ZENN"
+    default: "Caterly",
+    template: "%s | Caterly"
   },
-  description: "Admin portal for ZENN management system",
+  description: "Admin portal for Caterly management system",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

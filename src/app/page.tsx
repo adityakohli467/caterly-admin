@@ -81,7 +81,7 @@ export default function DashboardPage() {
 
   // Set page title
   useEffect(() => {
-    document.title = "ZENN"
+    document.title = "Caterly"
   }, [])
 
   useEffect(() => {
