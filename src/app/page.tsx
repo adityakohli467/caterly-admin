@@ -65,7 +65,7 @@ interface Order {
   }
 }
 
-interface RecentOrder extends Order {}
+interface RecentOrder extends Order { }
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -99,7 +99,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData()
-    
+
     // Refresh data every 30 seconds (only if we have auth)
     const interval = setInterval(() => {
       const hasAuth = localStorage.getItem('caterly-auth')
@@ -109,7 +109,7 @@ export default function DashboardPage() {
         clearInterval(interval)
       }
     }, 30000)
-    
+
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -124,14 +124,14 @@ export default function DashboardPage() {
 
     try {
       const response = await api.get("/admin/orders/stats")
-      
+
       const newStats = response.data.stats
-      
+
       // Store previous stats for comparison (only on first load)
       if (!previousStats && stats) {
         setPreviousStats(stats)
       }
-      
+
       setStats(newStats)
       setRecentOrders(response.data.recentOrders || [])
       setTodayOrders(response.data.todayOrders || [])
@@ -163,7 +163,7 @@ export default function DashboardPage() {
         setNext7DaysOrders([])
         return
       }
-      
+
       // Handle 401 auth errors gracefully
       if (error?.response?.status === 401) {
         // Clear auth and redirect to login
@@ -173,10 +173,10 @@ export default function DashboardPage() {
         }
         return
       }
-      
+
       // Log other errors
       console.error("Failed to fetch dashboard data:", error)
-      
+
       // Set default empty data for other errors so page still renders
       setStats({
         totalOrders: 0,
@@ -218,7 +218,7 @@ export default function DashboardPage() {
 
     const today = format(new Date(), 'dd MMM, yyyy')
     const tomorrow = format(new Date(Date.now() + 86400000), 'dd MMM, yyyy')
-    
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -242,7 +242,6 @@ export default function DashboardPage() {
                 <th>Order ID</th>
                 <th>Customer Name</th>
                 <th>Customer Phone</th>
-                <th>Customer Email</th>
                 <th>Delivery Time</th>
                 <th>Order Status</th>
               </tr>
@@ -253,9 +252,8 @@ export default function DashboardPage() {
                   <td>#${order.order_id}</td>
                   <td>${order.customer_order_name || `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() || 'N/A'}</td>
                   <td>${order.customer?.telephone || 'N/A'}</td>
-                  <td>${order.customer?.email || 'N/A'}</td>
                   <td>${order.delivery_date_time ? format(new Date(order.delivery_date_time), 'HH:mm') : 'N/A'}</td>
-                  <td>${getStatusText(order.order_status)}</td>
+                  <td>${order.is_completed === 1 ? 'Completed' : getStatusText(order.order_status)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -263,7 +261,7 @@ export default function DashboardPage() {
         </body>
       </html>
     `
-    
+
     printWindow.document.write(printContent)
     printWindow.document.close()
     printWindow.print()
@@ -316,12 +314,15 @@ export default function DashboardPage() {
     }
   }
 
-  const getStatusText = (status: number) => {
+  const getStatusText = (status: number, isCompleted?: number) => {
+    if (isCompleted === 1) return "Completed"
     switch (status) {
       case 0: return "Cancelled"
       case 1: return "New"
       case 2: return "Paid"
+      case 3: return "Shipped"
       case 4: return "Awaiting Approval"
+      case 5: return "Completed"
       case 7: return "Approved"
       case 8: return "Rejected"
       case 9: return "Modified"
@@ -351,8 +352,8 @@ export default function DashboardPage() {
 
     if (order.is_completed === 1) {
       return (
-        <span 
-          style={{ 
+        <span
+          style={{
             ...baseStyle,
             backgroundColor: '#f0fdf4',
             color: '#15803d',
@@ -363,12 +364,12 @@ export default function DashboardPage() {
         </span>
       )
     }
-    
+
     switch (order.order_status) {
       case 0:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#e7f1ff',
               color: '#055160',
@@ -380,8 +381,8 @@ export default function DashboardPage() {
         )
       case 1:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#fff7ed',
               color: '#ea580c',
@@ -393,8 +394,8 @@ export default function DashboardPage() {
         )
       case 2:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#f0fdf4',
               color: '#15803d',
@@ -406,8 +407,8 @@ export default function DashboardPage() {
         )
       case 4:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#fefce8',
               color: '#ca8a04',
@@ -419,21 +420,21 @@ export default function DashboardPage() {
         )
       case 7:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#eff6ff',
               color: '#2563eb',
             }}
           >
-            <div className="w-1.5 h-1.5 bg-[#055160] rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-[#C62828] rounded-full"></div>
             {getStatusText(order.order_status)}
           </span>
         )
       case 8:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#e7f1ff',
               color: '#055160',
@@ -445,21 +446,21 @@ export default function DashboardPage() {
         )
       case 9:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#eff6ff',
               color: '#2563eb',
             }}
           >
-            <div className="w-1.5 h-1.5 bg-[#055160] rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-[#C62828] rounded-full"></div>
             Modified
           </span>
         )
       default:
         return (
-          <span 
-            style={{ 
+          <span
+            style={{
               ...baseStyle,
               backgroundColor: '#f9fafb',
               color: '#374151',
@@ -487,7 +488,7 @@ export default function DashboardPage() {
     <div className="space-y-4 md:space-y-8 bg-gray-50 w-full max-w-full overflow-x-hidden">
       {/* Header with Greeting and New Order Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 
+        <h1
           className="text-2xl sm:text-3xl lg:text-4xl"
           style={{
             fontFamily: 'Albert Sans',
@@ -496,11 +497,11 @@ export default function DashboardPage() {
             letterSpacing: '0%'
           }}
         >
-          {getGreeting()}, <span className="text-[#055160]">{user?.username || 'User'}!</span>
+          {getGreeting()}, <span className="text-[#C62828]">{user?.username || 'User'}!</span>
         </h1>
         <Link href="/orders/new" className="w-full sm:w-auto">
-          <Button 
-            className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 sm:gap-3 w-full sm:w-auto"
+          <Button
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 sm:gap-3 w-full sm:w-auto"
             style={{
               minWidth: '140px',
               maxWidth: '100%',
@@ -612,10 +613,10 @@ export default function DashboardPage() {
                 {format(new Date(), 'dd MMM, yyyy')}
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              className="gap-2 text-xs sm:text-sm" 
-              size="sm" 
+            <Button
+              variant="outline"
+              className="gap-2 text-xs sm:text-sm"
+              size="sm"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               onClick={() => handlePrint(todayOrders, "Today's Deliveries")}
               disabled={todayOrders.length === 0}
@@ -627,13 +628,12 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-[108px] px-4 sm:px-6 lg:px-12 xl:px-[108px]">
-            <table className="w-full min-w-[800px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order ID</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
-                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Email</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
@@ -643,7 +643,7 @@ export default function DashboardPage() {
                 {loading ? (
                   Array.from({ length: 3 }).map((_, idx) => (
                     <tr key={idx} className="border-b border-gray-100">
-                      {Array.from({ length: 7 }).map((_, colIdx) => (
+                      {Array.from({ length: 6 }).map((_, colIdx) => (
                         <td key={colIdx} className="px-3 sm:px-6 py-3 sm:py-4">
                           <div className="h-4 bg-gray-200 rounded animate-pulse" />
                         </td>
@@ -651,7 +651,11 @@ export default function DashboardPage() {
                     </tr>
                   ))
                 ) : todayOrders && todayOrders.length > 0 ? (
-                  todayOrders.map((order, index) => (
+                  [...todayOrders].sort((a, b) => {
+                    const timeA = a.delivery_date_time ? new Date(a.delivery_date_time).getTime() : 0
+                    const timeB = b.delivery_date_time ? new Date(b.delivery_date_time).getTime() : 0
+                    return timeB - timeA
+                  }).map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm font-medium text-[#055160]">#{order.order_id}</span>
@@ -667,13 +671,8 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer?.email || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.delivery_date_time 
+                          {order.delivery_date_time
                             ? format(new Date(order.delivery_date_time), 'HH:mm')
                             : '00:00'}
                         </span>
@@ -682,69 +681,35 @@ export default function DashboardPage() {
                         {getStatusBadge(order)}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center gap-1 sm:gap-2 flex-nowrap">
-                          <Link href={`/orders/${order.order_id}/production`} prefetch={true}>
-                            <button
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontStyle: 'normal',
-                                fontSize: '14px',
-                                lineHeight: '20px',
-                                letterSpacing: '0%',
-                                textAlign: 'center',
-                                color: '#2563eb',
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                padding: 0,
-                              }}
-                              className="hover:opacity-80 transition-opacity whitespace-nowrap"
-                            >
-                              <span>Products</span>
-                              <ArrowRight className="h-3 w-3" />
-                            </button>
-                          </Link>
-                          <Link href={`/orders/${order.order_id}/production`} prefetch={true}>
-                            <button
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontStyle: 'normal',
-                                fontSize: '14px',
-                                lineHeight: '20px',
-                                letterSpacing: '0%',
-                                textAlign: 'center',
-                                color: '#2563eb',
-                                background: 'transparent',
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                padding: 0,
-                              }}
-                              className="hover:opacity-80 transition-opacity whitespace-nowrap"
-                            >
-                              <span>Prepare</span>
-                              <ArrowRight className="h-3 w-3" />
-                            </button>
-                          </Link>
+                        <div className="flex items-center gap-2 flex-nowrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewOrder(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            View Order
+                          </Button>
                           {order.is_completed === 0 && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkComplete(order.order_id)}
-                              style={{ 
-                                fontFamily: 'Albert Sans', 
+                              style={{
+                                fontFamily: 'Albert Sans',
                                 fontWeight: 600,
-                                fontSize: '12px',
-                                lineHeight: '16px',
+                                fontSize: '13px',
+                                lineHeight: '20px',
                               }}
-                              className="h-8 px-2.5 text-xs bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap shrink-0"
+                              className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
                             >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                               Complete
                             </Button>
                           )}
@@ -754,7 +719,7 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-3 sm:px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-3 sm:px-6 py-12 text-center text-gray-500">
                       <span style={{ fontFamily: 'Albert Sans' }}>No orders for today</span>
                     </td>
                   </tr>
@@ -777,10 +742,10 @@ export default function DashboardPage() {
                 {format(new Date(Date.now() + 86400000), 'dd MMM, yyyy')}
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              className="gap-2 text-xs sm:text-sm" 
-              size="sm" 
+            <Button
+              variant="outline"
+              className="gap-2 text-xs sm:text-sm"
+              size="sm"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               onClick={() => handlePrint(tomorrowOrders, "Tomorrow's Deliveries")}
               disabled={tomorrowOrders.length === 0}
@@ -792,13 +757,12 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-[108px] px-4 sm:px-6 lg:px-12 xl:px-[108px]">
-            <table className="w-full min-w-[800px]">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order ID</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
-                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Email</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
@@ -808,7 +772,7 @@ export default function DashboardPage() {
                 {loading ? (
                   Array.from({ length: 3 }).map((_, idx) => (
                     <tr key={idx} className="border-b border-gray-100">
-                      {Array.from({ length: 7 }).map((_, colIdx) => (
+                      {Array.from({ length: 6 }).map((_, colIdx) => (
                         <td key={colIdx} className="px-3 sm:px-6 py-3 sm:py-4">
                           <div className="h-4 bg-gray-200 rounded animate-pulse" />
                         </td>
@@ -816,7 +780,11 @@ export default function DashboardPage() {
                     </tr>
                   ))
                 ) : tomorrowOrders && tomorrowOrders.length > 0 ? (
-                  tomorrowOrders.map((order, index) => (
+                  [...tomorrowOrders].sort((a, b) => {
+                    const timeA = a.delivery_date_time ? new Date(a.delivery_date_time).getTime() : 0
+                    const timeB = b.delivery_date_time ? new Date(b.delivery_date_time).getTime() : 0
+                    return timeB - timeA
+                  }).map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm font-medium text-[#055160]">#{order.order_id}</span>
@@ -832,13 +800,8 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer?.email || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.delivery_date_time 
+                          {order.delivery_date_time
                             ? format(new Date(order.delivery_date_time), 'HH:mm')
                             : '00:00'}
                         </span>
@@ -847,60 +810,46 @@ export default function DashboardPage() {
                         {getStatusBadge(order)}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewOrder(order.order_id)}
-                            style={{ 
-                              fontFamily: 'Albert Sans', 
-                              fontWeight: 600,
-                              fontSize: '14px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-9 px-4 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-                          >
-                            View Order
-                          </Button>
-                          <Link href={`/orders/${order.order_id}/checklist`} prefetch={true}>
-                            <button
+                        <div className="flex items-center gap-2 flex-nowrap">
+                          <Link href={`/orders/${order.order_id}/production`} prefetch={true}>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               style={{
-                                width: '117px',
-                                height: '36px',
-                                paddingTop: '8px',
-                                paddingRight: '16px',
-                                paddingBottom: '8px',
-                                paddingLeft: '16px',
-                                gap: '4px',
-                                borderRadius: '35px',
-                                borderWidth: '1px',
-                                borderStyle: 'solid',
-                                borderColor: '#d1d5db',
-                                backgroundColor: '#ffffff',
-                                color: '#374151',
                                 fontFamily: 'Albert Sans',
                                 fontWeight: 600,
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 lineHeight: '20px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s',
                               }}
-                              className="hover:bg-gray-50"
+                              className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
                             >
-                              <ClipboardList className="h-4 w-4" />
-                              <span>Checklist</span>
-                            </button>
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              View Order
+                            </Button>
                           </Link>
+                          {order.is_completed === 0 && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkComplete(order.order_id)}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                              Complete
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-3 sm:px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-3 sm:px-6 py-12 text-center text-gray-500">
                       <span style={{ fontFamily: 'Albert Sans' }}>No orders for tomorrow</span>
                     </td>
                   </tr>

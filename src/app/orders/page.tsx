@@ -476,7 +476,7 @@ export default function OrdersPage() {
         </h1>
         <Link href="/orders/new" className="w-full sm:w-auto">
           <Button 
-            className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
             style={{ 
               fontWeight: 600,
               minWidth: '196px',
@@ -620,7 +620,7 @@ export default function OrdersPage() {
                         setShowDatePicker(false)
                         queryClient.invalidateQueries({ queryKey: ['orders'] })
                       }}
-                      className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white hover:text-white"
+                      className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white hover:text-white"
                       style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                     >
                       Apply
@@ -712,7 +712,7 @@ export default function OrdersPage() {
             <Button 
               onClick={handleApplyLateFee}
               disabled={updateLateFeeMutation.isPending || selectedOrders.length === 0}
-              className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap rounded-full hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap rounded-full hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ 
                 fontFamily: 'Albert Sans', 
                 fontWeight: 600,
@@ -1247,7 +1247,7 @@ export default function OrdersPage() {
                   variant="outline" 
                   size="sm" 
                   onClick={() => setPage(pageNum)}
-                  className={pageNum === page ? "bg-[#055160] text-white border-[#055160] hover:bg-[#04414d]" : ""}
+                  className={pageNum === page ? "bg-[#C62828] text-white border-[#055160] hover:bg-[#B71C1C]" : ""}
                   style={{ fontFamily: 'Albert Sans' }}
                 >
                   {pageNum}
@@ -1375,7 +1375,7 @@ export default function OrdersPage() {
             <Button
               onClick={handleImageUpload}
               disabled={!selectedImageFile}
-              className="bg-[#055160] hover:bg-[#04414d] text-white"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               Upload

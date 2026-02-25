@@ -182,7 +182,7 @@ export default function NewOrderPage() {
         {currentStep === 1 && (
           <Button 
             onClick={() => setShowAddCustomerModal(true)}
-            className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 rounded-lg"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
             <span className="text-lg">+</span>
@@ -191,7 +191,7 @@ export default function NewOrderPage() {
         )}
         {currentStep === 2 && (
           <Button 
-            className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 rounded-lg"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
             <span className="text-lg">+</span>
@@ -208,9 +208,9 @@ export default function NewOrderPage() {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   currentStep === step.number
-                    ? "bg-[#055160] text-white"
+                    ? "bg-[#C62828] text-white"
                     : currentStep > step.number
-                    ? "bg-[#055160] text-white"
+                    ? "bg-[#C62828] text-white"
                     : "bg-gray-300 text-gray-600"
                 }`}
               >
@@ -232,7 +232,7 @@ export default function NewOrderPage() {
             {index < steps.length - 1 && (
               <div
                 className={`w-24 h-0.5 mx-2 mt-[-20px] ${
-                  currentStep > step.number ? "bg-[#055160]" : "bg-gray-300"
+                  currentStep > step.number ? "bg-[#C62828]" : "bg-gray-300"
                 }`}
               />
             )}

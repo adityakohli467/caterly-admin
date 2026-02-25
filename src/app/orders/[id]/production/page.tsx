@@ -621,7 +621,7 @@ export default function ProductionFormPage() {
               fontSize: '14px',
               lineHeight: '20px'
             }}
-            className="bg-[#055160] hover:bg-[#04414d] h-8 px-3"
+            className="bg-[#C62828] hover:bg-[#B71C1C] h-8 px-3"
           >
             {order.order_products?.length || 0}
           </Button>

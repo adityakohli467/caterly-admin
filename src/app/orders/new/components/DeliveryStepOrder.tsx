@@ -1252,7 +1252,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 {!appliedCoupon ? (
                   <Button
                     onClick={handleApplyCoupon}
-                    className="bg-[#055160] hover:bg-[#04414d] text-white px-6"
+                    className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-6"
                     style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   >
                     Apply
@@ -1346,14 +1346,14 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               <Button
                 onClick={handleSaveOrder}
                 variant="outline"
-                className="w-full border-[#055160] text-[#055160] hover:bg-[#055160] hover:text-white"
+                className="w-full border-[#055160] text-[#055160] hover:bg-[#C62828] hover:text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600, height: '50px' }}
               >
                 💾 Save Order
               </Button>
               <Button
                 onClick={handleSendToCustomer}
-                className="w-full bg-[#055160] hover:bg-[#04414d] text-white rounded-full"
+                className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white rounded-full"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600, height: '50px' }}
               >
                 Send to Customer
@@ -1405,7 +1405,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               </Button>
               <Button
                 onClick={handleConfirmSend}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 Yes, Send
@@ -1479,7 +1479,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                             e.stopPropagation()
                             handleSelectCoupon(coupon.coupon_id.toString())
                           }}
-                          className="bg-[#055160] hover:bg-[#04414d] text-white text-xs px-3 py-1"
+                          className="bg-[#C62828] hover:bg-[#B71C1C] text-white text-xs px-3 py-1"
                           style={{ fontFamily: 'Albert Sans' }}
                         >
                           Apply

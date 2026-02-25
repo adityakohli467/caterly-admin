@@ -64,7 +64,7 @@ export default function BlogsPage() {
       if (searchQuery) params.append("search", searchQuery)
       if (filterPublished !== undefined) params.append("is_published", filterPublished.toString())
       params.append("limit", "50")
-      
+
       const response = await api.get(`/admin/blogs?${params.toString()}`)
       return response.data
     },
@@ -259,7 +259,7 @@ export default function BlogsPage() {
           <h1 className="text-3xl font-bold mb-2">Blog Management</h1>
           <p className="text-gray-600">Create, edit, and manage blog posts</p>
         </div>
-        <Button onClick={handleAdd} className="flex items-center gap-2">
+        <Button onClick={handleAdd} className="flex items-center gap-2 bg-[#C62828] hover:bg-[#B71C1C] text-white">
           <Plus className="w-4 h-4" />
           Add Blog
         </Button>

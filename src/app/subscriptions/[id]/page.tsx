@@ -250,7 +250,7 @@ export default function SubscriptionDetailPage() {
               <Button
                 onClick={handleSave}
                 disabled={updateMutation.isPending}
-                className="bg-[#055160] hover:bg-[#04414d] text-white gap-2"
+                className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 <Save className="h-4 w-4" />
@@ -281,7 +281,7 @@ export default function SubscriptionDetailPage() {
               <Button
                 onClick={handleSendInvoice}
                 disabled={sendingInvoice}
-                className="bg-[#055160] hover:bg-[#04414d] text-white gap-2"
+                className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 <Send className="h-4 w-4" />

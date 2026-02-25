@@ -292,7 +292,7 @@ export default function DepartmentsPage() {
         </h1>
         <Button 
           onClick={handleAddDepartment}
-          className="no-print bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
+          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
           style={{ 
             fontWeight: 600,
             minWidth: '196px',
@@ -467,7 +467,7 @@ export default function DepartmentsPage() {
             </Button>
             <Button 
               size="sm" 
-              className="bg-[#055160] hover:bg-[#04414d] text-white px-4 h-9 rounded-md text-[14px] min-w-[40px]"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-4 h-9 rounded-md text-[14px] min-w-[40px]"
               style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
             >
               1
@@ -625,7 +625,7 @@ export default function DepartmentsPage() {
               <Button
                 onClick={handleSaveNewDepartment}
                 disabled={createDepartmentMutation.isPending || !selectedCompanyId || !departmentName}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createDepartmentMutation.isPending ? (
@@ -789,7 +789,7 @@ export default function DepartmentsPage() {
               <Button
                 onClick={handleUpdateDepartment}
                 disabled={updateDepartmentMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {updateDepartmentMutation.isPending ? (
@@ -842,7 +842,7 @@ export default function DepartmentsPage() {
               <Button
                 onClick={confirmDelete}
                 disabled={deleteDepartmentMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {deleteDepartmentMutation.isPending ? (

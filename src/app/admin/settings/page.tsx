@@ -236,7 +236,7 @@ export default function SettingsPage() {
     sessionTimeout: 30,
     passwordExpiry: 90,
     theme: "light",
-    primaryColor: "#055160",
+    primaryColor: "#C62828",
     language: "en",
     maintenanceMode: false,
   }
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                   psql -U your_user -d your_database -f migrations/create_settings_table.sql
                 </code>
               )}
-              <Button onClick={() => refetch()} className="bg-[#055160] hover:bg-[#04414d] text-white">
+              <Button onClick={() => refetch()} className="bg-[#C62828] hover:bg-[#B71C1C] text-white">
                 Retry
               </Button>
             </div>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
         <Button 
           onClick={handleSave} 
           disabled={!hasChanges || updateMutation.isPending}
-          className="bg-[#055160] hover:bg-[#04414d] gap-2"
+          className="bg-[#C62828] hover:bg-[#B71C1C] gap-2"
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           {updateMutation.isPending ? (
@@ -505,14 +505,14 @@ export default function SettingsPage() {
                   <Input
                     id="primaryColor"
                     type="color"
-                    value={currentSettings.primaryColor || "#055160"}
+                    value={currentSettings.primaryColor || "#C62828"}
                     onChange={(e) => handleInputChange('primaryColor', e.target.value)}
                     className="w-16 h-10 p-1 border rounded"
                   />
                   <Input
-                    value={currentSettings.primaryColor || "#055160"}
+                    value={currentSettings.primaryColor || "#C62828"}
                     onChange={(e) => handleInputChange('primaryColor', e.target.value)}
-                    placeholder="#055160"
+                    placeholder="#C62828"
                     style={{ fontFamily: 'Albert Sans' }}
                   />
                 </div>

@@ -411,7 +411,7 @@ export default function RolesPage() {
                     <td className="p-4">{role.permission_count}</td>
                     <td className="p-4">
                       {role.is_system_role ? (
-                        <span className="rounded bg-[#e7f1ff] px-2 py-1 text-xs text-[#04414d]">
+                        <span className="rounded bg-[#e7f1ff] px-2 py-1 text-xs text-[#B71C1C]">
                           System
                         </span>
                       ) : (

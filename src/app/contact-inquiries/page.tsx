@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Eye, Trash2, Mail, Phone, MessageSquare, Calendar, MoreVertical } from "lucide-react"
+import { Search, Eye, Trash2, Mail, Phone, MessageSquare, Calendar, Check } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 
@@ -116,7 +116,7 @@ export default function ContactInquiriesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Contact Inquiries</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Contact Enquiries</h1>
         <p className="text-gray-600 mt-2">View and manage contact form submissions</p>
       </div>
 
@@ -196,40 +196,45 @@ export default function ContactInquiriesPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleViewDetails(inquiry)}
+                    className="text-gray-700"
                   >
-                    <Eye className="w-4 h-4 mr-1" />
+                    <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {inquiry.status !== "read" && (
-                        <DropdownMenuItem
-                          onClick={() => updateStatusMutation.mutate({ id: inquiry.id, status: "read" })}
-                        >
-                          Mark as Read
-                        </DropdownMenuItem>
-                      )}
-                      {inquiry.status !== "replied" && (
-                        <DropdownMenuItem
-                          onClick={() => updateStatusMutation.mutate({ id: inquiry.id, status: "replied" })}
-                        >
-                          Mark as Replied
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem
-                        className="text-[#055160]"
-                        onClick={() => handleDelete(inquiry.id)}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+
+                  {inquiry.status !== "read" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateStatusMutation.mutate({ id: inquiry.id, status: "read" })}
+                      className="text-gray-700"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Mark as Read
+                    </Button>
+                  )}
+
+                  {inquiry.status === "read" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateStatusMutation.mutate({ id: inquiry.id, status: "replied" })}
+                      className="text-gray-700"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      Mark as Replied
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(inquiry.id)}
+                    className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -333,4 +338,3 @@ export default function ContactInquiriesPage() {
     </div>
   )
 }
-

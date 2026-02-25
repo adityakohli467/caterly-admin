@@ -46,16 +46,16 @@ const allNavigation = [
       { name: "User Management", href: "/admin/users" },
       { name: "Roles & Permissions", href: "/admin/roles" },
       { name: "Locations", href: "/admin/locations" },
-      { name: "Manage Categories", href: "/admin/categories" },
-      { name: "Manage Products", href: "/admin/products" },
-      { name: "Manage Options", href: "/admin/options" },
-      { name: "Manage Blogs", href: "/admin/blogs" },
+      // { name: "Manage Categories", href: "/admin/categories" },
+      { name: "Product Management ", href: "/admin/products" },
+      // { name: "Manage Options", href: "/admin/options" },
+      { name: "Blogs", href: "/admin/blogs" },
       { name: "Reviews", href: "/admin/reviews" },
       { name: "Payments", href: "/admin/payments" },
       { name: "Reports", href: "/admin/reports" },
-      { name: "Contact Inquiries", href: "/contact-inquiries" },
+      { name: "Contact Enquiries", href: "/contact-inquiries" },
       // { name: "Wholesale Enquiries", href: "/wholesale-enquiries" }, // Hidden for kj3
-      { name: "API History", href: "/history" },
+      // { name: "API History", href: "/history" },
     ]
   },
 ]
@@ -261,11 +261,15 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-<Link href="/" prefetch={true} className="flex items-center justify-center flex-shrink-0">
+<Link
+  href="/"
+  prefetch={true}
+  className="flex items-center justify-center flex-shrink-0"
+>
   <img
-    src="/assets/cat_logo.png"
+    src="/assets/cat.svg"
     alt="Caterly Logo"
-    className="h-15 w-auto"
+    className="h-[60px] w-auto"
   />
 </Link>
 

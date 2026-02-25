@@ -286,7 +286,7 @@ export default function CompaniesPage() {
         </h1>
         <Button 
           onClick={handleAddCompany}
-          className="no-print bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
+          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
           style={{ 
             fontWeight: 600,
             width: '196px',
@@ -469,7 +469,7 @@ export default function CompaniesPage() {
             </Button>
             <Button 
               size="sm" 
-              className="bg-[#055160] hover:bg-[#04414d] text-white px-4 h-9 rounded-md text-[14px] min-w-[40px]"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-4 h-9 rounded-md text-[14px] min-w-[40px]"
               style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
             >
               1
@@ -638,7 +638,7 @@ export default function CompaniesPage() {
               <Button
                 onClick={handleSaveNewCompany}
                 disabled={createCompanyMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createCompanyMutation.isPending ? (
@@ -755,7 +755,7 @@ export default function CompaniesPage() {
               <Button
                 onClick={handleUpdateCompany}
                 disabled={updateCompanyMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {updateCompanyMutation.isPending ? (
@@ -809,7 +809,7 @@ export default function CompaniesPage() {
               <Button
                 onClick={confirmDelete}
                 disabled={deleteCompanyMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {deleteCompanyMutation.isPending ? (

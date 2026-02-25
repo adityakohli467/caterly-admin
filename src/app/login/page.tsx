@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const { login, logout } = useAuthStore()
-  
+
   const {
     register,
     handleSubmit,
@@ -37,11 +37,11 @@ export default function LoginPage() {
     try {
       await login(data.username, data.password)
       toast.success("Login successful!")
-      
+
       // Check if there's a redirect parameter
       const urlParams = new URLSearchParams(window.location.search)
       const redirect = urlParams.get('redirect')
-      
+
       // Redirect to the original page or dashboard
       router.push(redirect || "/dashboard")
     } catch (error: any) {
@@ -53,16 +53,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'rgba(5, 81, 96, 1)' }}>
-      <Card className="w-full max-w-md shadow-xl">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-8 relative"
+      style={{
+        backgroundImage: 'url(/assets/log.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Dark overlay for readability */}
+
+      <Card className="w-full max-w-md shadow-2xl relative z-10" style={{ borderRadius: '16px' }}>
         <CardHeader className="space-y-4 text-center pb-8">
-        <div className="flex justify-center">
-  <img
-    src="/assets/cat_logo.png"
-    alt="Caterly Logo"
-    className="h-20 w-auto"
-  />
-</div>
+          <div className="flex justify-center">
+            <img
+              src="/assets/cat.svg"
+              alt="Caterly Logo"
+              className="h-20 w-auto"
+            />
+          </div>
 
           <div>
             <CardTitle className="text-3xl font-bold text-gray-800">Admin Portal</CardTitle>
@@ -104,9 +114,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full h-11 text-white font-semibold"
-              style={{ backgroundColor: 'rgba(5, 81, 96, 1)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(4, 65, 77, 1)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(5, 81, 96, 1)'}
+              style={{ backgroundColor: '#C62828' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#B71C1C'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#C62828'}
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign in"}

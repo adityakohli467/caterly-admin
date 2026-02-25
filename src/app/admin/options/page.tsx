@@ -239,14 +239,14 @@ export default function OptionsPage() {
           fontWeight: 600,
           fontStyle: 'normal',
           fontSize: '40px',
-          lineHeight: '20px',
+          lineHeight: '48px',
           letterSpacing: '0%'
         }}>
-          Manage Options
+          Product Management
         </h1>
         <Button
           onClick={handleAddOption}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
           style={{
             fontWeight: 600,
             width: '196px',
@@ -267,14 +267,6 @@ export default function OptionsPage() {
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6">
-        <Link href="/admin/products">
-          <button
-            className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
-            style={{ fontWeight: 600 }}
-          >
-            Products
-          </button>
-        </Link>
         <Link href="/admin/categories">
           <button
             className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -283,8 +275,16 @@ export default function OptionsPage() {
             Categories
           </button>
         </Link>
+        <Link href="/admin/products">
+          <button
+            className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+            style={{ fontWeight: 600 }}
+          >
+            Products
+          </button>
+        </Link>
         <button
-          className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-[#e7f1ff] text-[#055160]"
+          className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-[#fce4ec] text-[#C62828]"
           style={{ fontWeight: 600 }}
         >
           Options
@@ -299,7 +299,7 @@ export default function OptionsPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -314,14 +314,14 @@ export default function OptionsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -398,14 +398,14 @@ export default function OptionsPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleEditOption(option)}
-                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                               title="Edit"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteOption(option)}
-                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -439,7 +439,7 @@ export default function OptionsPage() {
           </Button>
           <Button
             size="sm"
-            className="bg-[#055160] hover:bg-[#04414d] text-white"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
           >
             {currentPage}
           </Button>
@@ -469,8 +469,8 @@ export default function OptionsPage() {
       }}>
         <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Settings className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#fce4ec] mx-auto mb-4">
+              <Settings className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               {selectedOption ? "Edit Option" : "Add New Option"}
@@ -500,7 +500,7 @@ export default function OptionsPage() {
                 id="optionType"
                 value={optionType}
                 onChange={(e) => setOptionType(e.target.value)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 <option value="dropdown">Dropdown</option>
@@ -551,7 +551,7 @@ export default function OptionsPage() {
                           onClick={() => removeValueField(index)}
                           size="sm"
                           variant="outline"
-                          className="text-[#055160] hover:text-[#055160] hover:bg-[#e7f1ff]"
+                          className="text-[#C62828] hover:text-[#C62828] hover:bg-[#fce4ec]"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -627,7 +627,7 @@ export default function OptionsPage() {
               <Button
                 onClick={handleSaveOption}
                 disabled={createOptionMutation.isPending || updateOptionMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createOptionMutation.isPending || updateOptionMutation.isPending
@@ -649,8 +649,8 @@ export default function OptionsPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#fce4ec]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

@@ -541,7 +541,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                   }}
                   className={`px-3 py-1.5 text-xs rounded-md border transition-all ${
                     selectedCategory === 0
-                      ? "bg-[#055160] text-white border-[#055160] shadow-sm"
+                      ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
                       : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
                   }`}
                   style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
@@ -557,7 +557,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                     }}
                     className={`px-3 py-1.5 text-xs rounded-md border transition-all ${
                       selectedCategory === category.category_id
-                        ? "bg-[#055160] text-white border-[#055160] shadow-sm"
+                        ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
                         : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
                     }`}
                     style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
@@ -792,7 +792,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
           <Button
             onClick={handleProceed}
             disabled={cart.length === 0}
-            className="w-full bg-[#055160] hover:bg-[#04414d] text-white rounded-full disabled:opacity-50"
+            className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white rounded-full disabled:opacity-50"
             style={{ 
               fontFamily: 'Albert Sans', 
               fontWeight: 600,

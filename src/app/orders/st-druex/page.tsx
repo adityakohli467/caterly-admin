@@ -144,7 +144,7 @@ export default function StDruexOrdersPage() {
             color: '#2563eb',
           }}
         >
-          <div className="w-1.5 h-1.5 bg-[#055160] rounded-full"></div>
+          <div className="w-1.5 h-1.5 bg-[#C62828] rounded-full"></div>
           Paid
         </span>
       )

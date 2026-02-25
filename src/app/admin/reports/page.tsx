@@ -31,7 +31,7 @@ interface Report {
 
 export default function ReportsPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  
+
   // Filter state
   const [orderDateFrom, setOrderDateFrom] = useState<Date | null>(null)
   const [orderDateTo, setOrderDateTo] = useState<Date | null>(null)
@@ -39,6 +39,7 @@ export default function ReportsPage() {
   const [deliveryDateTo, setDeliveryDateTo] = useState<Date | null>(null)
   const [selectedLocation, setSelectedLocation] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedCompany, setSelectedCompany] = useState("")
 
   // Applied filters (for API call)
   const [appliedFilters, setAppliedFilters] = useState({
@@ -48,6 +49,7 @@ export default function ReportsPage() {
     delivery_date_to: "",
     location_id: "",
     status: "",
+    company: "",
     search: ""
   })
 
@@ -64,6 +66,17 @@ export default function ReportsPage() {
     },
   })
 
+  // Fetch companies
+  const { data: companiesData } = useQuery({
+    queryKey: ["companies-all"],
+    queryFn: async () => {
+      const response = await api.get("/companies?limit=1000")
+      return response.data
+    },
+  })
+
+  const companies = companiesData?.companies || []
+
   const locations = locationsData?.locations || []
 
   // Fetch reports
@@ -77,6 +90,7 @@ export default function ReportsPage() {
       if (appliedFilters.delivery_date_to) params.append("delivery_date_to", appliedFilters.delivery_date_to)
       if (appliedFilters.location_id) params.append("location_id", appliedFilters.location_id)
       if (appliedFilters.status) params.append("status", appliedFilters.status)
+      if (appliedFilters.company) params.append("company", appliedFilters.company)
       if (appliedFilters.search) params.append("search", appliedFilters.search)
       params.append("limit", itemsPerPage.toString())
       params.append("offset", ((currentPage - 1) * itemsPerPage).toString())
@@ -97,6 +111,7 @@ export default function ReportsPage() {
       delivery_date_to: deliveryDateTo ? format(deliveryDateTo as Date, "yyyy-MM-dd") : "",
       location_id: selectedLocation,
       status: selectedStatus,
+      company: selectedCompany,
       search: searchQuery
     })
     setCurrentPage(1)
@@ -109,6 +124,7 @@ export default function ReportsPage() {
     setDeliveryDateTo(null)
     setSelectedLocation("")
     setSelectedStatus("")
+    setSelectedCompany("")
     setSearchQuery("")
     setAppliedFilters({
       order_date_from: "",
@@ -117,6 +133,7 @@ export default function ReportsPage() {
       delivery_date_to: "",
       location_id: "",
       status: "",
+      company: "",
       search: ""
     })
     setCurrentPage(1)
@@ -131,6 +148,7 @@ export default function ReportsPage() {
       if (appliedFilters.delivery_date_to) params.append("delivery_date_to", appliedFilters.delivery_date_to)
       if (appliedFilters.location_id) params.append("location_id", appliedFilters.location_id)
       if (appliedFilters.status) params.append("status", appliedFilters.status)
+      if (appliedFilters.company) params.append("company", appliedFilters.company)
       if (appliedFilters.search) params.append("search", appliedFilters.search)
 
       const response = await api.get(`/admin/reports/download/csv?${params.toString()}`, {
@@ -180,12 +198,12 @@ export default function ReportsPage() {
     <div className="bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-gray-900" style={{ 
+        <h1 className="text-gray-900" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
-          fontSize: '40px',
-          lineHeight: '20px',
+          fontSize: '32px',
+          lineHeight: '40px',
           letterSpacing: '0%'
         }}>
           Reports
@@ -194,7 +212,7 @@ export default function ReportsPage() {
 
       {/* Filters Section */}
       <Card className="border border-gray-200 shadow-sm mb-6 p-6 bg-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           {/* Order Date From/To */}
           <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
             <CalendarIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
@@ -271,6 +289,24 @@ export default function ReportsPage() {
             </select>
           </div>
 
+          {/* Select Company */}
+          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
+            <Filter className="h-5 w-5 text-gray-500" />
+            <select
+              value={selectedCompany}
+              onChange={(e) => setSelectedCompany(e.target.value)}
+              className="flex-1 text-sm bg-transparent border-none p-0 focus:outline-none"
+              style={{ fontFamily: 'Albert Sans' }}
+            >
+              <option value="">Select Company</option>
+              {companies.map((company: any) => (
+                <option key={company.company_id} value={company.company_id}>
+                  {company.company_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Select Statuses */}
           <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
             <select
@@ -280,6 +316,7 @@ export default function ReportsPage() {
               style={{ fontFamily: 'Albert Sans' }}
             >
               <option value="">Select Statuses</option>
+              <option value="1">New</option>
               <option value="7">Approved</option>
               <option value="90">All minus paid</option>
               <option value="91">All minus cancelled</option>
@@ -293,15 +330,15 @@ export default function ReportsPage() {
 
         {/* Filter Actions */}
         <div className="flex items-center justify-end gap-3">
-          <Button 
+          <Button
             onClick={handleApplyFilters}
-            className="bg-[#055160] hover:bg-[#04414d] text-white shadow-sm transition-all hover:shadow-md"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white shadow-sm transition-all hover:shadow-md"
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             <Filter className="h-4 w-4 mr-2" />
             Apply Filters
           </Button>
-          <Button 
+          <Button
             onClick={handleClearFilters}
             variant="outline"
             className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all text-gray-700 hover:text-gray-900"
@@ -329,29 +366,29 @@ export default function ReportsPage() {
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
-        <Button 
+        <Button
           onClick={handleDownloadCSV}
-          variant="outline" 
+          variant="outline"
           className="gap-2 h-11 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-all"
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           <FileDown className="h-5 w-5" />
           CSV
         </Button>
-        <Button 
+        <Button
           onClick={handleDownloadExcel}
-          variant="outline" 
+          variant="outline"
           className="gap-2 h-11 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-all"
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           <FileText className="h-5 w-5" />
           Excel
         </Button>
-        <Button 
+        <Button
           onClick={handlePrint}
           className="gap-2 whitespace-nowrap border-0 shadow-none ml-auto"
-          style={{ 
-            fontFamily: 'Albert Sans', 
+          style={{
+            fontFamily: 'Albert Sans',
             fontWeight: 600,
             fontStyle: 'normal',
             fontSize: '16px',
@@ -391,6 +428,9 @@ export default function ReportsPage() {
                   Delivery Date
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                  Delivery Time
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                   Customer
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
@@ -422,11 +462,11 @@ export default function ReportsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={12} className="text-center py-8 text-gray-500">Loading reports...</td>
+                  <td colSpan={13} className="text-center py-8 text-gray-500">Loading reports...</td>
                 </tr>
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="text-center py-8 text-gray-500">No reports found.</td>
+                  <td colSpan={13} className="text-center py-8 text-gray-500">No reports found.</td>
                 </tr>
               ) : (
                 reports.map((report: Report, index: number) => {
@@ -446,6 +486,11 @@ export default function ReportsPage() {
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                           {report.delivery_date_time ? format(new Date(report.delivery_date_time), "dd-MM-yyyy") : "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                          {report.delivery_date_time ? format(new Date(report.delivery_date_time), "HH:mm") : "N/A"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -508,24 +553,24 @@ export default function ReportsPage() {
           Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} Entries
         </p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             Prev
           </Button>
-          <Button 
-            size="sm" 
-            className="bg-[#055160] hover:bg-[#04414d] text-white"
+          <Button
+            size="sm"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
           >
             {currentPage}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages || totalPages === 0}
