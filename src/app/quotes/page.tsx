@@ -297,7 +297,7 @@ export default function QuotesPage() {
         </h1>
         <Link href="/quotes/new" className="w-full sm:w-auto">
           <Button 
-            className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
             style={{ 
               fontWeight: 600,
               minWidth: '196px',
@@ -498,7 +498,7 @@ export default function QuotesPage() {
                   setShowDatePicker(false)
                   setCurrentPage(1) // Reset to first page when filter changes
                 }}
-                className="bg-[#055160] hover:bg-[#04414d] text-white"
+                className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
               >
                 Apply
               </Button>
@@ -788,7 +788,7 @@ export default function QuotesPage() {
                             quote.order_status === 5 || quote.order_status === 8 ? 'bg-red-500' :  // Cancelled/Rejected - red
                             quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
                             quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
-                            'bg-[#055160]'  // New (status 1) - teal
+                            'bg-[#C62828]'  // New (status 1) - teal
                           }`}></div>
                         )}
                         {getStatusLabel(quote.order_status)}
@@ -913,7 +913,7 @@ export default function QuotesPage() {
                       onClick={() => setCurrentPage(page)}
                       className={
                         currentPage === page
-                          ? "bg-[#055160] text-white border-[#055160] hover:bg-[#04414d]"
+                          ? "bg-[#C62828] text-white border-[#055160] hover:bg-[#B71C1C]"
                           : "text-gray-700"
                       }
                       style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}

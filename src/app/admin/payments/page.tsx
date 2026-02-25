@@ -147,7 +147,7 @@ export default function PaymentsPage() {
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Pending</Badge>
       case 'refunded':
-        return <Badge className="bg-[#e7f1ff] text-[#04414d]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
+        return <Badge className="bg-[#e7f1ff] text-[#B71C1C]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -156,7 +156,7 @@ export default function PaymentsPage() {
   const getGatewayBadge = (gateway: string) => {
     const colors: Record<string, string> = {
       netcomplete: "bg-purple-100 text-purple-800",
-      pinpayments: "bg-[#e7f1ff] text-[#04414d]",
+      pinpayments: "bg-[#e7f1ff] text-[#B71C1C]",
       securepay: "bg-gray-100 text-gray-800",
       manual: "bg-orange-100 text-orange-800",
     }

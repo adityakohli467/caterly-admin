@@ -9,13 +9,15 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden !important;
   max-width: 100vw !important;
   width: 100% !important;
 }
 
-#__next, [data-nextjs-scroll-focus-boundary] {
+#__next,
+[data-nextjs-scroll-focus-boundary] {
   overflow-x: hidden !important;
   max-width: 100vw !important;
   width: 100% !important;
@@ -112,7 +114,7 @@ html, body {
 }
 
 .react-datepicker__day--selected:hover {
-  background-color: #04414d !important;
+  background-color: #B71C1C !important;
 }
 
 .react-datepicker__day--today {
@@ -232,7 +234,7 @@ html, body {
 .rdp-nav_button:hover:not(:disabled) {
   background-color: #f3f4f6;
   border-color: #d1d5db;
-  color: #055160;
+  color: #C62828;
 }
 
 .rdp-nav_button:disabled {
@@ -324,7 +326,7 @@ html, body {
 
 .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
   background-color: #f3f4f6;
-  color: #055160;
+  color: #C62828;
   font-weight: 600;
 }
 
@@ -335,7 +337,7 @@ html, body {
 }
 
 .rdp-day_selected:hover {
-  background-color: #04414d !important;
+  background-color: #B71C1C !important;
 }
 
 .rdp-day_today:not(.rdp-day_selected) {
@@ -374,8 +376,9 @@ html, body {
 
 /* Print styles */
 @media print {
+
   /* Hide navigation, buttons, and other UI elements */
-  nav, 
+  nav,
   header,
   .no-print {
     display: none !important;
@@ -384,12 +387,6 @@ html, body {
   /* Hide action buttons in table cells */
   td button,
   th:has(+ td button) {
-    display: none !important;
-  }
-
-  /* Hide the Actions column header and cells */
-  table thead tr th:last-child,
-  table tbody tr td:last-child {
     display: none !important;
   }
 
@@ -408,14 +405,15 @@ html, body {
   tbody {
     display: table-row-group !important;
   }
-  
+
   tr {
     display: table-row !important;
     page-break-inside: avoid;
     page-break-after: auto;
   }
 
-  th, td {
+  th,
+  td {
     display: table-cell !important;
     padding: 8px !important;
     border: 1px solid #dee2e6 !important;
@@ -447,7 +445,8 @@ html, body {
   }
 
   /* Ensure main content is visible */
-  main, .min-h-screen {
+  main,
+  .min-h-screen {
     display: block !important;
     min-height: auto !important;
   }
@@ -456,33 +455,38 @@ html, body {
 @layer base {
   :root {
     /* Bootstrap-inspired color scheme */
-    --background: 0 0% 98%; /* neutral-50 */
-    --foreground: 0 0% 3.9%; /* neutral-950 */
+    --background: 0 0% 98%;
+    /* neutral-50 */
+    --foreground: 0 0% 3.9%;
+    /* neutral-950 */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    
-    /* Caterly primary teal rgba(5, 81, 96, 1) */
-    --primary: 188 90% 20%;
+
+    /* Caterly primary red */
+    --primary: 0 78% 50%;
     --primary-foreground: 0 0% 100%;
-    
+
     /* Bootstrap secondary colors */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    
-    --accent: 188 90% 20%; /* Same as primary */
-    --accent-foreground: 0 0% 100%;
-    
+
+    --accent: 210 40% 96.1%;
+    /* Light gray for hover states */
+    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Dark text on hover */
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    
-    --border: 0 0% 88.2%; /* #e0e0e0 */
+
+    --border: 0 0% 88.2%;
+    /* #e0e0e0 */
     --input: 0 0% 88.2%;
-    --ring: 188 90% 20%;
+    --ring: 0 78% 50%;
     --radius: 0.5rem;
   }
 
@@ -493,19 +497,19 @@ html, body {
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 188 90% 20%;
+    --primary: 0 78% 50%;
     --primary-foreground: 0 0% 100%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 0 0% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 188 90% 20%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 188 90% 20%;
+    --ring: 0 78% 50%;
   }
 }
 
@@ -513,15 +517,18 @@ html, body {
   * {
     @apply border-border;
   }
+
   html {
     height: 100%;
   }
+
   body {
     @apply bg-background text-foreground;
     height: 100%;
     font-family: 'Albert Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
+
   #__next {
     height: 100%;
   }
@@ -531,9 +538,8 @@ html, body {
   .font-albert-sans {
     font-family: 'Albert Sans', sans-serif;
   }
-  
+
   .font-inter {
     font-family: 'Inter', sans-serif;
   }
 }
-

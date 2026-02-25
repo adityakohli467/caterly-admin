@@ -289,7 +289,7 @@ export default function LocationsPage() {
         </h1>
         <Button 
           onClick={handleAddLocation}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
           style={{ 
             fontWeight: 600,
             width: '196px',
@@ -484,7 +484,7 @@ export default function LocationsPage() {
           </Button>
           <Button 
             size="sm" 
-            className="bg-[#055160] hover:bg-[#04414d] text-white"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
           >
             {currentPage}
           </Button>
@@ -702,7 +702,7 @@ export default function LocationsPage() {
               <Button
                 onClick={handleSaveLocation}
                 disabled={!locationName || createLocationMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createLocationMutation.isPending ? "Saving..." : "Save"}
@@ -887,7 +887,7 @@ export default function LocationsPage() {
               <Button
                 onClick={handleSaveLocation}
                 disabled={!locationName || updateLocationMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {updateLocationMutation.isPending ? "Updating..." : "Update"}

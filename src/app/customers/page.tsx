@@ -496,7 +496,7 @@ export default function CustomersPage() {
         </h1>
         <Button 
           onClick={handleAddCustomer}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
           style={{ 
             fontWeight: 600,
             width: '196px',
@@ -1136,7 +1136,7 @@ export default function CustomersPage() {
               <Button
                 onClick={handleSaveCustomer}
                 disabled={!customerType || createCustomerMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createCustomerMutation.isPending ? "Saving..." : "Save"}
@@ -1429,7 +1429,7 @@ export default function CustomersPage() {
               <Button
                 onClick={handleSaveCustomer}
                 disabled={updateCustomerMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {updateCustomerMutation.isPending ? "Saving..." : "Save"}

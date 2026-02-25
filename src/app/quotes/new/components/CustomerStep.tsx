@@ -619,7 +619,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       <div className="flex justify-end mt-8">
         <Button
           onClick={handleProceed}
-          className="bg-[#055160] hover:bg-[#04414d] text-white px-8 py-2 rounded-full"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-8 py-2 rounded-full"
           style={{ 
             fontFamily: 'Albert Sans', 
             fontWeight: 600,
@@ -722,7 +722,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               <Button
                 onClick={handleSaveCompany}
                 disabled={createCompanyMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createCompanyMutation.isPending ? (
@@ -817,7 +817,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               <Button
                 onClick={handleSaveDepartment}
                 disabled={createDepartmentMutation.isPending || selectedCompany === 0}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createDepartmentMutation.isPending ? (
@@ -1010,7 +1010,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               <Button
                 onClick={handleSaveCustomer}
                 disabled={createCustomerMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createCustomerMutation.isPending ? (

@@ -364,7 +364,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
       <Button
         type="submit"
         disabled={loading || !pinInitialized}
-        className="w-full bg-[#055160] hover:bg-[#04414d] text-white"
+        className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white"
         size="lg"
         style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
       >

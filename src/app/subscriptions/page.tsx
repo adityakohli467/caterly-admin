@@ -209,7 +209,7 @@ export default function SubscriptionsPage() {
         </div>
         <Button 
           onClick={() => setShowAddModal(true)}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
           style={{ 
             fontWeight: 600,
             width: '196px',
@@ -500,7 +500,7 @@ export default function SubscriptionsPage() {
                 setShowAddModal(false)
                 router.push('/orders/new')
               }}
-              className="bg-[#055160] hover:bg-[#04414d] text-white"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               Create Order

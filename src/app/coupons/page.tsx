@@ -310,7 +310,7 @@ export default function CouponsPage() {
         </h1>
         <Button 
           onClick={handleAddCoupon}
-          className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto flex-shrink-0"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto flex-shrink-0"
           style={{ 
             fontWeight: 600,
             minWidth: 'auto',
@@ -638,7 +638,7 @@ export default function CouponsPage() {
               <Button
                 onClick={handleSaveCoupon}
                 disabled={!couponCode || !discountAmount || !discountType || createCouponMutation.isPending || updateCouponMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createCouponMutation.isPending || updateCouponMutation.isPending ? "Saving..." : "Submit"}

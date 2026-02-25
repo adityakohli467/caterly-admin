@@ -156,7 +156,7 @@ export default function OrderDetailPage() {
           )}
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-[#055160] text-white rounded-lg hover:bg-[#04414d] transition-colors"
+            className="mt-4 px-4 py-2 bg-[#C62828] text-white rounded-lg hover:bg-[#B71C1C] transition-colors"
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             Go Back
@@ -181,7 +181,7 @@ export default function OrderDetailPage() {
           )}
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-[#055160] text-white rounded-lg hover:bg-[#04414d] transition-colors"
+            className="mt-4 px-4 py-2 bg-[#C62828] text-white rounded-lg hover:bg-[#B71C1C] transition-colors"
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             Go Back
@@ -415,7 +415,7 @@ export default function OrderDetailPage() {
             {printingInvoice ? "Printing..." : "Print Tax Invoice"}
           </Button>
           <Button
-            className="bg-[#055160] hover:bg-[#04414d] text-white gap-2"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2"
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             onClick={handleOpenPaymentLinkModal}
             disabled={sendingPaymentLink}
@@ -995,7 +995,7 @@ export default function OrderDetailPage() {
               </Button>
               <Button
                 onClick={handleSendPaymentLink}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                 disabled={sendingPaymentLink || !paymentLinkEmail.trim()}
               >
@@ -1077,7 +1077,7 @@ export default function OrderDetailPage() {
               </Button>
               <Button
                 onClick={handleSendInvoice}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                 disabled={sendingInvoice || !invoiceEmail.trim()}
               >

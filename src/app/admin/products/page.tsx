@@ -841,7 +841,7 @@ export default function ProductsPage() {
           lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
-          Manage Products
+          Product Management
         </h1>
         <div className="flex gap-3">
           <Button
@@ -857,7 +857,7 @@ export default function ProductsPage() {
           </Button>
           <Button
             onClick={handleAddProduct}
-            className="bg-[#055160] hover:bg-[#04414d] text-white whitespace-nowrap w-full sm:w-auto"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
             style={{
               fontWeight: 600,
               minWidth: '196px',
@@ -879,12 +879,6 @@ export default function ProductsPage() {
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6">
-        <button
-          className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-[#e7f1ff] text-[#055160]"
-          style={{ fontWeight: 600 }}
-        >
-          Products
-        </button>
         <Link href="/admin/categories">
           <button
             className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -893,6 +887,12 @@ export default function ProductsPage() {
             Categories
           </button>
         </Link>
+        <button
+          className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-[#fce4ec] text-[#C62828]"
+          style={{ fontWeight: 600 }}
+        >
+          Products
+        </button>
         <Link href="/admin/options">
           <button
             className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -911,7 +911,7 @@ export default function ProductsPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -926,14 +926,14 @@ export default function ProductsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -1058,7 +1058,7 @@ export default function ProductsPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleEditProduct(product)}
-                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                               title="Edit"
                             >
                               <Edit className="h-4 w-4" />
@@ -1080,7 +1080,7 @@ export default function ProductsPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteProduct(product)}
-                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -1123,7 +1123,7 @@ export default function ProductsPage() {
                             <div className="flex items-center gap-2">
                               <button
                                 onClick={() => handleEditProduct(product)}
-                                className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                                className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1145,7 +1145,7 @@ export default function ProductsPage() {
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(product)}
-                                className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                                className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1180,7 +1180,7 @@ export default function ProductsPage() {
           </Button>
           <Button
             size="sm"
-            className="bg-[#055160] hover:bg-[#04414d] text-white"
+            className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
           >
             {currentPage}
           </Button>
@@ -1210,8 +1210,8 @@ export default function ProductsPage() {
       }}>
         <DialogContent className="w-[95vw] sm:w-full max-w-3xl bg-white max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#fce4ec] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               {selectedProduct ? "Edit Product" : "Add New Product"}
@@ -1337,7 +1337,7 @@ export default function ProductsPage() {
                       value="all"
                       checked={customerTypeVisibility === 'all'}
                       onChange={(e) => setCustomerTypeVisibility(e.target.value as 'all' | 'retailers' | 'wholesalers')}
-                      className="w-4 h-4 text-[#055160] focus:ring-[#055160]"
+                      className="w-4 h-4 text-[#C62828] focus:ring-[#C62828]"
                     />
                     <span className="text-sm text-gray-700">All Customers</span>
                   </label>
@@ -1348,7 +1348,7 @@ export default function ProductsPage() {
                       value="retailers"
                       checked={customerTypeVisibility === 'retailers'}
                       onChange={(e) => setCustomerTypeVisibility(e.target.value as 'all' | 'retailers' | 'wholesalers')}
-                      className="w-4 h-4 text-[#055160] focus:ring-[#055160]"
+                      className="w-4 h-4 text-[#C62828] focus:ring-[#C62828]"
                     />
                     <span className="text-sm text-gray-700">Only Retailers</span>
                   </label>
@@ -1361,7 +1361,7 @@ export default function ProductsPage() {
                         value="wholesalers"
                         checked={customerTypeVisibility === 'wholesalers'}
                         onChange={(e) => setCustomerTypeVisibility(e.target.value as 'all' | 'retailers' | 'wholesalers')}
-                        className="w-4 h-4 text-[#055160] focus:ring-[#055160]"
+                        className="w-4 h-4 text-[#C62828] focus:ring-[#C62828]"
                       />
                       <span className="text-sm text-gray-700">Only Wholesalers</span>
                     </label>
@@ -1371,6 +1371,17 @@ export default function ProductsPage() {
               </div>
             </div>
 
+            <ValidatedTextarea
+              label="Short Description (Optional)"
+              placeholder="Short description displayed on product detail page..."
+              value={shortDescription}
+              fieldName="Short Description"
+              onChange={(value) => {
+                setShortDescription(value)
+              }}
+              rows={2}
+              className="border-gray-300 bg-white"
+            />
             <ValidatedTextarea
               label="Product Description"
               placeholder="Brief description of the product..."
@@ -1392,19 +1403,8 @@ export default function ProductsPage() {
               className="border-gray-300 bg-white"
             />
 
-            <ValidatedTextarea
-              label="Short Description (Optional)"
-              placeholder="Short description displayed on product detail page..."
-              value={shortDescription}
-              fieldName="Short Description"
-              onChange={(value) => {
-                setShortDescription(value)
-              }}
-              rows={2}
-              className="border-gray-300 bg-white"
-            />
             <p className="text-xs text-gray-500 -mt-2">This will be displayed prominently on the product detail page</p>
-
+{/* 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 Roast Level (Optional)
@@ -1412,7 +1412,7 @@ export default function ProductsPage() {
               <select
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 <option value="">No Roast Level (Don't show roast field)</option>
@@ -1423,7 +1423,7 @@ export default function ProductsPage() {
                 <option value="Medium-Dark">Medium-Dark</option>
               </select>
               <p className="text-xs text-gray-500">Select roast level if applicable. Leave empty to hide roast field on product page.</p>
-            </div>
+            </div> */}
 
             <div className="space-y-3">
               <Label className="text-sm font-medium text-gray-700">Display Options</Label>
@@ -1491,7 +1491,7 @@ export default function ProductsPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(index, preview.id)}
-                          className="absolute top-2 right-2 bg-[#e7f1ff]0 text-white rounded-full p-1.5 hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-lg"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-lg"
                           title="Remove image"
                         >
                           <X className="h-4 w-4" />
@@ -1511,8 +1511,8 @@ export default function ProductsPage() {
               {imagePreviews.length < 10 && (
                 <label
                   className={`flex flex-col items-center justify-center w-full min-h-[180px] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${dragActive
-                    ? "border-[#055160] bg-[#e7f1ff] scale-[1.02] shadow-lg"
-                    : "border-gray-300 bg-gray-50 hover:border-[#055160] hover:bg-[#e7f1ff]/50 hover:shadow-md"
+                    ? "border-[#C62828] bg-[#fce4ec] scale-[1.02] shadow-lg"
+                    : "border-gray-300 bg-gray-50 hover:border-[#C62828] hover:bg-[#fce4ec]/50 hover:shadow-md"
                     } ${uploadingImages.size > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -1521,7 +1521,7 @@ export default function ProductsPage() {
                 >
                   <div className="flex flex-col items-center justify-center py-8 px-4">
                     <div className={`mb-4 transition-transform ${dragActive ? "scale-110" : ""}`}>
-                      <Upload className={`w-12 h-12 ${dragActive ? "text-[#055160]" : "text-gray-400"}`} />
+                      <Upload className={`w-12 h-12 ${dragActive ? "text-[#C62828]" : "text-gray-400"}`} />
                     </div>
                     <p className="mb-1 text-base font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                       {dragActive ? "Drop images here" : "Click to upload or drag and drop"}
@@ -1533,7 +1533,7 @@ export default function ProductsPage() {
                       Maximum 10MB per image • Up to 10 images total
                     </p>
                     {imagePreviews.length > 0 && (
-                      <p className="text-xs text-[#055160] mt-2 font-medium" style={{ fontFamily: 'Albert Sans' }}>
+                      <p className="text-xs text-[#C62828] mt-2 font-medium" style={{ fontFamily: 'Albert Sans' }}>
                         {10 - imagePreviews.length} more image{10 - imagePreviews.length !== 1 ? 's' : ''} can be added
                       </p>
                     )}
@@ -1587,7 +1587,7 @@ export default function ProductsPage() {
               <select
                 value={selectedSubcategory || ""}
                 onChange={(e) => setSelectedSubcategory(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                 style={{ fontFamily: 'Albert Sans' }}
                 disabled={selectedCategories.length === 0}
               >
@@ -1789,7 +1789,7 @@ export default function ProductsPage() {
               <Button
                 onClick={handleSaveProduct}
                 disabled={createProductMutation.isPending || updateProductMutation.isPending}
-                className="flex-1 bg-[#055160] hover:bg-[#04414d] text-white disabled:opacity-50"
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
                 {createProductMutation.isPending || updateProductMutation.isPending
@@ -1889,8 +1889,8 @@ export default function ProductsPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#fce4ec]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

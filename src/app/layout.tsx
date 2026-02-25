@@ -6,7 +6,7 @@ import { DashboardLayout } from "./dashboard-layout"
 import { ErrorHandler } from "@/components/ErrorHandler"
 import { SessionManager } from "@/components/session-manager"
 
-const albertSans = Albert_Sans({ 
+const albertSans = Albert_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-albert-sans",
@@ -20,15 +20,12 @@ export const metadata: Metadata = {
   description: "Admin portal for Caterly management system",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png" },
-      // { url: "/assets/Group 171.png", type: "image/png" },
+      { url: "/assets/cat.svg", type: "image/svg+xml" },
     ],
     apple: [
-      { url: "/apple-icon.png", type: "image/png" },
-      // { url: "/assets/Group 171.png", type: "image/png" },
+      { url: "/assets/cat.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/assets/cat.svg",
   },
 }
 

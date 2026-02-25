@@ -190,7 +190,7 @@ export default function QuoteDetailPage() {
           )}
           <button
             onClick={() => router.back()}
-            className="mt-4 px-4 py-2 bg-[#055160] text-white rounded-lg hover:bg-[#04414d] transition-colors"
+            className="mt-4 px-4 py-2 bg-[#C62828] text-white rounded-lg hover:bg-[#B71C1C] transition-colors"
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             Go Back

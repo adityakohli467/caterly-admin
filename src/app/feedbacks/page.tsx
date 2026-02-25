@@ -286,7 +286,7 @@ export default function FeedbacksPage() {
               </Button>
               <Button
                 onClick={handleDownloadReport}
-                className="bg-[#055160] hover:bg-[#04414d] text-white gap-2 w-full sm:w-auto"
+                className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 w-full sm:w-auto"
                 disabled={filteredFeedbacks.length === 0}
                 style={{ fontWeight: 600 }}
               >
@@ -309,7 +309,7 @@ export default function FeedbacksPage() {
               </div>
               <Button
                 type="submit"
-                className="bg-[#055160] hover:bg-[#04414d] text-white h-11 w-full sm:w-auto"
+                className="bg-[#C62828] hover:bg-[#B71C1C] text-white h-11 w-full sm:w-auto"
                 style={{ fontWeight: 600 }}
               >
                 Filter
@@ -780,7 +780,7 @@ export default function FeedbacksPage() {
                 })
               }}
               disabled={sendEmailMutation.isPending || !recipientEmail.trim()}
-              className="bg-[#055160] hover:bg-[#04414d] text-white"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               {sendEmailMutation.isPending ? (

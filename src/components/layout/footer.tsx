@@ -6,11 +6,11 @@ export function Footer() {
       <div className="px-20 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-7">
-            <p className="font-medium text-base text-black">2025 © Aaria</p>
+            <p className="font-medium text-base text-black">2025 © Caterly</p>
           </div>
           <div className="flex items-center gap-7">
             <p className="font-medium text-base text-black">
-              Design and Development by Aaria
+              Design and Development by Caterly
             </p>
           </div>
         </div>
