@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
 import { format } from "date-fns"
-import { Loader2 } from "lucide-react"
+import { Loader2, Printer } from "lucide-react"
 
 interface OrderProduct {
   order_product_id: number
@@ -82,9 +82,80 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, orderId])
 
+  const handlePrint = () => {
+    if (!order) return
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const deliveryDate = order.delivery_date_time
+      ? new Date(order.delivery_date_time).toLocaleString('en-AU', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : 'N/A'
+
+    const productsHtml = (order.order_products || []).map((p, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>
+          ${p.product_name}
+          ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map(o => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity}, $${Number(o.option_price).toFixed(2)})`).join(', ') + '</small>' : ''}
+          ${p.product_comment ? '<br/><em>Note: ' + p.product_comment + '</em>' : ''}
+        </td>
+        <td style="text-align:center">${p.quantity}</td>
+        <td style="text-align:right">$${Number(p.price).toFixed(2)}</td>
+        <td style="text-align:right">$${Number(p.total).toFixed(2)}</td>
+      </tr>
+    `).join('')
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Order #${order.order_id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; color: #111; }
+            h1 { font-size: 22px; margin-bottom: 4px; }
+            .meta { color: #555; font-size: 13px; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+            th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; font-size: 13px; }
+            th { background: #f5f5f5; font-weight: 600; }
+            .totals { margin-top: 16px; width: 320px; margin-left: auto; }
+            .totals td { border: none; padding: 4px 8px; }
+            .totals .total-row td { font-weight: 700; border-top: 2px solid #333; }
+            .section { margin-top: 24px; }
+            .section h2 { font-size: 15px; margin-bottom: 8px; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+            .info-item label { font-size: 11px; color: #888; display: block; }
+            .info-item span { font-size: 13px; }
+          </style>
+        </head>
+        <body>
+          <h1>Order #${order.order_id}</h1>
+          <div class="meta">Delivery: ${deliveryDate}</div>
+          <div class="info-grid">
+            <div class="info-item"><label>Customer</label><span>${order.customer_order_name || 'N/A'}</span></div>
+            <div class="info-item"><label>Phone</label><span>${order.customer_order_telephone || 'N/A'}</span></div>
+            ${order.company_name ? `<div class="info-item"><label>Company</label><span>${order.company_name}</span></div>` : ''}
+            ${order.delivery_address ? `<div class="info-item"><label>Delivery Address</label><span>${order.delivery_address}</span></div>` : ''}
+          </div>
+          <table>
+            <thead><tr><th>No.</th><th>Product</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
+            <tbody>${productsHtml}</tbody>
+          </table>
+          <table class="totals">
+            <tr><td>Sub Total</td><td style="text-align:right">$${Number(order.subtotal || 0).toFixed(2)}</td></tr>
+            ${Number(order.delivery_fee || 0) > 0 ? `<tr><td>Delivery Fee</td><td style="text-align:right">$${Number(order.delivery_fee).toFixed(2)}</td></tr>` : ''}
+            ${Number(order.gst || 0) > 0 ? `<tr><td>GST (10%)</td><td style="text-align:right">$${Number(order.gst).toFixed(2)}</td></tr>` : ''}
+            <tr class="total-row"><td>Total</td><td style="text-align:right">$${Number(order.calculated_total || order.order_total || 0).toFixed(2)}</td></tr>
+          </table>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+    printWindow.print()
+  }
+
   const fetchOrderDetails = async () => {
     if (!orderId) return
-    
+
     setLoading(true)
     setError(null)
     try {
@@ -133,10 +204,20 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-2xl">
             Order Details #{orderId}
           </DialogTitle>
+          {order && (
+            <button
+              onClick={handlePrint}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors mr-8"
+            >
+              <Printer className="h-4 w-4" />
+              Print
+            </button>
+          )}
         </DialogHeader>
 
         {loading ? (
@@ -271,20 +352,20 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <div className="flex justify-between">
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">Sub Total</span>
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
-                            ${Number(order.subtotal || 0).toFixed(2)}
+                            ${Number(order.subtotal).toFixed(2)}
                           </span>
                         </div>
-                        {(order.wholesale_discount && parseFloat(String(order.wholesale_discount)) > 0) && (
+                        {Number(order.wholesale_discount) > 0 && (
                           <div className="flex justify-between">
                             <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-green-600">
                               Wholesale Discount
                             </span>
                             <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-green-600">
-                              -${Number(order.wholesale_discount || 0).toFixed(2)}
+                              -${Number(order.wholesale_discount).toFixed(2)}
                             </span>
                           </div>
                         )}
-                        {(order.coupon_discount && parseFloat(String(order.coupon_discount)) > 0) && (
+                        {Number(order.coupon_discount) > 0 && (
                           <div className="flex justify-between">
                             <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-green-600">
                               Coupon Discount {order.coupon_code && `(${order.coupon_code})`}
@@ -381,7 +462,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                       <div>
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Date & Time</p>
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
-                          {order.delivery_date_time 
+                          {order.delivery_date_time
                             ? format(new Date(order.delivery_date_time), 'dd MMM, yyyy HH:mm')
                             : 'N/A'}
                         </p>

@@ -23,6 +23,7 @@ interface CustomerStepProps {
   onNext: () => void
   showAddCustomerModal?: boolean
   onCloseAddCustomerModal?: () => void
+  onOpenAddCustomerModal?: () => void
 }
 
 interface Company {
@@ -49,7 +50,7 @@ interface Location {
   location_name: string
 }
 
-export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = false, onCloseAddCustomerModal }: CustomerStepProps) {
+export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = false, onCloseAddCustomerModal, onOpenAddCustomerModal }: CustomerStepProps) {
   const queryClient = useQueryClient()
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   // Initialize with data prop values, but will sync via useEffect
@@ -106,17 +107,14 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
     enabled: selectedCompany > 0
   })
 
-  // Fetch customers - include all customers if no company selected, or filter by company if selected
+  // Always fetch ALL customers - customer is selected first, before company
+  // Do NOT filter by company here, otherwise selecting company would refetch and clear the customer
   const { data: customersData, isLoading: loadingCustomers } = useQuery({
-    queryKey: ['customers', selectedCompany],
+    queryKey: ['customers'],
     queryFn: async () => {
-      // If company is selected, filter by company_id
-      // If no company selected, fetch all customers (API will return all if company_id not provided)
-      const params = selectedCompany > 0 ? { company_id: selectedCompany } : {}
-      const response = await customersAPI.list(params)
+      const response = await customersAPI.list({})
       return response.data
     },
-    // Always enabled - fetch customers regardless of company selection
   })
 
   // Fetch locations
@@ -352,7 +350,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
         }
       }
     }, 50) // Small delay to ensure data is ready
-    
+
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.company_id, data.department_id, data.customer_id, data.location_id, data.customer_name, data.phone, data.email])
@@ -361,15 +359,15 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   useEffect(() => {
     if (isInitialLoad) {
       // Check if we have valid data (either from props or state)
-      const hasDataFromProps = (data.company_id !== undefined && data.company_id !== null) || 
-                                (data.customer_id !== undefined && data.customer_id !== null) ||
-                                (data.location_id !== undefined && data.location_id !== null)
-      
+      const hasDataFromProps = (data.company_id !== undefined && data.company_id !== null) ||
+        (data.customer_id !== undefined && data.customer_id !== null) ||
+        (data.location_id !== undefined && data.location_id !== null)
+
       const hasDataFromState = selectedCompany > 0 || selectedCustomer > 0 || selectedLocation > 0
-      
+
       // Wait for all queries to finish loading
       const allLoaded = !loadingDepartments && !loadingCustomers && !loadingCompanies && !loadingLocations
-      
+
       if ((hasDataFromProps || hasDataFromState) && allLoaded) {
         // Add a delay to ensure everything is rendered and synced
         const timer = setTimeout(() => {
@@ -386,15 +384,12 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
     }
   }, [isInitialLoad, selectedCompany, selectedCustomer, selectedLocation, loadingDepartments, loadingCustomers, loadingCompanies, loadingLocations, data.company_id, data.customer_id, data.location_id])
 
-  // Reset department and customer when company changes manually (not during initial load)
+  // Reset department when company changes manually (not during initial load)
+  // Customer is selected first now, so we don't reset customer here
   const handleCompanyChange = (companyId: number) => {
     setSelectedCompany(companyId)
-    if (!isInitialLoad && companyId > 0) {
+    if (!isInitialLoad) {
       setSelectedDepartment(0)
-      setSelectedCustomer(0)
-      setCustomerName("")
-      setPhone("")
-      setEmail("")
     }
   }
 
@@ -449,7 +444,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       phone,
       email,
     })
-    
+
     toast.success("Customer details saved")
     onNext()
   }
@@ -462,7 +457,43 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Customer Name */}
+        <div className="space-y-2">
+          <Label htmlFor="customer" className="text-sm font-medium text-gray-700">
+            Customer Name <span className="text-red-500">*</span>
+          </Label>
+          <div className="flex gap-2">
+            <select
+              id="customer"
+              value={selectedCustomer}
+              onChange={(e) => handleCustomerChange(Number(e.target.value))}
+              disabled={loadingCustomers}
+              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              style={{ fontFamily: 'Albert Sans' }}
+            >
+              <option value={0}>
+                {loadingCustomers ? "Loading..." : "Enter"}
+              </option>
+              {customers.map((customer: Customer) => (
+                <option key={customer.customer_id} value={customer.customer_id}>
+                  {customer.firstname} {customer.lastname}
+                </option>
+              ))}
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenAddCustomerModal && onOpenAddCustomerModal()}
+              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d]"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              <span className="text-lg">+</span>
+              Add New
+            </Button>
+          </div>
+        </div>
+
         {/* Company */}
         <div className="space-y-2">
           <Label htmlFor="company" className="text-sm font-medium text-gray-700">
@@ -473,7 +504,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               id="company"
               value={selectedCompany}
               onChange={(e) => handleCompanyChange(Number(e.target.value))}
-              disabled={loadingCompanies}
+              disabled={loadingCompanies || selectedCustomer === 0}
               className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
@@ -489,8 +520,9 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             <Button
               type="button"
               variant="outline"
+              disabled={selectedCustomer === 0}
               onClick={() => setShowAddCompanyModal(true)}
-              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d]"
+              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d] disabled:opacity-50"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               <span className="text-lg">+</span>
@@ -536,32 +568,6 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
           </div>
         </div>
 
-        {/* Customer Name */}
-        <div className="space-y-2">
-          <Label htmlFor="customer" className="text-sm font-medium text-gray-700">
-            Customer Name <span className="text-red-500">*</span>
-          </Label>
-          <div className="flex gap-2">
-            <select
-              id="customer"
-              value={selectedCustomer}
-              onChange={(e) => handleCustomerChange(Number(e.target.value))}
-              disabled={selectedCompany === 0 || loadingCustomers}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              <option value={0}>
-                {loadingCustomers ? "Loading..." : "Enter"}
-              </option>
-              {customers.map((customer: Customer) => (
-                <option key={customer.customer_id} value={customer.customer_id}>
-                  {customer.firstname} {customer.lastname}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         {/* Phone Number */}
         <ValidatedInput
           label="Phone Number *"
@@ -570,6 +576,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
           value={phone}
           validationRule={ValidationRules.customer.telephone}
           fieldName="Phone Number"
+          disabled={selectedCustomer === 0}
           onChange={(value, isValid) => {
             const previousValue = phone
             const formatted = formatAustralianPhone(value, previousValue)
@@ -586,6 +593,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
           value={email}
           validationRule={ValidationRules.customer.email}
           fieldName="Email"
+          disabled={selectedCustomer === 0}
           onChange={(value) => setEmail(value)}
           className="h-11 border-gray-300"
         />
@@ -599,7 +607,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             id="location"
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(Number(e.target.value))}
-            disabled={loadingLocations}
+            disabled={loadingLocations || selectedCustomer === 0}
             className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             style={{ fontFamily: 'Albert Sans' }}
           >
@@ -620,8 +628,8 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
         <Button
           onClick={handleProceed}
           className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-8 py-2 rounded-full"
-          style={{ 
-            fontFamily: 'Albert Sans', 
+          style={{
+            fontFamily: 'Albert Sans',
             fontWeight: 600,
             height: '50px',
             minWidth: '196px'

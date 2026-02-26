@@ -59,12 +59,12 @@ interface Department {
   company_id: number
 }
 
-const customerTypes = ["Retail", "Club Members", "Full Service Wholesale", "Partial Service Wholesale"].filter(type => !type.includes("Wholesale")) // Hide wholesale types for kj3
+const customerGroups = ["Frontend", "Backend"]
 
 export default function CustomersPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedType, setSelectedType] = useState("Retail")
+  const [selectedGroup, setSelectedGroup] = useState("Frontend")
   const [activeTab, setActiveTab] = useState<"Active" | "Archived" | "Pending Approval">("Active")
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -72,13 +72,13 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [isClosingModal, setIsClosingModal] = useState(false)
   const [discounts, setDiscounts] = useState<Record<string, number>>({})
-  
+
   // Confirmation modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null)
   const [confirmCustomerId, setConfirmCustomerId] = useState<number | null>(null)
   const [confirmCustomerName, setConfirmCustomerName] = useState("")
-  
+
   // Form State
   const [customerType, setCustomerType] = useState("")
   const [firstname, setFirstname] = useState("")
@@ -91,7 +91,7 @@ export default function CustomersPage() {
   const [selectedCompany, setSelectedCompany] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState("")
   const [discountPercentage, setDiscountPercentage] = useState<string>("")
-  
+
   // Validation errors
   const [errors, setErrors] = useState<{
     customerType?: string
@@ -106,7 +106,7 @@ export default function CustomersPage() {
 
   // Fetch customers
   const { data: customersData, isLoading } = useQuery({
-    queryKey: ["customers", selectedType, activeTab, searchQuery],
+    queryKey: ["customers", selectedGroup, activeTab, searchQuery],
     queryFn: async () => {
       if (activeTab === "Pending Approval") {
         // Fetch pending approval customers (wholesale from frontend)
@@ -114,7 +114,7 @@ export default function CustomersPage() {
           limit: "100",
         })
         if (searchQuery) params.append("search", searchQuery)
-        
+
         const response = await customersAPI.listPendingApproval(params)
         return response.data
       } else {
@@ -123,42 +123,39 @@ export default function CustomersPage() {
           archived: (activeTab === "Archived").toString(),
           limit: "100",
         })
-        if (selectedType && selectedType.trim() !== '') {
-          params.append("customer_type", selectedType)
+        if (selectedGroup === "Frontend") {
+          params.append("created_from", "storefront")
+        } else if (selectedGroup === "Backend") {
+          params.append("created_from", "admin")
         }
         if (searchQuery) params.append("search", searchQuery)
-        
+
         // For Active tab, exclude pending approval customers
         if (activeTab === "Active") {
           params.append("exclude_pending_approval", "true")
         }
-        
+
         const response = await api.get(`/admin/customers?${params}`)
         return response.data
       }
     },
   })
 
-  // Fetch pending approval count
-  const { data: pendingApprovalCountData } = useQuery({
-    queryKey: ["customers-count", "pending-approval"],
-    queryFn: async () => {
-      const response = await customersAPI.listPendingApproval({ limit: "0" })
-      return response.data
-    },
-  })
+
 
   // Fetch active count for the selected type (excluding pending approval)
   const { data: activeCountData } = useQuery({
-    queryKey: ["customers-count", selectedType, "active"],
+    queryKey: ["customers-count", selectedGroup, "active"],
     queryFn: async () => {
       const params = new URLSearchParams({
-        customer_type: selectedType,
         archived: "false",
         limit: "0",
       })
-      // Exclude pending approval customers from active count
-      params.append("exclude_pending_approval", "true")
+      if (selectedGroup === "Frontend") {
+        params.append("created_from", "storefront")
+      } else if (selectedGroup === "Backend") {
+        params.append("created_from", "admin")
+      }
       const response = await api.get(`/admin/customers?${params}`)
       return response.data
     },
@@ -166,13 +163,17 @@ export default function CustomersPage() {
 
   // Fetch archived count for the selected type
   const { data: archivedCountData } = useQuery({
-    queryKey: ["customers-count", selectedType, "archived"],
+    queryKey: ["customers-count", selectedGroup, "archived"],
     queryFn: async () => {
       const params = new URLSearchParams({
-        customer_type: selectedType,
         archived: "true",
         limit: "0",
       })
+      if (selectedGroup === "Frontend") {
+        params.append("created_from", "storefront")
+      } else if (selectedGroup === "Backend") {
+        params.append("created_from", "admin")
+      }
       const response = await api.get(`/admin/customers?${params}`)
       return response.data
     },
@@ -208,7 +209,7 @@ export default function CustomersPage() {
       await queryClient.invalidateQueries({ queryKey: ["customers"] })
       await queryClient.invalidateQueries({ queryKey: ["customers-count"] })
       // Force refetch the current query
-      await queryClient.refetchQueries({ queryKey: ["customers", selectedType, activeTab, searchQuery] })
+      await queryClient.refetchQueries({ queryKey: ["customers", selectedGroup, activeTab, searchQuery] })
       toast.success("Customer created successfully!")
       setShowAddModal(false)
       resetForm()
@@ -311,7 +312,15 @@ export default function CustomersPage() {
     },
   })
 
-  const customers = customersData?.customers || []
+  const customers = useMemo(() => {
+    const rawCustomers = customersData?.customers || []
+
+    return rawCustomers.filter((c: Customer) => {
+      const isFrontend = c.created_from === 'storefront'
+      if (selectedGroup === "Frontend") return isFrontend
+      return !isFrontend
+    })
+  }, [customersData?.customers, selectedGroup, activeTab])
   const companies = companiesData?.companies || []
   const departments = departmentsData?.departments || []
 
@@ -337,25 +346,19 @@ export default function CustomersPage() {
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {}
-    
-    // Validate customer type (required, max 100 chars per migration)
-    const customerTypeValidation = validateRequired(customerType, "Customer type", 100)
-    if (!customerTypeValidation.valid) {
-      newErrors.customerType = customerTypeValidation.error || "Customer type is required"
-    }
-    
+
     // Validate firstname (required, max 255 chars per DB schema)
     const firstnameValidation = validateRequired(firstname, "First name", 255)
     if (!firstnameValidation.valid) {
       newErrors.firstname = firstnameValidation.error || "First name is required"
     }
-    
+
     // Validate lastname (required, max 255 chars per DB schema)
     const lastnameValidation = validateRequired(lastname, "Last name", 255)
     if (!lastnameValidation.valid) {
       newErrors.lastname = lastnameValidation.error || "Last name is required"
     }
-    
+
     // Validate email (optional, max 255 chars per DB schema, must be valid format)
     if (customerEmail && customerEmail.trim() !== '') {
       const emailValidation = validateEmail(customerEmail, 255)
@@ -363,7 +366,7 @@ export default function CustomersPage() {
         newErrors.email = emailValidation.error || "Please enter a valid email address"
       }
     }
-    
+
     // Validate telephone (optional, Australian format, max 15 chars per DB schema)
     if (phoneNumber && phoneNumber.trim() !== '') {
       // First check format validation
@@ -378,17 +381,17 @@ export default function CustomersPage() {
         }
       }
     }
-    
+
     // Validate customer address (optional, TEXT field - reasonable limit)
     if (address && address.length > 1000) {
       newErrors.customer_address = "Address must be 1000 characters or less"
     }
-    
+
     // Validate cost centre (optional, max 255 chars per migration)
     if (costCentre && costCentre.length > 255) {
       newErrors.customer_cost_centre = "Cost centre must be 255 characters or less"
     }
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -405,7 +408,7 @@ export default function CustomersPage() {
       email: customerEmail.trim() || null,
       telephone: cleanPhoneNumber(phoneNumber) || null,
       customer_address: address.trim() || null,
-      customer_type: customerType,
+      customer_type: customerType || "Backend",
       customer_notes: additionalNotes.trim() || null,
       customer_cost_centre: costCentre.trim() || null,
       company_id: selectedCompany && selectedCompany.trim() !== '' && selectedCompany !== 'none' ? Number(selectedCompany) : null,
@@ -448,7 +451,7 @@ export default function CustomersPage() {
     } else if (confirmAction === "delete") {
       deleteCustomerMutation.mutate(confirmCustomerId)
     }
-    
+
     setShowConfirmModal(false)
     setConfirmCustomerId(null)
     setConfirmCustomerName("")
@@ -478,13 +481,13 @@ export default function CustomersPage() {
   }
 
   const isWholesale = customerType?.includes("Wholesale")
-  const isWholesaleTypeSelected = selectedType?.includes("Wholesale")
+  const isWholesaleTypeSelected = false
 
   return (
     <div className="bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-gray-900" style={{ 
+        <h1 className="text-gray-900" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
@@ -494,10 +497,10 @@ export default function CustomersPage() {
         }}>
           Customers
         </h1>
-        <Button 
+        <Button
           onClick={handleAddCustomer}
           className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
-          style={{ 
+          style={{
             fontWeight: 600,
             width: '196px',
             height: '54px',
@@ -528,11 +531,11 @@ export default function CustomersPage() {
           />
         </div>
         <div className="ml-auto flex-shrink-0">
-          <Button 
+          <Button
             onClick={() => printTableData("Customers")}
             className="gap-2 whitespace-nowrap border-0 shadow-none w-full sm:w-auto"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontStyle: 'normal',
               fontSize: '16px',
@@ -554,18 +557,17 @@ export default function CustomersPage() {
 
       {/* Customer Type Tabs */}
       <div className="flex gap-2 sm:gap-3 mb-6 flex-wrap">
-        {customerTypes.filter((type: any) => !type.includes("Wholesale")).map((type: any) => (
+        {customerGroups.map((group: string) => (
           <button
-            key={type}
-            onClick={() => setSelectedType(type)}
-            className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
-              selectedType === type
-                ? "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
-                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
-            }`}
+            key={group}
+            onClick={() => setSelectedGroup(group)}
+            className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${selectedGroup === group
+              ? "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
+              : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
           >
-            {type}
+            {group}
           </button>
         ))}
       </div>
@@ -574,38 +576,20 @@ export default function CustomersPage() {
       <div className="flex gap-6 border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab("Active")}
-          className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-            activeTab === "Active"
-              ? "border-[#055160] text-[#055160]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
-          }`}
+          className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === "Active"
+            ? "border-[#055160] text-[#055160]"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           Active ({activeCountData?.count || 0})
         </button>
         <button
-          onClick={() => setActiveTab("Pending Approval")}
-          className={`pb-3 text-sm font-medium transition-colors border-b-2 relative ${
-            activeTab === "Pending Approval"
-              ? "border-[#055160] text-[#055160]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
-          }`}
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-        >
-          Pending Approval
-          {pendingApprovalCountData?.total > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-              {pendingApprovalCountData.total}
-            </span>
-          )}
-        </button>
-        <button
           onClick={() => setActiveTab("Archived")}
-          className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
-            activeTab === "Archived"
-              ? "border-[#055160] text-[#055160]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
-          }`}
+          className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === "Archived"
+            ? "border-[#055160] text-[#055160]"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           Archived ({archivedCountData?.count || 0})
@@ -640,151 +624,124 @@ export default function CustomersPage() {
                   </th>
                 </tr>
               </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    Loading customers...
-                  </td>
-                </tr>
-              ) : customers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    No customers found
-                  </td>
-                </tr>
-              ) : (
-                customers.map((customer: Customer) => (
-                  <tr key={customer.customer_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-3 sm:px-4 py-3 sm:py-4">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-gray-900 text-xs sm:text-sm" style={{ 
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                      Loading customers...
+                    </td>
+                  </tr>
+                ) : customers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                      No customers found
+                    </td>
+                  </tr>
+                ) : (
+                  customers.map((customer: Customer) => (
+                    <tr key={customer.customer_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-3 sm:px-4 py-3 sm:py-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="text-gray-900 text-xs sm:text-sm" style={{
+                            fontFamily: 'Albert Sans',
+                            fontWeight: 400,
+                            fontStyle: 'normal',
+                            lineHeight: '20px',
+                            letterSpacing: '0%'
+                          }}>
+                            {customer.firstname} {customer.lastname}
+                          </div>
+                          {customer.created_from === 'storefront' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#e7f1ff] text-[#055160]">
+                              Frontend
+                            </span>
+                          )}
+                          {/* Show Pending badge only for customers from storefront that are not approved */}
+                          {customer.created_from === 'storefront' && customer.approved === false && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          )}
+                        </div>
+                        {customer.customer_cost_centre && (
+                          <div className="text-gray-500 text-xs sm:text-sm mt-1" style={{
+                            fontFamily: 'Albert Sans',
+                            fontWeight: 400,
+                            fontStyle: 'normal',
+                            lineHeight: '20px',
+                            letterSpacing: '0%'
+                          }}>CC: {customer.customer_cost_centre}</div>
+                        )}
+                      </td>
+                      <td className="px-3 sm:px-4 py-3 sm:py-4">
+                        <span className="text-gray-700 text-xs sm:text-sm" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {customer.firstname} {customer.lastname}
-                        </div>
-                        {customer.created_from === 'storefront' && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#e7f1ff] text-[#055160]">
-                            Frontend
-                          </span>
-                        )}
-                        {/* Show Pending badge only for customers from storefront that are not approved */}
-                        {customer.created_from === 'storefront' && customer.approved === false && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Pending
-                          </span>
-                        )}
-                      </div>
-                      {customer.customer_cost_centre && (
-                        <div className="text-gray-500 text-xs sm:text-sm mt-1" style={{ 
+                          {customer.telephone || '-'}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3 sm:py-4 hidden lg:table-cell">
+                        <span className="text-gray-700 line-clamp-2 text-xs sm:text-sm" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
                           lineHeight: '20px',
                           letterSpacing: '0%'
-                        }}>CC: {customer.customer_cost_centre}</div>
-                      )}
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-4">
-                      <span className="text-gray-700 text-xs sm:text-sm" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {customer.telephone || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-4 hidden lg:table-cell">
-                      <span className="text-gray-700 line-clamp-2 text-xs sm:text-sm" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {customer.customer_address || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
-                      <span className="text-gray-700 text-xs sm:text-sm" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {customer.company?.company_name || '-'}
-                      </span>
-                    </td>
-                    {/* Department cell */}
-                    <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
-                      <span className="text-gray-700 text-xs sm:text-sm" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {customer.department?.department_name || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 sm:py-4">
-                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                        {activeTab === "Pending Approval" ? (
+                        }}>
+                          {customer.customer_address || '-'}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
+                        <span className="text-gray-700 text-xs sm:text-sm" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {customer.company?.company_name || '-'}
+                        </span>
+                      </td>
+                      {/* Department cell */}
+                      <td className="px-3 sm:px-4 py-3 sm:py-4 hidden xl:table-cell">
+                        <span className="text-gray-700 text-xs sm:text-sm" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {customer.department?.department_name || '-'}
+                        </span>
+                      </td>
+                      <td className="px-3 sm:px-4 py-3 sm:py-4">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+
                           <>
-                            <button 
-                              onClick={() => approveCustomerMutation.mutate(customer.customer_id)}
-                              disabled={approveCustomerMutation.isPending || rejectCustomerMutation.isPending}
-                              className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors disabled:opacity-50" 
-                              title="Approve"
-                            >
-                              {approveCustomerMutation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4" />
-                              )}
-                            </button>
-                            <button 
-                              onClick={() => rejectCustomerMutation.mutate(customer.customer_id)}
-                              disabled={approveCustomerMutation.isPending || rejectCustomerMutation.isPending}
-                              className="p-1.5 text-[#055160] hover:text-red-800 hover:bg-[#e7f1ff] rounded transition-colors disabled:opacity-50" 
-                              title="Reject"
-                            >
-                              {rejectCustomerMutation.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <X className="h-4 w-4" />
-                              )}
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button 
+                            <button
                               onClick={() => handleEditCustomer(customer)}
-                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors" 
+                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
                               title="Edit"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => {
                                 setSelectedCustomer(customer)
                                 setShowDiscountModal(true)
                               }}
-                              className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors" 
+                              className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                               title="Product Option Discounts"
                             >
                               <DollarSign className="h-4 w-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDelete(customer)}
-                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors" 
+                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -813,14 +770,14 @@ export default function CustomersPage() {
                               </Button>
                             )}
                           </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </Card>
@@ -837,8 +794,8 @@ export default function CustomersPage() {
           setShowAddModal(open)
         }
       }}>
-        <DialogContent 
-          className="w-[95vw] sm:w-full max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" 
+        <DialogContent
+          className="w-[95vw] sm:w-full max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto"
           style={{ fontFamily: 'Albert Sans' }}
           onCloseClick={() => {
             // Immediately prevent validation when X button is clicked
@@ -864,251 +821,230 @@ export default function CustomersPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Customer Type */}
-            <div className="space-y-2">
-              <Label htmlFor="customerType" className="text-sm font-medium text-gray-700">
-                Select Customer Type *
-              </Label>
-              <Select value={customerType} onValueChange={setCustomerType}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customerTypes.map((type: any) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="pt-2 space-y-3">
+              <p className="text-sm font-medium text-gray-700">Enter Customer Details</p>
 
-            {customerType && (
-              <>
-                <div className="pt-2 space-y-3">
-                  <p className="text-sm font-medium text-gray-700">Enter Customer Details</p>
-                  
-                  {/* First Name */}
-                  <ValidatedInput
-                    label="First Name"
-                    placeholder="First Name"
-                    value={firstname}
-                    validationRule={ValidationRules.customer.firstname}
-                    fieldName="First Name"
-                    error={errors.firstname}
-                    skipValidation={isClosingModal}
-                    onChange={(value, isValid) => {
-                      setFirstname(value)
-                      if (isValid) {
-                        setErrors(prev => {
-                          const newErrors = { ...prev }
-                          delete newErrors.firstname
-                          return newErrors
-                        })
+              {/* First Name */}
+              <ValidatedInput
+                label="First Name"
+                placeholder="First Name"
+                value={firstname}
+                validationRule={ValidationRules.customer.firstname}
+                fieldName="First Name"
+                error={errors.firstname}
+                skipValidation={isClosingModal}
+                onChange={(value, isValid) => {
+                  setFirstname(value)
+                  if (isValid) {
+                    setErrors(prev => {
+                      const newErrors = { ...prev }
+                      delete newErrors.firstname
+                      return newErrors
+                    })
+                  }
+                }}
+                className="h-11 border-gray-300"
+              />
+
+              {/* Last Name */}
+              <ValidatedInput
+                label="Last Name"
+                placeholder="Last Name"
+                value={lastname}
+                validationRule={ValidationRules.customer.lastname}
+                fieldName="Last Name"
+                error={errors.lastname}
+                skipValidation={isClosingModal}
+                onChange={(value, isValid) => {
+                  setLastname(value)
+                  if (isValid) {
+                    setErrors(prev => {
+                      const newErrors = { ...prev }
+                      delete newErrors.lastname
+                      return newErrors
+                    })
+                  }
+                }}
+                className="h-11 border-gray-300"
+              />
+
+              {/* Phone Number */}
+              <div>
+                <Label className="text-sm text-gray-600">Phone Number</Label>
+                <Input
+                  type="tel"
+                  placeholder={getPhonePlaceholder()}
+                  value={phoneNumber}
+                  onChange={(e) => {
+                    const previousValue = phoneNumber
+                    const formatted = formatAustralianPhone(e.target.value, previousValue)
+                    setPhoneNumber(formatted)
+
+                    // Real-time validation
+                    if (formatted.trim() !== '') {
+                      const validationError = getPhoneValidationError(formatted)
+                      if (validationError) {
+                        setErrors(prev => ({ ...prev, telephone: validationError }))
+                      } else {
+                        setErrors(prev => ({ ...prev, telephone: undefined }))
                       }
-                    }}
-                    className="h-11 border-gray-300"
-                  />
-
-                  {/* Last Name */}
-                  <ValidatedInput
-                    label="Last Name"
-                    placeholder="Last Name"
-                    value={lastname}
-                    validationRule={ValidationRules.customer.lastname}
-                    fieldName="Last Name"
-                    error={errors.lastname}
-                    skipValidation={isClosingModal}
-                    onChange={(value, isValid) => {
-                      setLastname(value)
-                      if (isValid) {
-                        setErrors(prev => {
-                          const newErrors = { ...prev }
-                          delete newErrors.lastname
-                          return newErrors
-                        })
-                      }
-                    }}
-                    className="h-11 border-gray-300"
-                  />
-
-                  {/* Phone Number */}
-                  <div>
-                    <Label className="text-sm text-gray-600">Phone Number</Label>
-                    <Input
-                      type="tel"
-                      placeholder={getPhonePlaceholder()}
-                      value={phoneNumber}
-                      onChange={(e) => {
-                        const previousValue = phoneNumber
-                        const formatted = formatAustralianPhone(e.target.value, previousValue)
-                        setPhoneNumber(formatted)
-                        
-                        // Real-time validation
-                        if (formatted.trim() !== '') {
-                          const validationError = getPhoneValidationError(formatted)
-                          if (validationError) {
-                            setErrors(prev => ({ ...prev, telephone: validationError }))
-                          } else {
-                            setErrors(prev => ({ ...prev, telephone: undefined }))
-                          }
+                    } else {
+                      setErrors(prev => ({ ...prev, telephone: undefined }))
+                    }
+                  }}
+                  onBlur={() => {
+                    // Final validation on blur
+                    if (phoneNumber && phoneNumber.trim() !== '') {
+                      const validationError = getPhoneValidationError(phoneNumber)
+                      if (validationError) {
+                        setErrors(prev => ({ ...prev, telephone: validationError }))
+                      } else {
+                        // Also check with existing validation
+                        const phoneValidation = validateAustralianPhone(phoneNumber)
+                        if (!phoneValidation.valid) {
+                          setErrors(prev => ({ ...prev, telephone: phoneValidation.error || validationError }))
                         } else {
                           setErrors(prev => ({ ...prev, telephone: undefined }))
                         }
-                      }}
-                      onBlur={() => {
-                        // Final validation on blur
-                        if (phoneNumber && phoneNumber.trim() !== '') {
-                          const validationError = getPhoneValidationError(phoneNumber)
-                          if (validationError) {
-                            setErrors(prev => ({ ...prev, telephone: validationError }))
-                          } else {
-                            // Also check with existing validation
-                            const phoneValidation = validateAustralianPhone(phoneNumber)
-                            if (!phoneValidation.valid) {
-                              setErrors(prev => ({ ...prev, telephone: phoneValidation.error || validationError }))
-                            } else {
-                              setErrors(prev => ({ ...prev, telephone: undefined }))
-                            }
-                          }
-                        }
-                      }}
-                      maxLength={20}
-                      className={`h-11 border-gray-300 ${errors.telephone ? 'border-red-500' : ''}`}
-                    />
-                    {errors.telephone && (
-                      <p className="text-sm text-red-500 mt-1">{errors.telephone}</p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <ValidatedInput
-                    label="Email"
-                    type="email"
-                    placeholder="Email"
-                    value={customerEmail}
-                    validationRule={ValidationRules.customer.email}
-                    fieldName="Email"
-                    error={errors.email}
-                    skipValidation={isClosingModal}
-                    onChange={(value, isValid) => {
-                      setCustomerEmail(value)
-                      if (isValid) {
-                        setErrors(prev => {
-                          const newErrors = { ...prev }
-                          delete newErrors.email
-                          return newErrors
-                        })
                       }
-                    }}
-                    className="h-11 border-gray-300"
-                  />
+                    }
+                  }}
+                  maxLength={20}
+                  className={`h-11 border-gray-300 ${errors.telephone ? 'border-red-500' : ''}`}
+                />
+                {errors.telephone && (
+                  <p className="text-sm text-red-500 mt-1">{errors.telephone}</p>
+                )}
+              </div>
 
-                  {/* Address */}
-                  <ValidatedTextarea
-                    label="Address"
-                    placeholder="Address"
-                    value={address}
-                    validationRule={ValidationRules.customer.customer_address}
-                    fieldName="Address"
-                    skipValidation={isClosingModal}
-                    onChange={(value) => setAddress(value)}
-                    className="min-h-[80px] border-gray-300"
-                  />
+              {/* Email */}
+              <ValidatedInput
+                label="Email"
+                type="email"
+                placeholder="Email"
+                value={customerEmail}
+                validationRule={ValidationRules.customer.email}
+                fieldName="Email"
+                error={errors.email}
+                skipValidation={isClosingModal}
+                onChange={(value, isValid) => {
+                  setCustomerEmail(value)
+                  if (isValid) {
+                    setErrors(prev => {
+                      const newErrors = { ...prev }
+                      delete newErrors.email
+                      return newErrors
+                    })
+                  }
+                }}
+                className="h-11 border-gray-300"
+              />
 
-                  {/* Company */}
-                  <div>
-                    <Label className="text-sm text-gray-600">Company <span className="text-gray-400 text-xs">(optional)</span></Label>
-                    <Select 
-                      value={selectedCompany || undefined} 
-                      onValueChange={(value) => {
-                        if (value === "none") {
-                          setSelectedCompany("")
-                          setSelectedDepartment("")
-                        } else {
-                          setSelectedCompany(value)
-                          // Clear department when company is cleared
-                          if (!value) {
-                            setSelectedDepartment("")
-                          }
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Select company (optional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {companies.map((company: Company) => (
-                          <SelectItem key={company.company_id} value={company.company_id.toString()}>
-                            {company.company_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {/* Address */}
+              <ValidatedTextarea
+                label="Address"
+                placeholder="Address"
+                value={address}
+                validationRule={ValidationRules.customer.customer_address}
+                fieldName="Address"
+                skipValidation={isClosingModal}
+                onChange={(value) => setAddress(value)}
+                className="min-h-[80px] border-gray-300"
+              />
 
-                  {/* Department */}
-                  {selectedCompany && selectedCompany !== "" && (
-                    <div>
-                      <Label className="text-sm text-gray-600">Department <span className="text-gray-400 text-xs">(optional)</span></Label>
-                      <Select 
-                        value={selectedDepartment || undefined} 
-                        onValueChange={(value) => {
-                          setSelectedDepartment(value === "none" ? "" : value)
-                        }}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Select department (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {departments.map((dept: Department) => (
-                            <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
-                              {dept.department_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Cost Centre */}
-                  <ValidatedInput
-                    label="Cost Centre"
-                    placeholder="Cost Centre Code (optional)"
-                    value={costCentre}
-                    validationRule={ValidationRules.customer.customer_cost_centre}
-                    fieldName="Cost Centre"
-                    error={errors.customer_cost_centre}
-                    skipValidation={isClosingModal}
-                    onChange={(value, isValid) => {
-                      setCostCentre(value)
-                      if (isValid) {
-                        setErrors(prev => {
-                          const newErrors = { ...prev }
-                          delete newErrors.customer_cost_centre
-                          return newErrors
-                        })
+              {/* Company */}
+              <div>
+                <Label className="text-sm text-gray-600">Company <span className="text-gray-400 text-xs">(optional)</span></Label>
+                <Select
+                  value={selectedCompany || undefined}
+                  onValueChange={(value) => {
+                    if (value === "none") {
+                      setSelectedCompany("")
+                      setSelectedDepartment("")
+                    } else {
+                      setSelectedCompany(value)
+                      // Clear department when company is cleared
+                      if (!value) {
+                        setSelectedDepartment("")
                       }
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select company (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {companies.map((company: Company) => (
+                      <SelectItem key={company.company_id} value={company.company_id.toString()}>
+                        {company.company_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Department */}
+              {selectedCompany && selectedCompany !== "" && (
+                <div>
+                  <Label className="text-sm text-gray-600">Department <span className="text-gray-400 text-xs">(optional)</span></Label>
+                  <Select
+                    value={selectedDepartment || undefined}
+                    onValueChange={(value) => {
+                      setSelectedDepartment(value === "none" ? "" : value)
                     }}
-                    className="h-11 border-gray-300"
-                  />
-
-
-                  {/* Additional Notes */}
-                  <ValidatedTextarea
-                    label="Additional Notes"
-                    placeholder="Enter notes here..."
-                    value={additionalNotes}
-                    validationRule={ValidationRules.customer.customer_notes}
-                    fieldName="Additional Notes"
-                    skipValidation={isClosingModal}
-                    onChange={(value) => setAdditionalNotes(value)}
-                    rows={3}
-                    className="border-gray-300 resize-none"
-                  />
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select department (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {departments.map((dept: Department) => (
+                        <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
+                          {dept.department_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
-            )}
+              )}
+
+              {/* Cost Centre */}
+              <ValidatedInput
+                label="Cost Centre"
+                placeholder="Cost Centre Code (optional)"
+                value={costCentre}
+                validationRule={ValidationRules.customer.customer_cost_centre}
+                fieldName="Cost Centre"
+                error={errors.customer_cost_centre}
+                skipValidation={isClosingModal}
+                onChange={(value, isValid) => {
+                  setCostCentre(value)
+                  if (isValid) {
+                    setErrors(prev => {
+                      const newErrors = { ...prev }
+                      delete newErrors.customer_cost_centre
+                      return newErrors
+                    })
+                  }
+                }}
+                className="h-11 border-gray-300"
+              />
+
+
+              {/* Additional Notes */}
+              <ValidatedTextarea
+                label="Additional Notes"
+                placeholder="Enter notes here..."
+                value={additionalNotes}
+                validationRule={ValidationRules.customer.customer_notes}
+                fieldName="Additional Notes"
+                skipValidation={isClosingModal}
+                onChange={(value) => setAdditionalNotes(value)}
+                rows={3}
+                className="border-gray-300 resize-none"
+              />
+            </div>
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
@@ -1135,7 +1071,7 @@ export default function CustomersPage() {
               </Button>
               <Button
                 onClick={handleSaveCustomer}
-                disabled={!customerType || createCustomerMutation.isPending}
+                disabled={createCustomerMutation.isPending}
                 className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
               >
@@ -1168,37 +1104,9 @@ export default function CustomersPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Customer Type */}
-            <div className="space-y-2">
-              <Label htmlFor="editCustomerType" className="text-sm font-medium text-gray-700">
-                Customer Type <span className="text-red-500">*</span>
-              </Label>
-              <Select 
-                value={customerType} 
-                onValueChange={(value) => {
-                  setCustomerType(value)
-                  if (errors.customerType) {
-                    setErrors(prev => ({ ...prev, customerType: undefined }))
-                  }
-                }}
-              >
-                <SelectTrigger className={`h-11 ${errors.customerType ? 'border-red-500' : ''}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {customerTypes.map((type: any) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.customerType && (
-                <p className="text-sm text-red-500">{errors.customerType}</p>
-              )}
-            </div>
-
             <div className="pt-2 space-y-3">
               <p className="text-sm font-medium text-gray-700">Customer Details</p>
-              
+
               {/* First Name */}
               <div>
                 <Label className="text-sm text-gray-600">First Name <span className="text-red-500">*</span></Label>
@@ -1294,9 +1202,9 @@ export default function CustomersPage() {
 
               {/* Address */}
               <div>
-                <Label className="text-sm text-gray-600">Address</Label>
+                <Label className="text-sm text-gray-600">Delivery Address</Label>
                 <Input
-                  placeholder="Address"
+                  placeholder="Delivery Address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="h-11 border-gray-300"
@@ -1308,8 +1216,8 @@ export default function CustomersPage() {
                 {/* Company */}
                 <div>
                   <Label className="text-sm text-gray-600">Company <span className="text-gray-400 text-xs">(optional)</span></Label>
-                  <Select 
-                    value={selectedCompany || undefined} 
+                  <Select
+                    value={selectedCompany || undefined}
                     onValueChange={(value) => {
                       if (value === "none") {
                         setSelectedCompany("")
@@ -1340,8 +1248,8 @@ export default function CustomersPage() {
                 {selectedCompany && selectedCompany !== "" && (
                   <div>
                     <Label className="text-sm text-gray-600">Department <span className="text-gray-400 text-xs">(optional)</span></Label>
-                    <Select 
-                      value={selectedDepartment || undefined} 
+                    <Select
+                      value={selectedDepartment || undefined}
                       onValueChange={(value) => {
                         setSelectedDepartment(value === "none" ? "" : value)
                       }}
@@ -1449,9 +1357,8 @@ export default function CustomersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                confirmAction === "archive" ? "bg-yellow-100" : "bg-[#e7f1ff]"
-              }`}>
+              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${confirmAction === "archive" ? "bg-yellow-100" : "bg-[#e7f1ff]"
+                }`}>
                 {confirmAction === "archive" ? (
                   <Archive className={`h-6 w-6 text-yellow-600`} />
                 ) : (
@@ -1460,8 +1367,8 @@ export default function CustomersPage() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>
-                  {confirmAction === "archive" 
-                    ? "Are you sure you want to archive this customer?" 
+                  {confirmAction === "archive"
+                    ? "Are you sure you want to archive this customer?"
                     : "Are you sure you want to permanently delete this customer? This action cannot be undone."}
                 </p>
                 <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
@@ -1481,11 +1388,10 @@ export default function CustomersPage() {
             </Button>
             <Button
               onClick={handleConfirmAction}
-              className={`${
-                confirmAction === "archive" 
-                  ? "bg-yellow-600 hover:bg-yellow-700" 
-                  : "bg-red-600 hover:bg-red-700"
-              } text-white`}
+              className={`${confirmAction === "archive"
+                ? "bg-yellow-600 hover:bg-yellow-700"
+                : "bg-red-600 hover:bg-red-700"
+                } text-white`}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               {confirmAction === "archive" ? "Archive" : "Delete"}
@@ -1508,8 +1414,8 @@ export default function CustomersPage() {
               Configure discounts for {selectedCustomer?.firstname} {selectedCustomer?.lastname}
             </p>
           </DialogHeader>
-          
-          <ProductOptionDiscountsContent 
+
+          <ProductOptionDiscountsContent
             customerId={selectedCustomer?.customer_id}
             onClose={() => {
               setShowDiscountModal(false)
@@ -1613,7 +1519,7 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
   const saveMutation = useMutation({
     mutationFn: async (discountsToSave: Record<string, number>) => {
       if (!customerId) return
-      
+
       const discountsArray = Object.entries(discountsToSave)
         .filter(([_, value]) => value > 0) // Only include discounts > 0
         .map(([key, value]) => {
@@ -1635,7 +1541,7 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
             }
           }
         })
-      
+
       return await customersAPI.setProductOptionDiscounts(customerId, discountsArray)
     },
     onSuccess: async () => {
@@ -1661,7 +1567,7 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
       // Product-level discount
       key = `product_${productId}`
     }
-    
+
     const numValue = parseFloat(value) || 0
     const clampedValue = Math.max(0, Math.min(100, numValue)) // Clamp between 0-100
     setLocalDiscounts(prev => ({
@@ -1677,12 +1583,12 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
 
   const filteredProducts = useMemo(() => {
     if (!discountsData?.products) return []
-    
+
     const query = searchQuery.toLowerCase()
     return discountsData.products.filter((product: ProductWithOptions) => {
       const matchesName = product.product_name.toLowerCase().includes(query)
       if (matchesName) return true
-      
+
       // Also search in option names (if product has options)
       if (product.has_options && product.options) {
         return product.options.some((option: ProductOption) =>
@@ -1754,24 +1660,24 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
           filteredProducts.map((product: ProductWithOptions) => {
             // Check if product actually has options (not just marked as has_options)
             const hasOptions = product.has_options && product.options && product.options.length > 0
-            
+
             return (
               <Card key={product.product_id} className="p-4">
                 <h3 className="font-semibold text-lg mb-3 text-gray-900">{product.product_name}</h3>
-                
+
                 {hasOptions ? (
                   // Product with options - show option-level discounts
                   <div className="space-y-3">
                     {product.options!.map((option: ProductOption) => {
                       const key = `${product.product_id}_${option.option_value_id}`
                       const discountValue = localDiscounts[key] || 0
-                      
+
                       // Calculate final price: base price (retail/wholesale) - discount percentage
                       const basePrice = option.option_base_price || option.option_price
-                      const finalPrice = discountValue > 0 
+                      const finalPrice = discountValue > 0
                         ? basePrice * (1 - discountValue / 100)
                         : basePrice
-                      
+
                       return (
                         <div key={option.option_value_id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
                           <div className="flex-1">
@@ -1820,10 +1726,10 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
                           const key = `product_${product.product_id}`
                           const discountValue = localDiscounts[key] || 0
                           const basePrice = product.product_price || 0
-                          const finalPrice = discountValue > 0 
+                          const finalPrice = discountValue > 0
                             ? basePrice * (1 - discountValue / 100)
                             : basePrice
-                          
+
                           return discountValue > 0 ? (
                             <>
                               <span className="line-through text-gray-500">

@@ -1325,7 +1325,7 @@ export default function ProductsPage() {
                 </>
               )}
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Product Visibility
                 </Label>
@@ -1352,7 +1352,7 @@ export default function ProductsPage() {
                     />
                     <span className="text-sm text-gray-700">Only Retailers</span>
                   </label>
-                  {/* Wholesalers option - Hidden for kj3 */}
+                 
                   {false && (
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -1368,7 +1368,7 @@ export default function ProductsPage() {
                   )}
                 </div>
                 <p className="text-xs text-gray-500">Select which customer types can see this product</p>
-              </div>
+              </div> */}
             </div>
 
             <ValidatedTextarea

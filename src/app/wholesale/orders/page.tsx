@@ -62,7 +62,7 @@ const orderStatusMap: Record<number, { label: string; color: string; bgColor: st
 
 export default function WholesaleOrdersPage() {
   const queryClient = useQueryClient()
-  
+
   // Filters
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null)
@@ -73,7 +73,7 @@ export default function WholesaleOrdersPage() {
   const [minAmount, setMinAmount] = useState("")
   const [maxAmount, setMaxAmount] = useState("")
   const [showDatePicker, setShowDatePicker] = useState(false)
-  
+
   // UI state
   const [selectedOrders, setSelectedOrders] = useState<number[]>([])
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -216,11 +216,11 @@ export default function WholesaleOrdersPage() {
   const handleDownloadInvoice = async (orderId: number) => {
     try {
       const response = await invoicesAPI.download(orderId)
-      
+
       // Create blob from response
       const blob = new Blob([response.data], { type: 'application/pdf' })
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       // Create download link
       const link = document.createElement('a')
       link.href = blobUrl
@@ -228,10 +228,10 @@ export default function WholesaleOrdersPage() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl)
-      
+
       toast.success("Invoice downloaded successfully")
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to download invoice")
@@ -268,7 +268,7 @@ export default function WholesaleOrdersPage() {
     <div className="bg-gray-50 " style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-gray-900" style={{ 
+        <h1 className="text-gray-900" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
@@ -296,7 +296,7 @@ export default function WholesaleOrdersPage() {
               style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
             />
           </div>
-          
+
           <div className="relative">
             <DatePicker
               selected={dateFrom}
@@ -311,12 +311,11 @@ export default function WholesaleOrdersPage() {
             />
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setSelectedStatus(selectedStatus === 2 ? null : 2)}
-            className={`gap-2 h-11 border-gray-300 bg-white ${
-              selectedStatus === 2 ? "text-blue-600 border-blue-600" : ""
-            }`}
+            className={`gap-2 h-11 border-gray-300 bg-white ${selectedStatus === 2 ? "text-blue-600 border-blue-600" : ""
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             <Filter className="h-5 w-5" />
@@ -324,8 +323,8 @@ export default function WholesaleOrdersPage() {
           </Button>
 
           {hasActiveFilters && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleClearFilters}
               className="h-11 border-gray-300 bg-white text-blue-600"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -334,8 +333,8 @@ export default function WholesaleOrdersPage() {
             </Button>
           )}
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => {
               const min = prompt("Enter minimum amount:")
               if (min) setMinAmount(min)
@@ -347,11 +346,11 @@ export default function WholesaleOrdersPage() {
           </Button>
 
           <div className="ml-auto">
-            <Button 
+            <Button
               onClick={handlePrint}
               className="gap-2 whitespace-nowrap border-0 shadow-none"
-              style={{ 
-                fontFamily: 'Albert Sans', 
+              style={{
+                fontFamily: 'Albert Sans',
                 fontWeight: 600,
                 fontStyle: 'normal',
                 fontSize: '16px',
@@ -432,11 +431,10 @@ export default function WholesaleOrdersPage() {
               setSelectedLocation(null)
               setPage(1)
             }}
-            className={`whitespace-nowrap ${
-              selectedLocation === null
+            className={`whitespace-nowrap ${selectedLocation === null
                 ? "text-blue-600 border-b-2 border-blue-600 rounded-none"
                 : "text-gray-600"
-            }`}
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             All Locations
@@ -449,11 +447,10 @@ export default function WholesaleOrdersPage() {
                 setSelectedLocation(location.location_id)
                 setPage(1)
               }}
-              className={`whitespace-nowrap ${
-                selectedLocation === location.location_id
+              className={`whitespace-nowrap ${selectedLocation === location.location_id
                   ? "text-blue-600 border-b-2 border-blue-600 rounded-none"
                   : "text-gray-600"
-              }`}
+                }`}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             >
               {location.location_name}
@@ -542,7 +539,7 @@ export default function WholesaleOrdersPage() {
                         No wholesale orders found
                       </span>
                       <span className="text-xs text-gray-400" style={{ fontFamily: 'Albert Sans' }}>
-                        {hasActiveFilters 
+                        {hasActiveFilters
                           ? "Try clearing filters or create an order for a wholesale customer"
                           : "Create an order for a wholesale customer to see it here"}
                       </span>
@@ -593,7 +590,15 @@ export default function WholesaleOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {order.delivery_time || 'N/A'}
+                          {(() => {
+                            const timePart = order.delivery_time;
+                            if (!timePart) return '—';
+                            const [hours, minutes] = timePart.split(':').map(Number);
+                            if (isNaN(hours) || isNaN(minutes)) return timePart;
+                            const hour12 = hours % 12 || 12;
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                          })()}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -603,12 +608,11 @@ export default function WholesaleOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            order.order_status === 4 || order.order_status === 7 ? 'bg-green-600' :
-                            order.order_status === 2 ? 'bg-yellow-600' :
-                            order.order_status === 6 ? 'bg-orange-600' :
-                            'bg-gray-600'
-                          }`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full ${order.order_status === 4 || order.order_status === 7 ? 'bg-green-600' :
+                              order.order_status === 2 ? 'bg-yellow-600' :
+                                order.order_status === 6 ? 'bg-orange-600' :
+                                  'bg-gray-600'
+                            }`}></span>
                           {getStatusLabel(order.order_status)}
                         </span>
                       </td>
@@ -624,33 +628,33 @@ export default function WholesaleOrdersPage() {
                               <Edit className="h-4 w-4 text-gray-600" />
                             </button>
                           </Link>
-                          <button 
+                          <button
                             onClick={() => handleDownloadInvoice(order.order_id)}
-                            className="p-1 hover:bg-gray-100 rounded" 
+                            className="p-1 hover:bg-gray-100 rounded"
                             title="Download Invoice"
                           >
                             <Download className="h-4 w-4 text-gray-600" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleEmailInvoice(order.order_id)}
-                            className="p-1 hover:bg-gray-100 rounded" 
+                            className="p-1 hover:bg-gray-100 rounded"
                             title="Email Invoice"
                           >
                             <Mail className="h-4 w-4 text-gray-600" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               queryClient.invalidateQueries({ queryKey: ['wholesale-orders'] })
                               toast.success("Order refreshed")
                             }}
-                            className="p-1 hover:bg-gray-100 rounded" 
+                            className="p-1 hover:bg-gray-100 rounded"
                             title="Refresh"
                           >
                             <RefreshCw className="h-4 w-4 text-gray-600" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDelete(order.order_id)}
-                            className="p-1 hover:bg-gray-100 rounded" 
+                            className="p-1 hover:bg-gray-100 rounded"
                             title="Delete"
                           >
                             <Trash2 className="h-4 w-4 text-[#055160]" />
@@ -672,24 +676,24 @@ export default function WholesaleOrdersPage() {
           Showing {((page - 1) * limit) + 1}-{Math.min(page * limit, totalCount)} of {totalCount} Entries
         </p>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             Prev
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white"
           >
             {page}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="border-gray-300 bg-white"
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={page === totalPages || totalPages === 0}

@@ -99,10 +99,11 @@ export default function NewQuotePage() {
       // Backend will apply additional customer-specific discounts
       const transformedProducts = dataToUse.products?.map(product => ({
         ...product,
-        price: (product as any).base_price || product.price, // Use base_price if available, otherwise use price
+        price: Number((product as any).base_price) > 0 ? (product as any).base_price : product.price,
         add_ons: product.add_ons?.map(addon => ({
           ...addon,
-          price: (addon as any).base_price || addon.price, // Use base_price if available
+          // Use base_price only when it's set (> 0); otherwise use display price (e.g. $20)
+          price: Number((addon as any).base_price) > 0 ? Number((addon as any).base_price) : addon.price,
         })) || []
       })) || []
 
@@ -169,7 +170,7 @@ export default function NewQuotePage() {
             {currentStep === 3 && `Add Delivery details & send to ${quoteData.customer_name || "customer"}`}
           </p>
         </div>
-        {currentStep === 1 && (
+        {/* {currentStep === 1 && (
           <Button
             onClick={() => setShowAddCustomerModal(true)}
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
@@ -178,7 +179,7 @@ export default function NewQuotePage() {
             <span className="text-lg">+</span>
             Add Customer
           </Button>
-        )}
+        )} */}
         {currentStep === 2 && (
           <Button
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
@@ -197,10 +198,10 @@ export default function NewQuotePage() {
             <div className="flex flex-col items-center">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep === step.number
+                  ? "bg-[#C62828] text-white"
+                  : currentStep > step.number
                     ? "bg-[#C62828] text-white"
-                    : currentStep > step.number
-                      ? "bg-[#C62828] text-white"
-                      : "bg-gray-300 text-gray-600"
+                    : "bg-gray-300 text-gray-600"
                   }`}
               >
                 {currentStep > step.number ? (
@@ -235,6 +236,7 @@ export default function NewQuotePage() {
           onNext={handleNext}
           showAddCustomerModal={showAddCustomerModal}
           onCloseAddCustomerModal={() => setShowAddCustomerModal(false)}
+          onOpenAddCustomerModal={() => setShowAddCustomerModal(true)}
         />
       )}
       {currentStep === 2 && (

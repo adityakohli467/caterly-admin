@@ -22,6 +22,7 @@ import {
   Plus,
   Printer,
   ArrowRight,
+  ChefHat,
 } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/store/auth"
 import { toast } from "sonner"
 import { OrderDetailModal } from "@/components/OrderDetailModal"
+import { ChefViewModal } from "@/components/ChefViewModal"
 
 interface DashboardStats {
   totalOrders: number
@@ -56,6 +58,7 @@ interface Order {
   delivery_date_time: string
   is_catering_checklist_added: number
   is_completed: number
+  is_delivered?: number
   order_made_from?: string
   customer: {
     firstname: string
@@ -77,6 +80,8 @@ export default function DashboardPage() {
   const [previousStats, setPreviousStats] = useState<DashboardStats | null>(null)
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
+  const [selectedChefViewOrderId, setSelectedChefViewOrderId] = useState<number | null>(null)
+  const [isChefViewModalOpen, setIsChefViewModalOpen] = useState(false)
   const { user } = useAuthStore()
 
   // Set page title
@@ -279,6 +284,17 @@ export default function DashboardPage() {
     }
   }
 
+  const handleMarkDelivered = async (orderId: number) => {
+    try {
+      await api.put(`/admin/orders/${orderId}/deliver`)
+      toast.success("Order marked as delivered!")
+      fetchDashboardData()
+    } catch (error: any) {
+      console.error("Failed to mark order as delivered:", error)
+      toast.error(error.response?.data?.message || "Failed to mark order as delivered")
+    }
+  }
+
   const handleViewOrder = (orderId: number) => {
     setSelectedOrderId(orderId)
     setIsOrderModalOpen(true)
@@ -287,6 +303,16 @@ export default function DashboardPage() {
   const handleOrderModalClose = () => {
     setIsOrderModalOpen(false)
     setSelectedOrderId(null)
+  }
+
+  const handleChefView = (orderId: number) => {
+    setSelectedChefViewOrderId(orderId)
+    setIsChefViewModalOpen(true)
+  }
+
+  const handleChefViewModalClose = () => {
+    setIsChefViewModalOpen(false)
+    setSelectedChefViewOrderId(null)
   }
 
   const handleOrderUpdated = () => {
@@ -348,6 +374,21 @@ export default function DashboardPage() {
       borderRadius: '50px',
       height: '24px',
       whiteSpace: 'nowrap' as const,
+    }
+
+    if (order.is_delivered === 1) {
+      return (
+        <span
+          style={{
+            ...baseStyle,
+            backgroundColor: '#eff6ff',
+            color: '#1d4ed8',
+          }}
+        >
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+          Delivered
+        </span>
+      )
     }
 
     if (order.is_completed === 1) {
@@ -606,7 +647,7 @@ export default function DashboardPage() {
         <CardHeader className="border-b border-gray-200 bg-white p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-3">
-              <CardTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-lg sm:text-xl text-gray-900">
+              <CardTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-lg sm:text-xl text-[#C62828]">
                 Todays Deliveries
               </CardTitle>
               <p style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-500">
@@ -697,7 +738,22 @@ export default function DashboardPage() {
                             <Eye className="h-3.5 w-3.5 mr-1" />
                             View Order
                           </Button>
-                          {order.is_completed === 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleChefView(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
+                          >
+                            <ChefHat className="h-3.5 w-3.5 mr-1" />
+                            Chef View
+                          </Button>
+                          {order.is_completed !== 1 && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkComplete(order.order_id)}
@@ -711,6 +767,22 @@ export default function DashboardPage() {
                             >
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                               Complete
+                            </Button>
+                          )}
+                          {order.is_delivered !== 1 && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDelivered(order.order_id)}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
+                            >
+                              <Truck className="h-3.5 w-3.5 mr-1" />
+                              Deliver
                             </Button>
                           )}
                         </div>
@@ -735,7 +807,7 @@ export default function DashboardPage() {
         <CardHeader className="border-b border-gray-200 bg-white p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-3">
-              <CardTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-lg sm:text-xl text-gray-900">
+              <CardTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-lg sm:text-xl text-[#C62828]">
                 Tomorrow's Deliveries
               </CardTitle>
               <p style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-500">
@@ -811,23 +883,37 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <div className="flex items-center gap-2 flex-nowrap">
-                          <Link href={`/orders/${order.order_id}/production`} prefetch={true}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                lineHeight: '20px',
-                              }}
-                              className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-                            >
-                              <Eye className="h-3.5 w-3.5 mr-1" />
-                              View Order
-                            </Button>
-                          </Link>
-                          {order.is_completed === 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewOrder(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            View Order
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleChefView(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
+                          >
+                            <ChefHat className="h-3.5 w-3.5 mr-1" />
+                            Chef View
+                          </Button>
+                          {order.is_completed !== 1 && (
                             <Button
                               size="sm"
                               onClick={() => handleMarkComplete(order.order_id)}
@@ -841,6 +927,22 @@ export default function DashboardPage() {
                             >
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                               Complete
+                            </Button>
+                          )}
+                          {order.is_delivered !== 1 && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDelivered(order.order_id)}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
+                            >
+                              <Truck className="h-3.5 w-3.5 mr-1" />
+                              Deliver
                             </Button>
                           )}
                         </div>
@@ -866,6 +968,13 @@ export default function DashboardPage() {
         open={isOrderModalOpen}
         onOpenChange={handleOrderModalClose}
         onOrderUpdated={handleOrderUpdated}
+      />
+
+      {/* Chef View Modal */}
+      <ChefViewModal
+        orderId={selectedChefViewOrderId}
+        open={isChefViewModalOpen}
+        onOpenChange={handleChefViewModalClose}
       />
 
     </div>

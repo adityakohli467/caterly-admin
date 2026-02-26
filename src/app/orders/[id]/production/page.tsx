@@ -65,7 +65,7 @@ export default function ProductionFormPage() {
     try {
       const response = await api.get(`/admin/orders/${orderId}`)
       setOrder(response.data.order)
-      
+
       // Initialize prepared items state
       const prepared: { [key: number]: boolean } = {}
       response.data.order.order_products?.forEach((product: OrderProduct) => {
@@ -105,7 +105,7 @@ export default function ProductionFormPage() {
       toast.error("Order data not available")
       return
     }
-    
+
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       printTableData("Order Production")
@@ -200,7 +200,7 @@ export default function ProductionFormPage() {
         </body>
       </html>
     `
-    
+
     printWindow.document.write(printContent)
     printWindow.document.close()
     printWindow.print()
@@ -248,8 +248,8 @@ export default function ProductionFormPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handlePrint}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
             className="gap-2"
@@ -300,9 +300,9 @@ export default function ProductionFormPage() {
                       {order.delivery_date_time && (
                         <div>
                           <strong className="mr-2">Delivery Date:</strong>
-                          <span>{new Date(order.delivery_date_time).toLocaleString('en-AU', { 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
+                          <span>{new Date(order.delivery_date_time).toLocaleString('en-AU', {
+                            hour: '2-digit',
+                            minute: '2-digit',
                             hour12: false,
                             weekday: 'long',
                             day: 'numeric',
@@ -318,8 +318,8 @@ export default function ProductionFormPage() {
                       <div>
                         <strong className="mr-2">Shipping Method:</strong>
                         <span>
-                          {order.delivery_method === 1 || order.delivery_method === 'delivery' || order.shipping_method === 1 
-                            ? 'Delivery' 
+                          {order.delivery_method === 1 || order.delivery_method === 'delivery' || order.shipping_method === 1
+                            ? 'Delivery'
                             : 'Pickup'}
                         </span>
                       </div>
@@ -339,7 +339,7 @@ export default function ProductionFormPage() {
                     </div>
                   </td>
                 </tr>
-                
+
                 {/* Company Information Row */}
                 {(order.company_name || order.customer_company_name) && (
                   <>
@@ -396,10 +396,10 @@ export default function ProductionFormPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th 
+                  <th
                     className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
-                    style={{ 
-                      fontFamily: 'Albert Sans', 
+                    style={{
+                      fontFamily: 'Albert Sans',
                       fontWeight: 600,
                       fontStyle: 'normal',
                       fontSize: '14px',
@@ -412,10 +412,10 @@ export default function ProductionFormPage() {
                       <ArrowUpDown className="h-3 w-3 text-gray-400" />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
-                    style={{ 
-                      fontFamily: 'Albert Sans', 
+                    style={{
+                      fontFamily: 'Albert Sans',
                       fontWeight: 600,
                       fontStyle: 'normal',
                       fontSize: '14px',
@@ -428,10 +428,10 @@ export default function ProductionFormPage() {
                       <ArrowUpDown className="h-3 w-3 text-gray-400" />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
-                    style={{ 
-                      fontFamily: 'Albert Sans', 
+                    style={{
+                      fontFamily: 'Albert Sans',
                       fontWeight: 600,
                       fontStyle: 'normal',
                       fontSize: '14px',
@@ -444,10 +444,10 @@ export default function ProductionFormPage() {
                       <ArrowUpDown className="h-3 w-3 text-gray-400" />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
-                    style={{ 
-                      fontFamily: 'Albert Sans', 
+                    style={{
+                      fontFamily: 'Albert Sans',
                       fontWeight: 600,
                       fontStyle: 'normal',
                       fontSize: '14px',
@@ -465,14 +465,13 @@ export default function ProductionFormPage() {
               <tbody>
                 {order.order_products && order.order_products.length > 0 ? (
                   order.order_products.map((product, index) => (
-                    <tr 
+                    <tr
                       key={product.order_product_id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                      }`}
+                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                        }`}
                     >
                       <td className="px-4 py-4">
-                        <span style={{ 
+                        <span style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -484,7 +483,7 @@ export default function ProductionFormPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <div style={{ 
+                        <div style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -514,7 +513,7 @@ export default function ProductionFormPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span style={{ 
+                        <span style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -535,8 +534,8 @@ export default function ProductionFormPage() {
                           />
                           <label
                             htmlFor={`prepared-${product.order_product_id}`}
-                            style={{ 
-                              fontFamily: 'Albert Sans', 
+                            style={{
+                              fontFamily: 'Albert Sans',
                               fontWeight: 600,
                               fontSize: '14px',
                               lineHeight: '20px',
@@ -589,7 +588,7 @@ export default function ProductionFormPage() {
 
       {/* Pagination */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-        <p style={{ 
+        <p style={{
           fontFamily: 'Albert Sans',
           fontWeight: 400,
           fontSize: '14px',
@@ -598,12 +597,12 @@ export default function ProductionFormPage() {
           Showing 1-{order.order_products?.length || 0} of {order.order_products?.length || 0} Entries
         </p>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             disabled
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontSize: '14px',
               lineHeight: '20px'
@@ -612,11 +611,11 @@ export default function ProductionFormPage() {
           >
             Prev
           </Button>
-          <Button 
-            variant="default" 
+          <Button
+            variant="default"
             size="sm"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontSize: '14px',
               lineHeight: '20px'
@@ -625,12 +624,12 @@ export default function ProductionFormPage() {
           >
             {order.order_products?.length || 0}
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             disabled
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontSize: '14px',
               lineHeight: '20px'
