@@ -200,11 +200,11 @@ export default function OrderDetailPage() {
     setDownloadingInvoice(true)
     try {
       const response = await invoicesAPI.download(order.order_id)
-      
+
       // Create blob from response
       const blob = new Blob([response.data], { type: 'application/pdf' })
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       // Create download link
       const link = document.createElement('a')
       link.href = blobUrl
@@ -212,10 +212,10 @@ export default function OrderDetailPage() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl)
-      
+
       toast.success("Invoice downloaded successfully")
     } catch (error: any) {
       console.error("Download invoice error:", error)
@@ -235,15 +235,15 @@ export default function OrderDetailPage() {
 
   const handleSendPaymentLink = async () => {
     if (!orderId) return
-    
+
     setSendingPaymentLink(true)
     setShowPaymentLinkModal(false)
-    
+
     try {
       const response = await api.post(`/admin/orders/${orderId}/send-payment-link`, {
         email_payment: paymentLinkEmail || undefined
       })
-      
+
       // Check if email was actually sent
       if (response.data.email_sent) {
         setShowSuccessModal(true)
@@ -280,11 +280,11 @@ export default function OrderDetailPage() {
     setPrintingInvoice(true)
     try {
       const response = await invoicesAPI.download(order.order_id)
-      
+
       // Create blob from response
       const blob = new Blob([response.data], { type: 'application/pdf' })
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       // Open in new window for printing
       const printWindow = window.open(blobUrl, '_blank')
       if (printWindow) {
@@ -292,12 +292,12 @@ export default function OrderDetailPage() {
           printWindow.print()
         }
       }
-      
+
       // Clean up blob URL after a delay
       setTimeout(() => {
         window.URL.revokeObjectURL(blobUrl)
       }, 1000)
-      
+
       toast.success("Invoice opened for printing")
     } catch (error: any) {
       console.error("Failed to print invoice:", error)
@@ -323,13 +323,13 @@ export default function OrderDetailPage() {
 
     setSendingInvoice(true)
     setShowInvoiceModal(false)
-    
+
     try {
       // Check if we need to send with custom email
       // Note: The API might need to be updated to accept email parameter
       // For now, we'll send with custom_message if email is provided
       const response = await invoicesAPI.send(order.order_id, invoiceEmail ? `Email: ${invoiceEmail}` : undefined)
-      
+
       // Check if email was actually sent
       if (response.data.email_sent) {
         setShowInvoiceSuccessModal(true)
@@ -360,7 +360,7 @@ export default function OrderDetailPage() {
 
   // Calculate totals if not provided - order is guaranteed to exist here
   if (!order) return null
-  
+
   // Use backend calculated values if available, otherwise calculate
   const subtotal = typeof order.subtotal === 'number' ? order.subtotal : parseFloat(order.subtotal || '0')
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
@@ -480,7 +480,7 @@ export default function OrderDetailPage() {
                   {products && products.length > 0 ? (
                     products.map((product: OrderProduct, index: number) => {
                       const productTotal = parseFloat(product.total?.toString() || '0')
-                      const optionsTotal = product.options?.reduce((sum, opt) => 
+                      const optionsTotal = product.options?.reduce((sum, opt) =>
                         sum + (parseFloat(opt.option_price?.toString() || '0') * parseFloat(opt.option_quantity?.toString() || '0')), 0) || 0
                       const totalWithOptions = productTotal + optionsTotal
 
@@ -501,12 +501,12 @@ export default function OrderDetailPage() {
                                   Note: {product.product_comment}
                                 </p>
                               )}
-                              {product.options && product.options.length > 0 && (
+                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
                                   <p className="text-xs text-gray-600 font-medium" style={{ fontFamily: 'Albert Sans' }}>
                                     Options:
                                   </p>
-                                  {product.options.map((option, optionIndex) => (
+                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
                                     <div key={optionIndex} className="text-xs text-gray-600 ml-2" style={{ fontFamily: 'Albert Sans' }}>
                                       {option.option_name}: {option.option_value} {option.option_quantity > 1 ? `(x${option.option_quantity})` : ''}
                                     </div>
@@ -525,9 +525,9 @@ export default function OrderDetailPage() {
                               <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 {product.quantity}
                               </p>
-                              {product.options && product.options.length > 0 && (
+                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
-                                  {product.options.map((option, optionIndex) => (
+                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
                                     <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                                       {option.option_quantity}
                                     </p>
@@ -541,9 +541,9 @@ export default function OrderDetailPage() {
                               <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 ${Number(product.price).toFixed(2)}
                               </p>
-                              {product.options && product.options.length > 0 && (
+                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
-                                  {product.options.map((option, optionIndex) => (
+                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
                                     <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                                       ${Number(option.option_price).toFixed(2)}
                                     </p>
@@ -557,9 +557,9 @@ export default function OrderDetailPage() {
                               <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 ${totalWithOptions.toFixed(2)}
                               </p>
-                              {product.options && product.options.length > 0 && (
+                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
-                                  {product.options.map((option, optionIndex) => (
+                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
                                     <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                                       ${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
                                     </p>

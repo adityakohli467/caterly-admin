@@ -85,7 +85,7 @@ export default function QuotesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLocation, setSelectedLocation] = useState<number>(0)
   const [selectedStatus, setSelectedStatus] = useState("")
@@ -98,12 +98,12 @@ export default function QuotesPage() {
   const [itemsPerPage] = useState(20)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  
+
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteQuoteId, setDeleteQuoteId] = useState<number | null>(null)
   const [deleteQuoteName, setDeleteQuoteName] = useState("")
-  
+
   // Convert to order modal state
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [convertQuoteId, setConvertQuoteId] = useState<number | null>(null)
@@ -133,7 +133,7 @@ export default function QuotesPage() {
       const params = new URLSearchParams()
       params.append('limit', itemsPerPage.toString())
       params.append('offset', ((currentPage - 1) * itemsPerPage).toString())
-      
+
       if (searchQuery) params.append('search', searchQuery)
       if (selectedLocation) params.append('location_id', selectedLocation.toString())
       if (selectedStatus) params.append('status', selectedStatus)
@@ -143,7 +143,7 @@ export default function QuotesPage() {
         params.append('sort_field', sortField)
         params.append('sort_direction', sortDirection)
       }
-      
+
       const response = await api.get(`/admin/quotes?${params.toString()}`)
       return response.data
     }
@@ -286,7 +286,7 @@ export default function QuotesPage() {
     <div className="space-y-6 bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header - Title and Add Button */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{ 
+        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
@@ -296,9 +296,9 @@ export default function QuotesPage() {
           Quotes
         </h1>
         <Link href="/quotes/new" className="w-full sm:w-auto">
-          <Button 
+          <Button
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
-            style={{ 
+            style={{
               fontWeight: 600,
               minWidth: '196px',
               height: '54px',
@@ -329,14 +329,14 @@ export default function QuotesPage() {
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
-        
+
         <div className="relative flex-shrink-0">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowDatePicker(!showDatePicker)}
             className="gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               color: '#1f2937',
               minWidth: '155px',
@@ -354,14 +354,14 @@ export default function QuotesPage() {
             Select Date
           </Button>
         </div>
-        
+
         <div className="relative flex-shrink-0">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowStatusFilter(!showStatusFilter)}
             className="gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               color: '#1f2937',
               minWidth: '157px',
@@ -384,9 +384,8 @@ export default function QuotesPage() {
                     setSelectedStatus(option.value)
                     setShowStatusFilter(false)
                   }}
-                  className={`w-full text-left px-4 py-2 rounded hover:bg-gray-100 ${
-                    selectedStatus === option.value ? 'bg-[#e7f1ff] text-[#055160]' : ''
-                  }`}
+                  className={`w-full text-left px-4 py-2 rounded hover:bg-gray-100 ${selectedStatus === option.value ? 'bg-[#e7f1ff] text-[#055160]' : ''
+                    }`}
                   style={{ fontFamily: 'Albert Sans' }}
                 >
                   {option.label}
@@ -397,11 +396,11 @@ export default function QuotesPage() {
         </div>
 
         <div className="ml-auto">
-          <Button 
+          <Button
             onClick={handlePrint}
             className="gap-2 whitespace-nowrap border-0 shadow-none"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontStyle: 'normal',
               fontSize: '16px',
@@ -428,11 +427,10 @@ export default function QuotesPage() {
             setSelectedLocation(0)
             setCurrentPage(1)
           }}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-            selectedLocation === 0
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === 0
               ? "border-[#055160] text-[#055160]"
               : "border-transparent text-gray-600 hover:text-gray-900"
-          }`}
+            }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           <span className="w-5 h-5 flex items-center justify-center">📍</span>
@@ -445,11 +443,10 @@ export default function QuotesPage() {
               setSelectedLocation(location.location_id)
               setCurrentPage(1)
             }}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              selectedLocation === location.location_id
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
                 ? "border-[#055160] text-[#055160]"
                 : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             <span className="w-5 h-5 flex items-center justify-center">📍</span>
@@ -482,7 +479,7 @@ export default function QuotesPage() {
               />
             </div>
             <div className="self-end flex gap-2">
-              <Button 
+              <Button
                 onClick={() => {
                   setStartDate(null)
                   setEndDate(null)
@@ -493,7 +490,7 @@ export default function QuotesPage() {
               >
                 Clear
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   setShowDatePicker(false)
                   setCurrentPage(1) // Reset to first page when filter changes
@@ -520,8 +517,8 @@ export default function QuotesPage() {
                     className="h-5 w-5"
                   />
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'order_id') {
@@ -537,8 +534,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'customer_name') {
@@ -554,8 +551,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'company_name') {
@@ -571,8 +568,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'department_name') {
@@ -588,8 +585,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'delivery_date_time') {
@@ -605,8 +602,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'delivery_time') {
@@ -622,8 +619,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'order_total') {
@@ -639,8 +636,8 @@ export default function QuotesPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700" 
+                <th
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 text-sm font-semibold text-gray-700"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   onClick={() => {
                     if (sortField === 'order_status') {
@@ -690,7 +687,7 @@ export default function QuotesPage() {
                         prefetch={false}
                         onClick={(e) => e.stopPropagation()}
                         className="text-[#055160] hover:text-[#04414d] hover:underline cursor-pointer"
-                        style={{ 
+                        style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
                           fontStyle: 'normal',
@@ -704,7 +701,7 @@ export default function QuotesPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-900" style={{ 
+                      <span className="text-gray-900" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -716,7 +713,7 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
+                      <span className="text-gray-700" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -728,7 +725,7 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
+                      <span className="text-gray-700" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -740,7 +737,7 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
+                      <span className="text-gray-700" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -748,13 +745,13 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        {quote.delivery_date_time 
+                        {quote.delivery_date_time
                           ? format(new Date(quote.delivery_date_time), 'dd-MM-yyyy')
                           : 'N/A'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
+                      <span className="text-gray-700" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -762,13 +759,18 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        {quote.delivery_date_time 
-                          ? format(new Date(quote.delivery_date_time), 'HH:mm')
-                          : 'N/A'}
+                        {(() => {
+                          const date = new Date(quote.delivery_date_time);
+                          const hours = date.getHours();
+                          const minutes = date.getMinutes();
+                          const hour12 = hours % 12 || 12;
+                          const ampm = hours >= 12 ? 'PM' : 'AM';
+                          return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                        })()}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-gray-900" style={{ 
+                      <span className="text-gray-900" style={{
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -784,12 +786,11 @@ export default function QuotesPage() {
                         {quote.order_status === 2 || quote.order_status === 7 ? (
                           <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                         ) : (
-                          <div className={`w-1.5 h-1.5 rounded-full ${
-                            quote.order_status === 5 || quote.order_status === 8 ? 'bg-red-500' :  // Cancelled/Rejected - red
-                            quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
-                            quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
-                            'bg-[#C62828]'  // New (status 1) - teal
-                          }`}></div>
+                          <div className={`w-1.5 h-1.5 rounded-full ${quote.order_status === 5 || quote.order_status === 8 ? 'bg-red-500' :  // Cancelled/Rejected - red
+                              quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
+                                quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
+                                  'bg-[#C62828]'  // New (status 1) - teal
+                            }`}></div>
                         )}
                         {getStatusLabel(quote.order_status)}
                       </span>
@@ -803,21 +804,21 @@ export default function QuotesPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => router.push(`/quotes/${quote.order_id}`)}
                               className="cursor-pointer"
                             >
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => router.push(`/quotes/${quote.order_id}/edit?step=2`)}
                               className="cursor-pointer"
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Quote
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleConvertToOrder(quote)}
                               disabled={convertToOrderMutation.isPending}
                               className="cursor-pointer"
@@ -828,7 +829,7 @@ export default function QuotesPage() {
                                 <span>Convert to Order</span>
                               </div>
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleEmailQuote(quote)}
                               disabled={emailQuoteMutation.isPending}
                               className="cursor-pointer"
@@ -836,14 +837,14 @@ export default function QuotesPage() {
                               <Mail className="h-4 w-4 mr-2" />
                               {emailQuoteMutation.isPending ? "Sending..." : "Email Quote"}
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={handleRefresh}
                               className="cursor-pointer"
                             >
                               <RotateCcw className="h-4 w-4 mr-2" />
                               Refresh
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteQuote(quote)}
                               className="cursor-pointer text-[#055160] focus:text-[#055160]"
                             >
@@ -867,9 +868,9 @@ export default function QuotesPage() {
             Showing {totalCount > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} Entries
           </p>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
               className="text-gray-700 disabled:text-gray-400 disabled:opacity-50"
@@ -881,9 +882,9 @@ export default function QuotesPage() {
               <>
                 {currentPage > 3 && (
                   <>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setCurrentPage(1)}
                       className="text-gray-700"
                       style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -906,10 +907,10 @@ export default function QuotesPage() {
                   }
                   if (page < 1 || page > totalPages) return null
                   return (
-                    <Button 
+                    <Button
                       key={page}
-                      variant="outline" 
-                      size="sm" 
+                      variant="outline"
+                      size="sm"
                       onClick={() => setCurrentPage(page)}
                       className={
                         currentPage === page
@@ -925,9 +926,9 @@ export default function QuotesPage() {
                 {currentPage < totalPages - 2 && totalPages > 5 && (
                   <>
                     <span className="text-gray-500 px-2">...</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setCurrentPage(totalPages)}
                       className="text-gray-700"
                       style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -938,9 +939,9 @@ export default function QuotesPage() {
                 )}
               </>
             )}
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage(currentPage + 1)}
               className="text-gray-700 disabled:text-gray-400 disabled:opacity-50"

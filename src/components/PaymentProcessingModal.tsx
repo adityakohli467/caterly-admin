@@ -96,7 +96,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
   }
 
   return (
-    <div className="py-4 overflow-y-auto">
+    <div className="py-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="process">Process Payment</TabsTrigger>
@@ -107,8 +107,8 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
         <TabsContent value="process" className="space-y-4">
           {order ? (
             <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
+              <CardContent className="pt-3">
+                <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label>Order Total</Label>
                     <span className="text-lg font-bold">{formatCurrency(parseFloat(order.order_total || 0))}</span>
@@ -126,7 +126,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
                     </div>
                   )}
 
-                  <div className="pt-4 border-t">
+                  <div className="pt-2 border-t">
                     {order.order_status === 2 ? (
                       <div className="text-center py-4">
                         <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-2" />
@@ -149,7 +149,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
                         <p className="text-sm text-gray-600 mb-4">
                           Process payment using Pin Payments or mark the order as paid manually.
                         </p>
-                        
+
                         {/* Pin Payments Form */}
                         <div className="mb-4">
                           <PinPaymentForm

@@ -92,7 +92,7 @@ export default function NewOrderPage() {
       // Use latestData if provided (from DeliveryStep), otherwise use orderData state
       // This ensures we have the latest coupon data even if state hasn't updated yet
       const dataToUse = latestData ? { ...orderData, ...latestData } : orderData
-      
+
       // Validate required fields
       if (!dataToUse.customer_id) {
         toast.error("Please select a customer")
@@ -119,6 +119,8 @@ export default function NewOrderPage() {
       const orderPayload: any = {
         customer_id: dataToUse.customer_id,
         location_id: dataToUse.location_id,
+        company_id: dataToUse.company_id || null,       // ← was missing
+        department_id: dataToUse.department_id || null, // ← was missing
         delivery_date: dataToUse.delivery_date || null,
         delivery_time: dataToUse.delivery_time || null, // Send time separately
         delivery_date_time: deliveryDateTime, // Combined date and time
@@ -135,29 +137,42 @@ export default function NewOrderPage() {
         products: dataToUse.products.map(product => ({
           product_id: product.product_id,
           quantity: product.quantity,
-          price: (product as any).base_price || product.price, // Use base_price if available for backend discount calculation
+          price: Number((product as any).base_price) > 0 ? (product as any).base_price : product.price,
           comment: product.comment || null,
           add_ons: (product.add_ons || []).map(addon => ({
             ...addon,
-            price: (addon as any).base_price || addon.price // Use base_price if available
+            // Use base_price only when it's actually set (> 0); otherwise use display price (e.g. $20)
+            price: Number((addon as any).base_price) > 0 ? Number((addon as any).base_price) : addon.price
           }))
         }))
       }
 
       console.log("Saving order:", orderPayload)
+      console.log("💰 ADD-ONS PRICE DEBUG:", JSON.stringify(
+        orderPayload.products.map((p: any) => ({
+          name: p.name || p.product_id,
+          price: p.price,
+          add_ons: (p.add_ons || []).map((a: any) => ({
+            name: a.name,
+            price: a.price,
+            base_price: a.base_price,
+            quantity: a.quantity
+          }))
+        })), null, 2
+      ))
       console.log("Coupon data:", {
         coupon_code: orderPayload.coupon_code,
         coupon_type: dataToUse.coupon_type,
         coupon_discount: dataToUse.coupon_discount
       })
-      
+
       const response = await ordersAPI.create(orderPayload)
-      
+
       if (response.data) {
-        // Invalidate orders queries to refresh the list
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
+        // Invalidate ALL orders queries (prefix match) so any cached tab refreshes
+        await queryClient.invalidateQueries({ queryKey: ['orders'], exact: false, refetchType: 'all' })
         toast.success("Order created successfully!")
-        router.push("/orders?tab=future")
+        router.push(`/orders?tab=future&refresh=${Date.now()}`)
       }
     } catch (error: any) {
       console.error("Error saving order:", error)
@@ -180,7 +195,7 @@ export default function NewOrderPage() {
           </p>
         </div>
         {currentStep === 1 && (
-          <Button 
+          <Button
             onClick={() => setShowAddCustomerModal(true)}
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
@@ -190,7 +205,7 @@ export default function NewOrderPage() {
           </Button>
         )}
         {currentStep === 2 && (
-          <Button 
+          <Button
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
@@ -206,13 +221,12 @@ export default function NewOrderPage() {
           <div key={step.number} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                  currentStep === step.number
-                    ? "bg-[#C62828] text-white"
-                    : currentStep > step.number
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep === step.number
+                  ? "bg-[#C62828] text-white"
+                  : currentStep > step.number
                     ? "bg-[#C62828] text-white"
                     : "bg-gray-300 text-gray-600"
-                }`}
+                  }`}
               >
                 {currentStep > step.number ? (
                   <Check className="h-5 w-5" />
@@ -221,9 +235,8 @@ export default function NewOrderPage() {
                 )}
               </div>
               <span
-                className={`text-xs mt-2 whitespace-nowrap ${
-                  currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
-                }`}
+                className={`text-xs mt-2 whitespace-nowrap ${currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
+                  }`}
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 {step.label}
@@ -231,9 +244,8 @@ export default function NewOrderPage() {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`w-24 h-0.5 mx-2 mt-[-20px] ${
-                  currentStep > step.number ? "bg-[#C62828]" : "bg-gray-300"
-                }`}
+                className={`w-24 h-0.5 mx-2 mt-[-20px] ${currentStep > step.number ? "bg-[#C62828]" : "bg-gray-300"
+                  }`}
               />
             )}
           </div>

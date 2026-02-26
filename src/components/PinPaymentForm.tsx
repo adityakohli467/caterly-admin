@@ -34,17 +34,17 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
       return
     }
     initAttemptedRef.current = true
-    
+
     let script: HTMLScriptElement | null = null
-    
+
     const initializePin = async () => {
       try {
         let key: string | null = null
-        
+
         // Try to get publishable key from backend first
         try {
           const response = await paymentsAPI.getPinKey(orderId)
-          
+
           if (response.data?.success && response.data?.publishable_key) {
             key = response.data.publishable_key
           } else {
@@ -62,22 +62,22 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             throw new Error(errorMsg)
           }
         }
-        
+
         if (!key) {
           throw new Error("Pin Payments publishable key not found")
         }
-        
+
         setPublishableKey(key)
-        
+
         // Function to initialize Pin after script loads
         const initPinLibrary = (attempt = 0): boolean => {
           // Check multiple ways Pin.js might expose itself
           const Pin = (window as any).Pin || (globalThis as any).Pin || (window as any).pinpayments
-          
+
           if (!Pin) {
             return false
           }
-          
+
           // Try different initialization methods
           if (typeof Pin.setPublishableKey === 'function') {
             try {
@@ -88,7 +88,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
               // Silent fail, try next method
             }
           }
-          
+
           // Try setting as property
           if (attempt === 0 && !Pin.publishableKey) {
             try {
@@ -102,7 +102,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
               // Silent fail, try next method
             }
           }
-          
+
           if (typeof Pin.configure === 'function') {
             try {
               Pin.configure({ publishableKey: key! })
@@ -112,7 +112,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
               // Silent fail, try next method
             }
           }
-          
+
           if (typeof Pin.init === 'function') {
             try {
               Pin.init({ publishableKey: key! })
@@ -122,22 +122,22 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
               // Silent fail, try next method
             }
           }
-          
+
           // Maybe Pin.js v2 doesn't need initialization - try to use createToken directly
           if (typeof Pin.createToken === 'function') {
             // Store the key for later use in createToken
             setPinInitialized(true)
             return true
           }
-          
+
           return false
         }
-        
+
         // Check if Pin.js is already loaded
         if (initPinLibrary()) {
           return
         }
-        
+
         // Check if script is already in the document
         const existingScript = document.querySelector('script[src="https://cdn.pinpayments.com/pin.v2.js"]')
         if (existingScript) {
@@ -158,14 +158,14 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
           }, 100)
           return
         }
-        
+
         // Load Pin.js script
         script = document.createElement("script")
         script.src = "https://cdn.pinpayments.com/pin.v2.js"
         script.type = "text/javascript"
         script.async = true
         script.defer = true
-        
+
         script.onload = () => {
           // Retry initialization with multiple attempts
           let retries = 0
@@ -181,12 +181,12 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             }
           }, 200)
         }
-        
+
         script.onerror = () => {
           toast.error("Failed to load Pin Payments script. Please check your internet connection.")
           onError("Failed to load Pin.js script")
         }
-        
+
         // Append to head instead of body (recommended by Pin Payments)
         document.head.appendChild(script)
       } catch (error: any) {
@@ -216,7 +216,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Get Pin.js library
     const Pin = (window as any).Pin || (globalThis as any).Pin
     if (!pinInitialized || !Pin || typeof Pin.createToken !== 'function') {
@@ -235,12 +235,12 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
       // Create card token using Pin.js
       // If Pin.js doesn't use setPublishableKey, we may need to pass the key in the form or options
       const tokenOptions: any = {}
-      
+
       // Some Pin.js versions require the key to be passed with createToken
       if (!Pin.publishableKey && publishableKey) {
         tokenOptions.publishableKey = publishableKey
       }
-      
+
       Pin.createToken(formRef.current, (result: any) => {
         if (result.error) {
           setLoading(false)
@@ -284,10 +284,10 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
   }
 
   return (
-    <form 
-      ref={formRef} 
-      onSubmit={handleSubmit} 
-      className="space-y-4"
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="space-y-2"
       data-pin-publishable-key={publishableKey}
     >
       <div className="space-y-2">
@@ -306,7 +306,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2">
         <div className="space-y-2">
           <Label htmlFor="expiry-month">Expiry Month</Label>
           <Input
@@ -365,7 +365,7 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
         type="submit"
         disabled={loading || !pinInitialized}
         className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white"
-        size="lg"
+        size="sm"
         style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
       >
         {loading ? (

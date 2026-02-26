@@ -124,7 +124,7 @@ function SortableCartItem({ item, index, onRemove, onQuantityChange, onAddOnQuan
               <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          
+
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 bg-gray-100 rounded-md">
               <button
@@ -252,12 +252,12 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
       params.append('status', '1') // Only active products
       params.append('limit', '1000') // Get all products for selection
       if (searchQuery) params.append('search', searchQuery)
-      
+
       // Include customer_id to get customer-specific pricing (retail vs wholesale)
       if (data.customer_id) {
         params.append('customer_id', data.customer_id.toString())
       }
-      
+
       // Use products-new endpoint which returns categories and options properly
       const response = await api.get(`/admin/products-new?${params.toString()}`)
       return response.data
@@ -266,20 +266,20 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
   })
 
   const allProducts = productsData?.products || []
-  
+
   // Filter products by selected category and ensure they have valid data
-  const products = (selectedCategory === 0 
-    ? allProducts 
-    : allProducts.filter((p: Product) => 
-        p.categories?.some(cat => cat.category_id === selectedCategory)
-      )
+  const products = (selectedCategory === 0
+    ? allProducts
+    : allProducts.filter((p: Product) =>
+      p.categories?.some(cat => cat.category_id === selectedCategory)
+    )
   ).filter((p: Product) => {
     // Ensure product has required fields
     return p.product_id && p.product_name && p.product_price !== undefined && p.product_price !== null
   })
 
   // Helper function to generate a unique key for cart items based on product_id and options
-  const generateCartItemKey = (productId: number, addOns: Array<{product_option_id?: number, option_value_id?: number}>) => {
+  const generateCartItemKey = (productId: number, addOns: Array<{ product_option_id?: number, option_value_id?: number }>) => {
     if (!addOns || addOns.length === 0) {
       return `product_${productId}_no_options`
     }
@@ -298,7 +298,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
   // Helper function to check if two cart items are the same (same product + same options)
   const areCartItemsEqual = (item1: CartProduct, item2: CartProduct) => {
     if (item1.product_id !== item2.product_id) return false
-    
+
     // Compare options
     const key1 = generateCartItemKey(item1.product_id, item1.add_ons || [])
     const key2 = generateCartItemKey(item2.product_id, item2.add_ons || [])
@@ -307,7 +307,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
 
   const handleAddToCart = (product: Product) => {
     const quantity = quantities[product.product_id] || 1
-    
+
     // Get selected options
     // IMPORTANT: option_price is the customer-specific final price (what user sees)
     // option_base_price is the base customer-type price (for backend calculation)
@@ -321,18 +321,18 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
         option_value_id: option.option_value_id,
       })) || []
 
-    const categoryName = product.categories && product.categories.length > 0 
-      ? product.categories[0].category_name 
+    const categoryName = product.categories && product.categories.length > 0
+      ? product.categories[0].category_name
       : 'Uncategorized'
 
     // Prepare the new cart item
     let newCartItem: CartProduct
-    
+
     if (selectedOptionsList.length > 0) {
       // Generate a unique name that includes all selected options
       const optionsName = selectedOptionsList.map(opt => opt.name).join(', ')
       const cartItemName = `${product.product_name} (${optionsName})`
-      
+
       // Calculate prices
       // IMPORTANT: product_price from backend is already customer-specific (wholesale for wholesale customers)
       // Display price: final price with discounts (what user sees) - this should be customer-specific
@@ -340,7 +340,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
       // Base price: customer-type price without additional discounts (for backend)
       // original_price is the base customer-type price (wholesale base or retail base) without additional discounts
       const basePrice = product.original_price || displayPrice
-      
+
       // Calculate option prices
       const optionsDisplayTotal = selectedOptionsList.reduce((sum, opt) => {
         // Get display price (final price) for the option
@@ -348,26 +348,32 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
         return sum + (optionDisplayPrice * opt.quantity)
       }, 0)
       const totalDisplayPrice = displayPrice + optionsDisplayTotal
-      
+
       // Use the quantity from the first option or default quantity
       const itemQuantity = selectedOptionsList[0]?.quantity || quantity
-      
+
       newCartItem = {
         product_id: product.product_id,
         name: cartItemName,
         category: categoryName,
-        price: totalDisplayPrice, // Display price (what user sees)
-        base_price: basePrice, // Base price for backend discount calculation
-        quantity: itemQuantity,
+        price: displayPrice,   // Base product price only — add_ons carry their own prices
+        base_price: basePrice,
+        quantity,              // Use product quantity from the spinner
         comment: "",
         add_ons: selectedOptionsList.map(opt => {
           // Find the original option to get base price
           const originalOption = product.options?.find(o => o.option_value_id === opt.option_value_id)
-          const optionBasePrice = originalOption?.option_base_price || originalOption?.original_option_price || parseFloat(opt.price.toString())
+          // Only use base_price when it is actually set and > 0.
+          // option_base_price can be 0 (falsy) even when display price is $20, so use > 0 check.
+          const optionBasePrice = Number(originalOption?.option_base_price) > 0
+            ? Number(originalOption!.option_base_price)
+            : Number(originalOption?.original_option_price) > 0
+              ? Number(originalOption!.original_option_price)
+              : parseFloat(opt.price.toString()) // Fall back to display price (e.g. $20)
           return {
             name: opt.name,
-            price: parseFloat(opt.price.toString()), // Display price
-            base_price: optionBasePrice, // Base price for backend
+            price: parseFloat(opt.price.toString()), // Display price (e.g. $20)
+            base_price: optionBasePrice,             // Always > 0
             quantity: opt.quantity,
             product_option_id: opt.product_option_id,
             option_value_id: opt.option_value_id,
@@ -380,7 +386,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
       const displayPrice = parseFloat(product.product_price.toString())
       // Base price: customer-type price without additional discounts (for backend)
       const basePrice = product.original_price || displayPrice
-      
+
       newCartItem = {
         product_id: product.product_id,
         name: product.product_name,
@@ -394,15 +400,21 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
     }
 
     // Check if an item with the same product_id and options already exists in cart
+    console.log("🛒 CART ITEM BUILT:", JSON.stringify({
+      name: newCartItem.name,
+      price: newCartItem.price,
+      quantity: newCartItem.quantity,
+      add_ons: newCartItem.add_ons.map(a => ({ name: a.name, price: a.price, base_price: (a as any).base_price, qty: a.quantity }))
+    }, null, 2))
     const existingItemIndex = cart.findIndex(item => areCartItemsEqual(item, newCartItem))
-    
+
     if (existingItemIndex !== -1) {
       // Item already exists, increase quantity
       const updatedCart = [...cart]
       updatedCart[existingItemIndex].quantity += newCartItem.quantity
       setCart(updatedCart)
       onUpdate({ products: updatedCart })
-      toast.success(selectedOptionsList.length > 0 
+      toast.success(selectedOptionsList.length > 0
         ? "Product quantity increased in cart"
         : "Product quantity increased in cart")
     } else {
@@ -412,14 +424,14 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
         onUpdate({ products: updatedCart })
         return updatedCart
       })
-      toast.success(selectedOptionsList.length > 0 
+      toast.success(selectedOptionsList.length > 0
         ? "Product with options added to cart"
         : "Product added to cart")
     }
 
     setQuantities({ ...quantities, [product.product_id]: 1 })
     setExpandedProduct(null)
-    
+
     // Reset options selection
     if (product.options) {
       const resetOptions: Record<string, boolean> = {}
@@ -539,11 +551,10 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                     setSelectedCategory(0)
                     setSearchQuery("") // Clear search when selecting all
                   }}
-                  className={`px-3 py-1.5 text-xs rounded-md border transition-all ${
-                    selectedCategory === 0
-                      ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
-                  }`}
+                  className={`px-3 py-1.5 text-xs rounded-md border transition-all ${selectedCategory === 0
+                    ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
+                    }`}
                   style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
                 >
                   All Categories
@@ -555,11 +566,10 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                       setSelectedCategory(category.category_id)
                       setSearchQuery("") // Clear search when selecting category
                     }}
-                    className={`px-3 py-1.5 text-xs rounded-md border transition-all ${
-                      selectedCategory === category.category_id
-                        ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
-                    }`}
+                    className={`px-3 py-1.5 text-xs rounded-md border transition-all ${selectedCategory === category.category_id
+                      ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
+                      }`}
                     style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
                   >
                     {category.category_name}
@@ -587,7 +597,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                     Quantity
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                    
+
                   </th>
                 </tr>
               </thead>
@@ -620,7 +630,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                         </td>
                         <td className="px-4 py-4">
                           <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                            {product.categories && Array.isArray(product.categories) && product.categories.length > 0 
+                            {product.categories && Array.isArray(product.categories) && product.categories.length > 0
                               ? product.categories.map((cat: any) => cat.category_name).join(', ')
                               : 'Uncategorized'}
                           </span>
@@ -683,7 +693,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                                   const key = `${product.product_id}-${option.product_option_id}`
                                   const price = parseFloat(option.option_price.toString())
                                   return (
-                                    <div key={key} className="flex items-center justify-between">
+                                    <div key={key} className="flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                                       <div className="flex items-center gap-2">
                                         <Checkbox
                                           checked={selectedOptions[key] || false}
@@ -698,9 +708,9 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                                           </span>
                                         </span>
                                       </div>
-                                      <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-md">
+                                      <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-md" onClick={(e) => e.stopPropagation()}>
                                         <button
-                                          onClick={() => handleOptionQuantityChange(key, -1)}
+                                          onClick={(e) => { e.stopPropagation(); handleOptionQuantityChange(key, -1) }}
                                           className="px-2 py-1 text-gray-600 hover:text-gray-900"
                                         >
                                           -
@@ -709,7 +719,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                                           {optionQuantities[key] || 1}
                                         </span>
                                         <button
-                                          onClick={() => handleOptionQuantityChange(key, 1)}
+                                          onClick={(e) => { e.stopPropagation(); handleOptionQuantityChange(key, 1) }}
                                           className="px-2 py-1 text-gray-600 hover:text-gray-900"
                                         >
                                           +
@@ -793,8 +803,8 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
             onClick={handleProceed}
             disabled={cart.length === 0}
             className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white rounded-full disabled:opacity-50"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               height: '50px'
             }}

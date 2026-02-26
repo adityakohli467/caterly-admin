@@ -53,28 +53,49 @@ interface Location {
 
 // Order status mapping
 const orderStatusMap: Record<number, { label: string; color: string; bgColor: string; borderColor: string }> = {
-  0: { label: "Cancelled", color: "text-[#055160]", bgColor: "bg-[#e7f1ff]", borderColor: "border-red-200" },
-  1: { label: "New", color: "text-[#055160]", bgColor: "bg-[#e7f1ff]", borderColor: "border-red-200" },
-  2: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-200" },
-  3: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-200" },
-  4: { label: "Awaiting Approval", color: "text-yellow-700", bgColor: "bg-yellow-50", borderColor: "border-yellow-200" },
-  7: { label: "Approved", color: "text-purple-700", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
-  8: { label: "Rejected", color: "text-[#055160]", bgColor: "bg-[#e7f1ff]", borderColor: "border-red-200" },
+  0: { label: "Cancelled", color: "text-red-700", bgColor: "bg-red-50", borderColor: "border-red-300" },
+  1: { label: "New", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-300" },
+  2: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-300" },
+  3: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-300" },
+  4: { label: "Awaiting Approval", color: "text-yellow-700", bgColor: "bg-yellow-50", borderColor: "border-yellow-300" },
+  5: { label: "Processing", color: "text-orange-700", bgColor: "bg-orange-50", borderColor: "border-orange-300" },
+  6: { label: "Delivered", color: "text-teal-700", bgColor: "bg-teal-50", borderColor: "border-teal-300" },
+  7: { label: "Approved", color: "text-purple-700", bgColor: "bg-purple-50", borderColor: "border-purple-300" },
+  8: { label: "Rejected", color: "text-red-800", bgColor: "bg-red-100", borderColor: "border-red-400" },
 }
 
 const orderTabs = [
   { key: "future", label: "Future Orders" },
   { key: "past", label: "Past Orders" },
   { key: "reminder", label: "Reminder Orders" },
-  { key: "late", label: "Late Orders" },
-  { key: "wholesale", label: "Wholesale Orders", hidden: true }, // Hidden for kj3
-].filter(tab => !tab.hidden) // Hide wholesale tab
+  { key: "wholesale", label: "Wholesale Orders", hidden: true },
+].filter(tab => !tab.hidden)
+
+// Get current time in Australia/Sydney timezone as a comparable string
+const getNowAustralia = () => {
+  // Get the current date/time in Australia/Sydney
+  const nowUtc = new Date()
+  // Australia/Sydney offset: AEDT = UTC+11, AEST = UTC+10
+  // Use Intl to get current offset
+  const formatter = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'Australia/Sydney',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  })
+  const parts = formatter.formatToParts(nowUtc)
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '0'
+  return new Date(
+    parseInt(get('year')), parseInt(get('month')) - 1, parseInt(get('day')),
+    parseInt(get('hour')), parseInt(get('minute')), parseInt(get('second'))
+  )
+}
 
 export default function OrdersPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  
+
   // Filters
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTab, setSelectedTab] = useState(() => {
@@ -86,8 +107,9 @@ export default function OrdersPage() {
   const [dateFrom, setDateFrom] = useState<Date | null>(null)
   const [dateTo, setDateTo] = useState<Date | null>(null)
   const [amountFilter, setAmountFilter] = useState("")
+  const [showPaidOnly, setShowPaidOnly] = useState(false)
   const [lateFeeAmount, setLateFeeAmount] = useState("")
-  
+
   // UI state
   const [selectedOrders, setSelectedOrders] = useState<number[]>([])
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -119,27 +141,29 @@ export default function OrdersPage() {
   // Handle URL params and refresh orders when coming from order creation/update
   useEffect(() => {
     const tab = searchParams?.get('tab')
+    const refresh = searchParams?.get('refresh')
+    const success = searchParams?.get('success')
+
     if (tab && tab !== selectedTab) {
       setSelectedTab(tab)
-      setPage(1) // Reset to first page when tab changes
-      // Invalidate queries to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      setPage(1)
     }
-    
-    // If coming from order creation/update, invalidate queries to refresh
-    if (searchParams.get('success') === 'true') {
-      queryClient.invalidateQueries({ queryKey: ['orders'] })
+
+    // Force-refetch when arriving from order create/update (refresh or success param)
+    if (refresh || success === 'true') {
+      queryClient.invalidateQueries({ queryKey: ['orders'], exact: false, refetchType: 'all' })
     }
   }, [searchParams, queryClient])
 
   // Build query params
   const buildQueryParams = () => {
     const params: Record<string, any> = {
-      limit,
-      offset: (page - 1) * limit,
+      limit: 9999, // show all orders, no pagination
+      offset: 0,
+      sort_by: 'delivery_date',
+      sort_order: selectedTab === 'past' ? 'desc' : 'asc',
     }
 
-    // If wholesale tab is selected, use wholesale filter instead of order_type
     if (selectedTab === "wholesale") {
       params.wholesale = "true"
     } else {
@@ -147,15 +171,11 @@ export default function OrdersPage() {
     }
 
     if (selectedLocation) params.location_id = selectedLocation
-    if (selectedStatus !== null) params.status = selectedStatus
+    // Paid filter is applied client-side (status 2 OR 3) — not sent to backend
     if (searchQuery) params.search = searchQuery
-    if (dateFrom) params.from_date = dateFrom.toISOString()
-    if (dateTo) params.to_date = dateTo.toISOString()
-    if (amountFilter) {
-      const parts = amountFilter.split('.')
-      if (parts[0]) params.min_amount = parts[0]
-      if (parts[1]) params.max_amount = parts[1]
-    }
+    // Use delivery_date_ prefix so backend filters by delivery date
+    if (dateFrom) params.delivery_date_from = format(dateFrom, 'yyyy-MM-dd')
+    if (dateTo) params.delivery_date_to = format(dateTo, 'yyyy-MM-dd')
 
     return new URLSearchParams(params).toString()
   }
@@ -173,9 +193,84 @@ export default function OrdersPage() {
     refetchOnWindowFocus: true, // Refetch when window regains focus
   })
 
-  const orders: Order[] = ordersData?.orders || []
+  // Raw orders from API
+  const rawOrders: Order[] = ordersData?.orders || []
   const totalCount = ordersData?.count || 0
   const totalPages = Math.ceil(totalCount / limit)
+
+  // Helper: parse delivery date+time into a Date for sorting/splitting
+  // Handles invalid delivery_time values like "24:00" (not valid JS)
+  const parseDeliveryDT = (order: Order): Date => {
+    if (!order.delivery_date) return new Date(0)
+
+    // Extract just the date part (YYYY-MM-DD or DD/MM/YYYY or with T)
+    let datePart = order.delivery_date
+    if (datePart.includes('T')) datePart = datePart.split('T')[0]
+    // If date is DD/MM/YYYY, convert to YYYY-MM-DD
+    if (datePart.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [dd, mm, yyyy] = datePart.split('/')
+      datePart = `${yyyy}-${mm}-${dd}`
+    }
+
+    let timePart = (order.delivery_time || '00:00').replace(/\s/g, '')
+    // Handle "24:00" — treat as 00:00 of next day
+    if (timePart.startsWith('24:')) {
+      const d = new Date(`${datePart}T00:00:00`)
+      if (!isNaN(d.getTime())) d.setDate(d.getDate() + 1)
+      return isNaN(d.getTime()) ? new Date(0) : d
+    }
+    // Ensure time has seconds
+    if (timePart.length === 5) timePart += ':00'
+
+    const d = new Date(`${datePart}T${timePart}`)
+    return isNaN(d.getTime()) ? new Date(`${datePart}T00:00:00`) : d
+  }
+
+  // Today's date-only string in Australia/Sydney for past/future split
+  const todayAU = (() => {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Australia/Sydney',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    })
+    return formatter.format(new Date()) // returns YYYY-MM-DD
+  })()
+
+  const nowAU = getNowAustralia()
+
+  // Client-side delivery date range filter (backend may ignore the params)
+  const applyDateFilter = (list: Order[]) => {
+    if (!dateFrom && !dateTo) return list
+    return list.filter(o => {
+      const dt = parseDeliveryDT(o)
+      if (dt.getTime() === 0) return true // keep orders with no/invalid date
+      if (dateFrom) {
+        const startOfDay = new Date(dateFrom)
+        startOfDay.setHours(0, 0, 0, 0)
+        if (dt < startOfDay) return false
+      }
+      if (dateTo) {
+        const endOfDay = new Date(dateTo)
+        endOfDay.setHours(23, 59, 59, 999)
+        if (dt > endOfDay) return false
+      }
+      return true
+    })
+  }
+
+  // Trust the backend's order_type classification — only sort client-side
+  // Sort by order_id descending (latest order on top)
+  const orders: Order[] = (() => {
+    let list = applyDateFilter(
+      [...rawOrders].sort((a, b) => (b.order_id || 0) - (a.order_id || 0))
+    )
+    // Paid filter: status 2 (Paid via payment gateway) OR 3 (Marked as paid manually)
+    if (showPaidOnly) {
+      list = list.filter(o => o.order_status === 2 || o.order_status === 3)
+    }
+    return list
+  })()
+
+
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -245,6 +340,7 @@ export default function OrdersPage() {
     setDateTo(null)
     setAmountFilter("")
     setLateFeeAmount("")
+    setShowPaidOnly(false)
     setPage(1)
   }
 
@@ -282,7 +378,7 @@ export default function OrdersPage() {
 
     // Remove duplicates and ensure valid order IDs
     const uniqueOrderIds = [...new Set(selectedOrders.filter(id => id && !isNaN(Number(id))))]
-    
+
     if (uniqueOrderIds.length === 0) {
       toast.error("No valid orders selected")
       return
@@ -321,11 +417,11 @@ export default function OrdersPage() {
   const downloadInvoiceMutation = useMutation({
     mutationFn: async (orderId: number) => {
       const response = await invoicesAPI.download(orderId)
-      
+
       // Create blob from response
       const blob = new Blob([response.data], { type: 'application/pdf' })
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       // Create download link
       const link = document.createElement('a')
       link.href = blobUrl
@@ -333,10 +429,10 @@ export default function OrdersPage() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl)
-      
+
       return response.data
     },
     onSuccess: () => {
@@ -465,19 +561,19 @@ export default function OrdersPage() {
     <div className="bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{ 
+        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
           lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
-          {selectedTab === 'past' ? 'Past Orders' : selectedTab === 'future' ? 'Future Orders' : selectedTab === 'reminder' ? 'Reminder Orders' : selectedTab === 'late' ? 'Late Orders' : 'Wholesale Orders'}
+          {selectedTab === 'past' ? 'Past Orders' : selectedTab === 'future' ? 'Future Orders' : selectedTab === 'reminder' ? 'Reminder Orders' : 'Wholesale Orders'}
         </h1>
         <Link href="/orders/new" className="w-full sm:w-auto">
-          <Button 
+          <Button
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
-            style={{ 
+            style={{
               fontWeight: 600,
               minWidth: '196px',
               height: '54px',
@@ -509,13 +605,12 @@ export default function OrdersPage() {
               // Invalidate queries to ensure fresh data
               queryClient.invalidateQueries({ queryKey: ['orders'] })
             }}
-            className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
-              selectedTab === tab.key
-                ? tab.key === 'wholesale'
-                  ? "bg-purple-100 text-purple-700 border-2 border-purple-500"
-                  : "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
-                : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
-            }`}
+            className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${selectedTab === tab.key
+              ? tab.key === 'wholesale'
+                ? "bg-purple-100 text-purple-700 border-2 border-purple-500"
+                : "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
+              : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
           >
             {tab.label}
@@ -527,12 +622,12 @@ export default function OrdersPage() {
           </button>
         ))}
       </div>
-      
+
       {/* Info banner for wholesale tab - Hidden for kj3 */}
       {false && selectedTab === 'wholesale' && (
         <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
           <p className="text-sm text-purple-800" style={{ fontFamily: 'Albert Sans' }}>
-            <strong>Wholesale Orders Only:</strong> This view shows only orders from wholesale customers. 
+            <strong>Wholesale Orders Only:</strong> This view shows only orders from wholesale customers.
             Use Past/Future/Reminder tabs to see all orders regardless of customer type.
           </p>
         </div>
@@ -551,17 +646,19 @@ export default function OrdersPage() {
               style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
             />
           </div>
-          
+
+          {/* Delivery Date range picker */}
           <div className="relative flex-shrink-0">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto"
-              style={{ 
-                fontFamily: 'Albert Sans', 
+              className={`gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto ${(dateFrom || dateTo) ? 'border-[#055160] text-[#055160]' : ''
+                }`}
+              style={{
+                fontFamily: 'Albert Sans',
                 fontWeight: 600,
-                color: '#6b7280',
-                minWidth: '155px',
+                color: dateFrom || dateTo ? '#055160' : '#6b7280',
+                minWidth: '185px',
                 height: '54px',
                 paddingTop: '8px',
                 paddingRight: '24px',
@@ -574,20 +671,21 @@ export default function OrdersPage() {
               }}
             >
               <Calendar className="h-5 w-5 text-gray-500" />
-              Select Date
+              {dateFrom || dateTo
+                ? `${dateFrom ? format(dateFrom, 'dd/MM/yy') : '…'} → ${dateTo ? format(dateTo, 'dd/MM/yy') : '…'}`
+                : 'Delivery Date'}
             </Button>
             {showDatePicker && (
               <div className="absolute top-full mt-2 z-50 bg-white p-4 rounded-lg shadow-lg border">
+                <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Delivery Date Range</p>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">From Date</label>
+                    <label className="text-sm font-medium mb-2 block">From</label>
                     <DatePicker
                       selected={dateFrom}
                       onChange={(date) => {
                         setDateFrom(date)
-                        if (date) {
-                          queryClient.invalidateQueries({ queryKey: ['orders'] })
-                        }
+                        if (date) queryClient.invalidateQueries({ queryKey: ['orders'] })
                       }}
                       dateFormat="dd/MM/yyyy"
                       className="border rounded px-3 py-2 w-full"
@@ -599,12 +697,10 @@ export default function OrdersPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-2 block">To Date</label>
+                    <label className="text-sm font-medium mb-2 block">To</label>
                     <DatePicker
                       selected={dateTo}
-                      onChange={(date) => {
-                        setDateTo(date)
-                      }}
+                      onChange={(date) => setDateTo(date)}
                       dateFormat="dd/MM/yyyy"
                       className="border rounded px-3 py-2 w-full"
                       placeholderText="DD/MM/YYYY"
@@ -615,7 +711,7 @@ export default function OrdersPage() {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button 
+                    <Button
                       onClick={() => {
                         setShowDatePicker(false)
                         queryClient.invalidateQueries({ queryKey: ['orders'] })
@@ -625,7 +721,7 @@ export default function OrdersPage() {
                     >
                       Apply
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => {
                         setDateFrom(null)
                         setDateTo(null)
@@ -644,97 +740,47 @@ export default function OrdersPage() {
             )}
           </div>
 
-          <Button 
-            variant="outline" 
-            onClick={() => setSelectedStatus(selectedStatus === 3 ? null : 3)}
-            className={`gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 ${
-              selectedStatus === 3 ? "bg-[#e7f1ff] text-[#055160] border-red-300" : ""
-            }`}
-            style={{ 
-              fontFamily: 'Albert Sans', 
+          {/* Paid Orders filter */}
+          <Button
+            variant="outline"
+            onClick={() => setShowPaidOnly(!showPaidOnly)}
+            className={`gap-2 whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 ${showPaidOnly ? 'bg-green-50 text-green-700 border-green-400' : 'border border-gray-200 bg-white'
+              }`}
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
-              color: selectedStatus === 3 ? '#1e40af' : '#6b7280',
               height: '54px',
               paddingTop: '8px',
               paddingRight: '24px',
               paddingBottom: '8px',
               paddingLeft: '24px',
-              gap: '8px',
               borderRadius: '100px',
               borderWidth: '1px',
               opacity: 1
             }}
           >
-            <Filter className="h-5 w-5 text-gray-500" />
+            <Filter className="h-5 w-5" />
             Paid Orders
           </Button>
 
-          <Button 
+          <Button
             onClick={handleClearFilters}
             className="text-[#055160] hover:text-[#04414d] bg-transparent border-0 shadow-none p-0 h-auto whitespace-nowrap"
-            style={{ 
-              fontFamily: 'Albert Sans', 
+            style={{
+              fontFamily: 'Albert Sans',
               fontWeight: 600,
               fontSize: '16px'
             }}
           >
             Clear Filters
           </Button>
-
-          <div 
-            className="flex items-center justify-between border border-gray-200 bg-white rounded-full"
-            style={{
-              width: '312px',
-              height: '54px',
-              paddingTop: '8px',
-              paddingRight: '12px',
-              paddingBottom: '8px',
-              paddingLeft: '12px',
-              borderRadius: '100px',
-              borderWidth: '1px',
-              opacity: 1
-            }}
-          >
-            <div className="flex items-center gap-2 flex-1">
-              <DollarSign className="h-5 w-5 text-gray-500" />
-              <input
-                type="text"
-                value={lateFeeAmount}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, '')
-                  setLateFeeAmount(value)
-                }}
-                placeholder="Enter Late Fee"
-                className="outline-none text-sm flex-1 bg-transparent text-gray-700"
-                style={{ fontFamily: 'Albert Sans' }}
-              />
-            </div>
-            <Button 
-              onClick={handleApplyLateFee}
-              disabled={updateLateFeeMutation.isPending || selectedOrders.length === 0}
-              className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap rounded-full hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ 
-                fontFamily: 'Albert Sans', 
-                fontWeight: 600,
-                height: 'auto',
-                paddingTop: '6px',
-                paddingRight: '16px',
-                paddingBottom: '6px',
-                paddingLeft: '16px',
-                borderRadius: '100px',
-                borderWidth: '0px'
-              }}
-            >
-              {updateLateFeeMutation.isPending ? "Submitting..." : "Submit"}
-            </Button>
-          </div>
         </div>
 
-        <Button 
+        <Button
           onClick={handlePrint}
           className="gap-2 whitespace-nowrap border-0 shadow-none hover:bg-transparent"
-          style={{ 
-            fontFamily: 'Albert Sans', 
+          style={{
+            fontFamily: 'Albert Sans',
             fontWeight: 600,
             fontStyle: 'normal',
             fontSize: '16px',
@@ -760,11 +806,10 @@ export default function OrdersPage() {
             setSelectedLocation(null)
             setPage(1)
           }}
-          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-            selectedLocation === null
-              ? "border-[#055160] text-[#055160]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
-          }`}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === null
+            ? "border-[#055160] text-[#055160]"
+            : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           <span className="w-5 h-5 flex items-center justify-center">📍</span>
@@ -777,11 +822,10 @@ export default function OrdersPage() {
               setSelectedLocation(location.location_id)
               setPage(1)
             }}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-              selectedLocation === location.location_id
-                ? "border-[#055160] text-[#055160]"
-                : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
+              ? "border-[#055160] text-[#055160]"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+              }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
             <span className="w-5 h-5 flex items-center justify-center">📍</span>
@@ -803,7 +847,7 @@ export default function OrdersPage() {
                     className="h-5 w-5"
                   />
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'order_id') {
@@ -813,8 +857,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -827,7 +871,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'customer_name') {
@@ -837,8 +881,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -851,7 +895,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'company') {
@@ -861,8 +905,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -875,7 +919,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'department') {
@@ -885,8 +929,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -899,7 +943,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'delivery_date') {
@@ -909,8 +953,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -923,7 +967,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'delivery_time') {
@@ -933,8 +977,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -947,7 +991,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'order_total') {
@@ -957,8 +1001,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -971,7 +1015,7 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
                     if (sortField === 'order_status') {
@@ -981,8 +1025,8 @@ export default function OrdersPage() {
                       setSortDirection('asc')
                     }
                   }}
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -995,10 +1039,10 @@ export default function OrdersPage() {
                     <ArrowUpDown className="h-3 w-3 text-gray-400" />
                   </div>
                 </th>
-                <th 
+                <th
                   className="px-4 py-3 text-left"
-                  style={{ 
-                    fontFamily: 'Albert Sans', 
+                  style={{
+                    fontFamily: 'Albert Sans',
                     fontWeight: 600,
                     fontStyle: 'normal',
                     fontSize: '14px',
@@ -1029,192 +1073,203 @@ export default function OrdersPage() {
                 </tr>
               ) : (
                 orders.map((order: any) => {
+                  // Highlight frontend orders (placed by customer online) in light blue
+                  const isFrontendOrder = order.user_id != null && order.user_id !== 0
                   return (
-                  <tr key={order.order_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4">
-                      <Checkbox
-                        checked={selectedOrders.includes(order.order_id)}
-                        onCheckedChange={(checked) => handleSelectOrder(order.order_id, checked as boolean)}
-                        className="h-5 w-5"
-                      />
-                    </td>
-                    <td className="px-4 py-4">
-                      <Link href={`/orders/${order.order_id}`} prefetch={true} onClick={(e) => e.stopPropagation()}>
-                        <span className="text-[#055160] hover:underline cursor-pointer" style={{ 
-                          fontFamily: 'Albert Sans',
-                          fontWeight: 400,
-                          fontStyle: 'normal',
-                          fontSize: '14px',
-                          lineHeight: '20px',
-                          letterSpacing: '0%'
-                        }}>
-                          #{order.order_id}
-                        </span>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-900" style={{ 
-                          fontFamily: 'Albert Sans',
-                          fontWeight: 400,
-                          fontStyle: 'normal',
-                          fontSize: '14px',
-                          lineHeight: '20px',
-                          letterSpacing: '0%'
-                        }}>
-                          {order.customer_name || 'N/A'}
-                        </span>
-                        {/* Wholesale badge - Hidden for kj3 */}
-                        {false && order.customer_type && (order.customer_type.includes('Wholesale') || order.customer_type.includes('Wholesaler')) && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200" style={{ fontFamily: 'Albert Sans' }}>
-                            Wholesale
+                    <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${isFrontendOrder ? 'bg-blue-50' : 'hover:bg-gray-50'
+                      }`}>
+                      <td className="px-4 py-4">
+                        <Checkbox
+                          checked={selectedOrders.includes(order.order_id)}
+                          onCheckedChange={(checked) => handleSelectOrder(order.order_id, checked as boolean)}
+                          className="h-5 w-5"
+                        />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Link href={`/orders/${order.order_id}`} prefetch={true} onClick={(e) => e.stopPropagation()}>
+                          <span className="text-[#055160] hover:underline cursor-pointer" style={{
+                            fontFamily: 'Albert Sans',
+                            fontWeight: 400,
+                            fontStyle: 'normal',
+                            fontSize: '14px',
+                            lineHeight: '20px',
+                            letterSpacing: '0%'
+                          }}>
+                            #{order.order_id}
                           </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        fontSize: '14px',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {order.company || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        fontSize: '14px',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {order.department || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        fontSize: '14px',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {order.delivery_date ? format(new Date(order.delivery_date), 'dd/MM/yyyy') : 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-gray-700" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        fontSize: '14px',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        {order.delivery_time || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-gray-900" style={{ 
-                        fontFamily: 'Albert Sans',
-                        fontWeight: 400,
-                        fontStyle: 'normal',
-                        fontSize: '14px',
-                        lineHeight: '20px',
-                        letterSpacing: '0%'
-                      }}>
-                        ${Number(order.order_total || 0).toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      {getStatusBadge(order.order_status)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors">
-                              <MoreVertical className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem 
-                              onClick={() => handleViewOrder(order.order_id)}
-                              className="cursor-pointer"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleEditOrder(order.order_id)}
-                              className="cursor-pointer"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Order
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handlePayment(order.order_id)}
-                              className="cursor-pointer"
-                            >
-                              <DollarSign className="h-4 w-4 mr-2" />
-                              Process Payment
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleMarkAsPaid(order.order_id)}
-                              disabled={updateStatusMutation.isPending || order.order_status === 3}
-                              className="cursor-pointer"
-                            >
-                              <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Mark Paid
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDownloadOrder(order.order_id)}
-                              disabled={downloadInvoiceMutation.isPending}
-                              className="cursor-pointer"
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Download Invoice
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleEmailOrder(order)}
-                              disabled={emailMutation.isPending}
-                              className="cursor-pointer"
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Send Email to Customer
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleRefreshOrder(order.order_id)}
-                              className="cursor-pointer"
-                            >
-                              <RotateCcw className="h-4 w-4 mr-2" />
-                              Refresh Order
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleAttachImage(order.order_id)}
-                              className="cursor-pointer"
-                            >
-                              <ImageIcon className="h-4 w-4 mr-2" />
-                              Attach Image
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteClick(order.order_id)}
-                              className="cursor-pointer text-[#055160] focus:text-[#055160]"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Order
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                  </tr>
+                        </Link>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-900" style={{
+                            fontFamily: 'Albert Sans',
+                            fontWeight: 400,
+                            fontStyle: 'normal',
+                            fontSize: '14px',
+                            lineHeight: '20px',
+                            letterSpacing: '0%'
+                          }}>
+                            {order.customer_name || 'N/A'}
+                          </span>
+                          {/* Wholesale badge - Hidden for kj3 */}
+                          {false && order.customer_type && (order.customer_type.includes('Wholesale') || order.customer_type.includes('Wholesaler')) && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 border border-purple-200" style={{ fontFamily: 'Albert Sans' }}>
+                              Wholesale
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-gray-700" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {order.company || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-gray-700" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {order.department || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-gray-700" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {order.delivery_date ? format(new Date(order.delivery_date), 'dd/MM/yyyy') : 'N/A'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-gray-700" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          {(() => {
+                            const timePart = order.delivery_time;
+                            if (!timePart) return '—';
+                            const [hours, minutes] = timePart.split(':').map(Number);
+                            if (isNaN(hours) || isNaN(minutes)) return timePart;
+                            const hour12 = hours % 12 || 12;
+                            const ampm = hours >= 12 ? 'PM' : 'AM';
+                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                          })()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="text-gray-900" style={{
+                          fontFamily: 'Albert Sans',
+                          fontWeight: 400,
+                          fontStyle: 'normal',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          letterSpacing: '0%'
+                        }}>
+                          ${Number(order.order_total || 0).toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        {getStatusBadge(order.order_status)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors">
+                                <MoreVertical className="h-4 w-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem
+                                onClick={() => handleViewOrder(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleEditOrder(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Order
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handlePayment(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <DollarSign className="h-4 w-4 mr-2" />
+                                Process Payment
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleMarkAsPaid(order.order_id)}
+                                disabled={updateStatusMutation.isPending || order.order_status === 3}
+                                className="cursor-pointer"
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                Mark Paid
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDownloadOrder(order.order_id)}
+                                disabled={downloadInvoiceMutation.isPending}
+                                className="cursor-pointer"
+                              >
+                                <FileText className="h-4 w-4 mr-2" />
+                                Download Invoice
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleEmailOrder(order)}
+                                disabled={emailMutation.isPending}
+                                className="cursor-pointer"
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Email to Customer
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleRefreshOrder(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Refresh Order
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleAttachImage(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <ImageIcon className="h-4 w-4 mr-2" />
+                                Attach Image
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteClick(order.order_id)}
+                                className="cursor-pointer text-[#055160] focus:text-[#055160]"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Order
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </tr>
                   )
                 })
               )}
@@ -1222,49 +1277,11 @@ export default function OrdersPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-white">
+        {/* Order count */}
+        <div className="flex items-center px-6 py-4 border-t border-gray-200 bg-white">
           <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-            Showing {orders.length > 0 ? ((page - 1) * limit) + 1 : 0}-{Math.min(page * limit, totalCount)} of {totalCount} Entries
+            Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
           </p>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="text-gray-600"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              Prev
-            </Button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const pageNum = page <= 3 ? i + 1 : page + i - 2
-              if (pageNum > totalPages) return null
-              return (
-                <Button 
-                  key={pageNum}
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setPage(pageNum)}
-                  className={pageNum === page ? "bg-[#C62828] text-white border-[#055160] hover:bg-[#B71C1C]" : ""}
-                  style={{ fontFamily: 'Albert Sans' }}
-                >
-                  {pageNum}
-                </Button>
-              )
-            })}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={page === totalPages || totalPages === 0}
-              onClick={() => setPage(page + 1)}
-              className="text-gray-600"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              Next
-            </Button>
-          </div>
         </div>
       </Card>
 
@@ -1278,14 +1295,14 @@ export default function OrdersPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowDeleteModal(false)}
               disabled={deleteMutation.isPending}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
               className="bg-red-600 hover:bg-red-700 text-white"
@@ -1308,10 +1325,12 @@ export default function OrdersPage() {
 
       {/* Payment Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Process Payment</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-2xl max-h-[70vh] overflow-y-auto">
+          <DialogHeader className="sticky top-0 bg-white z-10 pb-2">
+            <DialogTitle style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+              Process Payment
+            </DialogTitle>
+            <DialogDescription style={{ fontFamily: 'Albert Sans' }}>
               Process payment for order #{paymentOrderId}
             </DialogDescription>
           </DialogHeader>

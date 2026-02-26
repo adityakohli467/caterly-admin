@@ -1086,7 +1086,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
 
               {/* Delivery Notes */}
               <ValidatedTextarea
-                label="Notes"
+                label="Delivery Notes"
                 placeholder="Enter time, location, and name"
                 value={deliveryNotes}
                 fieldName="Notes"
