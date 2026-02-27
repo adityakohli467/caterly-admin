@@ -428,8 +428,8 @@ export default function QuotesPage() {
             setCurrentPage(1)
           }}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === 0
-              ? "border-[#055160] text-[#055160]"
-              : "border-transparent text-gray-600 hover:text-gray-900"
+            ? "border-[#055160] text-[#055160]"
+            : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
@@ -444,8 +444,8 @@ export default function QuotesPage() {
               setCurrentPage(1)
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
-                ? "border-[#055160] text-[#055160]"
-                : "border-transparent text-gray-600 hover:text-gray-900"
+              ? "border-[#055160] text-[#055160]"
+              : "border-transparent text-gray-600 hover:text-gray-900"
               }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
@@ -759,14 +759,14 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        {(() => {
+                        {quote.delivery_date_time ? (() => {
                           const date = new Date(quote.delivery_date_time);
                           const hours = date.getHours();
                           const minutes = date.getMinutes();
                           const hour12 = hours % 12 || 12;
                           const ampm = hours >= 12 ? 'PM' : 'AM';
                           return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                        })()}
+                        })() : 'N/A'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
@@ -787,9 +787,9 @@ export default function QuotesPage() {
                           <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                         ) : (
                           <div className={`w-1.5 h-1.5 rounded-full ${quote.order_status === 5 || quote.order_status === 8 ? 'bg-red-500' :  // Cancelled/Rejected - red
-                              quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
-                                quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
-                                  'bg-[#C62828]'  // New (status 1) - teal
+                            quote.order_status === 4 ? 'bg-yellow-500' : // Awaiting Approval - yellow
+                              quote.order_status === 9 ? 'bg-orange-500' : // Modify - orange
+                                'bg-[#C62828]'  // New (status 1) - teal
                             }`}></div>
                         )}
                         {getStatusLabel(quote.order_status)}
