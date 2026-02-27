@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import api from "@/lib/api"
@@ -10,38 +10,101 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidationRules } from "@/lib/validation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Printer, Plus, Edit, Trash2, AlertCircle, FolderOpen } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Search, Printer, Plus, Edit, Trash2, AlertCircle, FolderOpen, GripVertical } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { validateRequired } from "@/lib/validations"
 import { printTableData } from "@/lib/print-utils"
+
+// dnd-kit
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 interface Category {
   category_id: number
   category_name: string
   parent_category_id?: number | null
   parent_category_name?: string | null
+  sort_order?: number | null
 }
 
+// ─── Sortable Item Component for Modal ─────────────────────────────────────────
+interface SortableItemProps {
+  category: Category
+  index: number
+}
+
+function SortableItem({ category, index }: SortableItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: category.category_id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 999 : undefined,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`flex items-center gap-3 p-4 mb-2 bg-white border rounded-lg cursor-grab active:cursor-grabbing ${isDragging ? "border-[#c62828] shadow-md" : "border-gray-200"
+        }`}
+    >
+      <div className="text-gray-400 p-1">
+        <GripVertical className="h-5 w-5" />
+      </div>
+      <div>
+        <span className="font-semibold text-gray-900">{category.category_name}</span>
+        <span className="ml-2 text-xs text-gray-500 font-normal">
+          (Current order: {index + 1})
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Categories Page ──────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const queryClient = useQueryClient()
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"products" | "categories">("categories")
-  const [categoryView, setCategoryView] = useState<"all" | "main" | "sub">("all") // Filter: all, main categories only, subcategories only
+  const [categoryView, setCategoryView] = useState<"all" | "main" | "sub">("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showReorderModal, setShowReorderModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
-  const [isSubcategory, setIsSubcategory] = useState(false) // Track if adding subcategory
+  const [isSubcategory, setIsSubcategory] = useState(false)
+
+  // Reordering state inside modal
+  const [modalCategories, setModalCategories] = useState<Category[]>([])
 
   // Form state
   const [categoryName, setCategoryName] = useState("")
   const [parentCategoryId, setParentCategoryId] = useState<number | null>(null)
+  const [errors, setErrors] = useState<{ category_name?: string }>({})
 
-  // Fetch all categories for parent selection
-  const { data: allCategoriesData } = useQuery({
+  // ── Fetch ALL categories ─────────────────────────────────────────────────────
+  const { data: allCategoriesData, isLoading } = useQuery({
     queryKey: ["categories-all"],
     queryFn: async () => {
       const response = await api.get("/admin/categories?limit=1000")
@@ -49,99 +112,122 @@ export default function CategoriesPage() {
     },
   })
 
-  const allCategories = allCategoriesData?.categories || []
-  const mainCategories = allCategories.filter((cat: any) => !cat.parent_category_id)
+  const allCategories: Category[] = allCategoriesData?.categories || []
+  const mainCategories = allCategories.filter((cat) => !cat.parent_category_id)
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  // ── Filtered Categories for Table ───────────────────────────────────────────
+  const filteredCategories = allCategories.filter((cat) => {
+    const matchesView =
+      categoryView === "all" ||
+      (categoryView === "main" && !cat.parent_category_id) ||
+      (categoryView === "sub" && !!cat.parent_category_id)
 
-  // Fetch categories
-  const { data: categoriesData, isLoading } = useQuery({
-    queryKey: ["categories", searchQuery, currentPage],
-    queryFn: async () => {
-      const params = new URLSearchParams()
-      if (searchQuery) params.append("search", searchQuery)
-      params.append("limit", itemsPerPage.toString())
-      params.append("offset", ((currentPage - 1) * itemsPerPage).toString())
-      const response = await api.get(`/admin/categories?${params.toString()}`)
-      return response.data
+    const matchesSearch =
+      !searchQuery ||
+      cat.category_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (cat.parent_category_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+
+    return matchesView && matchesSearch
+  })
+
+  // ── Reorder Logic ────────────────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleOpenReorderModal = () => {
+    // We only reorder main categories or all? Screenshot shows a specific list.
+    // Usually, reordering makes most sense for either all or just main. 
+    // Let's allow reordering of the current viewed list or just all.
+    // Screenshot shows simple names. Let's use all categories for now.
+    setModalCategories([...allCategories])
+    setShowReorderModal(true)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setModalCategories((items) => {
+      const oldIndex = items.findIndex((i) => i.category_id === active.id)
+      const newIndex = items.findIndex((i) => i.category_id === over.id)
+      return arrayMove(items, oldIndex, newIndex)
+    })
+  }
+
+  const reorderMutation = useMutation({
+    mutationFn: async (payload: any) => {
+      return api.post("/admin/categories/reorder", payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories-all"] })
+      toast.success("Category order saved!")
+      setShowReorderModal(false)
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to save category order")
     },
   })
 
-  const allCategoriesList = categoriesData?.categories || []
-  const totalCount = categoriesData?.count || 0
-
-  // Filter categories based on view mode
-  let filteredCategories = allCategoriesList
-  if (categoryView === "main") {
-    filteredCategories = allCategoriesList.filter((cat: Category) => !cat.parent_category_id)
-  } else if (categoryView === "sub") {
-    filteredCategories = allCategoriesList.filter((cat: Category) => cat.parent_category_id)
+  const handleSaveOrder = () => {
+    const payload = modalCategories.map((cat, index) => ({
+      category_id: cat.category_id,
+      sort_order: index,
+    }))
+    reorderMutation.mutate(payload)
   }
 
-  const categories = filteredCategories
-  const totalPages = Math.ceil(totalCount / itemsPerPage)
-
-  // Create category mutation
+  // ── CRUD Mutations ───────────────────────────────────────────────────────────
   const createCategoryMutation = useMutation({
-    mutationFn: async (categoryData: any) => {
-      const response = await api.post("/admin/categories", categoryData)
-      return response.data
-    },
+    mutationFn: (data: any) => api.post("/admin/categories", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["categories-all"] })
-      toast.success(isSubcategory ? "Subcategory created successfully!" : "Main category created successfully!")
+      toast.success("Category created successfully!")
       setShowAddModal(false)
       resetForm()
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to create category")
-    },
   })
 
-  // Update category mutation
   const updateCategoryMutation = useMutation({
-    mutationFn: async ({ id, ...categoryData }: any) => {
-      const response = await api.put(`/admin/categories/${id}`, categoryData)
-      return response.data
-    },
+    mutationFn: ({ id, ...data }: any) => api.put(`/admin/categories/${id}`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["categories-all"] })
       toast.success("Category updated successfully!")
       setShowEditModal(false)
       resetForm()
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to update category")
-    },
   })
 
-  // Delete category mutation
   const deleteCategoryMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await api.delete(`/admin/categories/${id}`)
-      return response.data
-    },
+    mutationFn: (id: number) => api.delete(`/admin/categories/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] })
       queryClient.invalidateQueries({ queryKey: ["categories-all"] })
       toast.success("Category deleted successfully!")
       setShowDeleteModal(false)
-      setSelectedCategory(null)
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to delete category")
     },
   })
 
-  const handleAddCategory = (isSubcategory: boolean = false) => {
+  const resetForm = () => {
     setCategoryName("")
     setParentCategoryId(null)
-    setIsSubcategory(isSubcategory)
-    setShowAddModal(true)
+    setIsSubcategory(false)
+    setSelectedCategory(null)
+    setErrors({})
+  }
+
+  const handleSaveCategory = () => {
+    const newErrors: any = {}
+    if (!categoryName.trim()) newErrors.category_name = "Required"
+    setErrors(newErrors)
+    if (Object.keys(newErrors).length > 0) return
+
+    const data = { category_name: categoryName, parent_category_id: parentCategoryId }
+    if (selectedCategory) {
+      updateCategoryMutation.mutate({ id: selectedCategory.category_id, ...data })
+    } else {
+      createCategoryMutation.mutate(data)
+    }
   }
 
   const handleEditCategory = (category: Category) => {
@@ -156,104 +242,29 @@ export default function CategoriesPage() {
     setShowDeleteModal(true)
   }
 
-  // Validation errors state
-  const [errors, setErrors] = useState<{
-    category_name?: string
-  }>({})
-
-  const handleSaveCategory = () => {
-    const newErrors: typeof errors = {}
-
-    // Validate category name (required, max 255 chars per DB schema)
-    const nameValidation = validateRequired(categoryName, "Category name", 255)
-    if (!nameValidation.valid) {
-      newErrors.category_name = nameValidation.error || "Category name is required"
-    }
-
-    setErrors(newErrors)
-
-    if (Object.keys(newErrors).length > 0) {
-      const firstError = Object.values(newErrors)[0]
-      if (firstError) toast.error(firstError)
-      return
-    }
-
-    const categoryData = {
-      category_name: categoryName.trim(),
-      parent_category_id: parentCategoryId || null,
-    }
-
-    if (selectedCategory) {
-      updateCategoryMutation.mutate({
-        id: selectedCategory.category_id,
-        ...categoryData
-      })
-    } else {
-      createCategoryMutation.mutate(categoryData)
-    }
-  }
-
-  const handleConfirmDelete = () => {
-    if (selectedCategory) {
-      deleteCategoryMutation.mutate(selectedCategory.category_id)
-    }
-  }
-
-  const resetForm = () => {
-    setCategoryName("")
-    setParentCategoryId(null)
-    setIsSubcategory(false)
-    setSelectedCategory(null)
-    setErrors({}) // Clear all validation errors
-  }
-
   return (
-    <div className="bg-gray-50 min-h-screen" style={{ fontFamily: 'Albert Sans' }}>
+    <div className="bg-gray-50 min-h-screen p-8" style={{ fontFamily: "Albert Sans" }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-gray-900" style={{
-          fontFamily: 'Albert Sans',
-          fontWeight: 600,
-          fontStyle: 'normal',
-          fontSize: '40px',
-          lineHeight: '48px',
-          letterSpacing: '0%'
-        }}>
-          Product Management
-        </h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold text-gray-900">Manage Categories</h1>
         <div className="flex gap-3">
           <Button
-            onClick={() => handleAddCategory(false)}
-            className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
-            style={{
-              fontWeight: 600,
-              height: '54px',
-              paddingTop: '8px',
-              paddingRight: '16px',
-              paddingBottom: '8px',
-              paddingLeft: '16px',
-              gap: '4px',
-              borderRadius: '67px',
-              opacity: 1
-            }}
+            onClick={handleOpenReorderModal}
+            className="bg-[#c62828] hover:bg-[#b01f1f] text-white flex items-center gap-2 px-6 h-12 rounded-full font-semibold"
+          >
+            <GripVertical className="h-5 w-5" />
+            Reorder Categories
+          </Button>
+          <Button
+            onClick={() => { setIsSubcategory(false); setShowAddModal(true); }}
+            className="bg-[#c62828] hover:bg-[#b01f1f] text-white flex items-center gap-2 px-6 h-12 rounded-full font-semibold"
           >
             <Plus className="h-5 w-5" />
             Add Main Category
           </Button>
           <Button
-            onClick={() => handleAddCategory(true)}
-            className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
-            style={{
-              fontWeight: 600,
-              height: '54px',
-              paddingTop: '8px',
-              paddingRight: '16px',
-              paddingBottom: '8px',
-              paddingLeft: '16px',
-              gap: '4px',
-              borderRadius: '67px',
-              opacity: 1
-            }}
+            onClick={() => { setIsSubcategory(true); setShowAddModal(true); }}
+            className="bg-[#c62828] hover:bg-[#b01f1f] text-white flex items-center gap-2 px-6 h-12 rounded-full font-semibold"
           >
             <Plus className="h-5 w-5" />
             Add Subcategory
@@ -262,391 +273,192 @@ export default function CategoriesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6">
-        <button
-          className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-[#fce4ec] text-[#C62828]"
-          style={{ fontWeight: 600 }}
-        >
+      <div className="flex gap-4 mb-8">
+        <button className="px-6 py-2 rounded-full text-sm font-semibold bg-[#fce4ec] text-[#c62828]">
           Categories
         </button>
-        <Link href="/admin/products">
-          <button
-            className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
-            style={{ fontWeight: 600 }}
-          >
-            Products
+        <Link href="/admin/options">
+          <button className="px-6 py-2 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-500 hover:bg-gray-50">
+            Options
           </button>
         </Link>
-        <Link href="/admin/options">
-          <button
-            className="px-6 py-2 rounded-full text-sm font-medium transition-colors bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
-            style={{ fontWeight: 600 }}
-          >
-            Options
+        <Link href="/admin/products">
+          <button className="px-6 py-2 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-500 hover:bg-gray-50">
+            Products
           </button>
         </Link>
       </div>
 
-      {/* Category View Filter */}
-      <div className="flex gap-3 mb-6">
+      {/* View Filters */}
+      <div className="flex gap-3 mb-8">
         <Button
           variant={categoryView === "all" ? "default" : "outline"}
           onClick={() => setCategoryView("all")}
-          className={categoryView === "all" ? "bg-[#C62828] text-white" : ""}
-          style={{ fontWeight: 600 }}
+          className={categoryView === "all" ? "bg-[#c62828] text-white" : "text-gray-600 bg-white"}
         >
           All Categories
         </Button>
         <Button
           variant={categoryView === "main" ? "default" : "outline"}
           onClick={() => setCategoryView("main")}
-          className={categoryView === "main" ? "bg-[#C62828] text-white" : ""}
-          style={{ fontWeight: 600 }}
+          className={categoryView === "main" ? "bg-[#c62828] text-white" : "text-gray-600 bg-white"}
         >
           Main Categories Only
         </Button>
         <Button
           variant={categoryView === "sub" ? "default" : "outline"}
           onClick={() => setCategoryView("sub")}
-          className={categoryView === "sub" ? "bg-[#C62828] text-white" : ""}
-          style={{ fontWeight: 600 }}
+          className={categoryView === "sub" ? "bg-[#c62828] text-white" : "text-gray-600 bg-white"}
         >
           Subcategories Only
         </Button>
       </div>
 
       {/* Search and Print */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <div className="flex items-center justify-between mb-8">
+        <div className="relative w-[500px]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
-            style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
+            className="pl-12 h-14 rounded-full border border-gray-200 bg-white"
           />
         </div>
-        <Button
-          onClick={() => printTableData("Categories")}
-          className="gap-2 whitespace-nowrap border-0 shadow-none"
-          style={{
-            fontFamily: 'Albert Sans',
-            fontWeight: 600,
-            fontStyle: 'normal',
-            fontSize: '16px',
-            lineHeight: '20px',
-            letterSpacing: '0%',
-            textAlign: 'center',
-            color: '#C62828',
-            backgroundColor: 'transparent',
-            padding: 0,
-            gap: '8px',
-            opacity: 1
-          }}
-        >
-          <Printer className="h-5 w-5 text-[#C62828]" />
+        <Button variant="ghost" className="text-[#c62828] font-semibold flex items-center gap-2">
+          <Printer className="h-5 w-5" />
           Print
         </Button>
       </div>
 
-      {/* Table */}
-      <Card className="border border-gray-200 shadow-sm overflow-hidden bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  Category
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  Parent Category
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  Actions
-                </th>
+      {/* Main Table */}
+      <Card className="border-0 shadow-sm overflow-hidden bg-white rounded-xl">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Parent Category</th>
+              <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {isLoading ? (
+              <tr><td colSpan={3} className="text-center py-10 text-gray-400">Loading categories...</td></tr>
+            ) : filteredCategories.map((category) => (
+              <tr key={category.category_id} className="hover:bg-gray-50/50 transition-colors">
+                <td className="px-8 py-5 text-sm font-medium text-gray-900 uppercase">
+                  {category.category_name}
+                  {category.parent_category_id && <span className="ml-2 text-xs text-gray-400 lowercase italic">(subcategory)</span>}
+                </td>
+                <td className="px-8 py-5 text-sm text-gray-500 uppercase">
+                  {category.parent_category_name || "-"}
+                </td>
+                <td className="px-8 py-5">
+                  <div className="flex gap-3">
+                    <button onClick={() => handleEditCategory(category)} className="p-2 text-[#c62828] hover:bg-[#fce4ec] rounded-lg"><Edit className="h-4 w-4" /></button>
+                    <button onClick={() => handleDeleteCategory(category)} className="p-2 text-[#c62828] hover:bg-[#fce4ec] rounded-lg"><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={3} className="text-center py-8 text-gray-500">Loading categories...</td>
-                </tr>
-              ) : categories.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="text-center py-8 text-gray-500">No categories found.</td>
-                </tr>
-              ) : (
-                categories.map((category: Category) => (
-                  <tr key={category.category_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {category.category_name}
-                      {category.parent_category_id && (
-                        <span className="ml-2 text-xs text-gray-500">(Subcategory)</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                      {category.parent_category_name || "-"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEditCategory(category)}
-                          className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCategory(category)}
-                          className="p-1.5 text-[#C62828] hover:bg-[#fce4ec] rounded transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </Card>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-6">
-        <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-          Showing {categories.length > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} Entries
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-gray-300 bg-white"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </Button>
-          <Button
-            size="sm"
-            className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
-          >
-            {currentPage}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-gray-300 bg-white"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages || totalPages === 0}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-
-      {/* Add Category Modal */}
-      <Dialog open={showAddModal} onOpenChange={(open) => {
-        if (!open) {
-          // Blur active element to prevent validation on blur
-          if (document.activeElement && document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur()
-          }
-          resetForm() // Clear form and errors when closing
-        }
-        setShowAddModal(open)
-      }}>
-        <DialogContent className="max-w-md bg-white" style={{ fontFamily: 'Albert Sans' }}>
-          <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#fce4ec] mx-auto mb-4">
-              <FolderOpen className="h-6 w-6 text-[#C62828]" />
-            </div>
-            <DialogTitle className="text-center text-xl font-semibold">
-              {isSubcategory ? "Add New Subcategory" : "Add New Main Category"}
-            </DialogTitle>
+      {/* ── REORDER MODAL ────────────────────────────────────────────────── */}
+      <Dialog open={showReorderModal} onOpenChange={setShowReorderModal}>
+        <DialogContent className="max-w-2xl bg-white p-8 rounded-2xl border-0 shadow-2xl">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-2xl font-bold text-gray-900">Reorder Categories</DialogTitle>
+            <DialogDescription className="text-gray-500 mt-2">
+              Drag and drop categories to reorder them. The order will be reflected in the shop page.
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <ValidatedInput
-              label="Category Name"
-              placeholder={isSubcategory ? "Enter subcategory name" : "Enter category name"}
-              value={categoryName}
-              validationRule={ValidationRules.category.category_name}
-              fieldName="Category Name"
-              onChange={(value) => setCategoryName(value)}
-              className="h-11 border-gray-300 bg-white"
-            />
-
-            {isSubcategory && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Parent Category <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  value={parentCategoryId || ""}
-                  onChange={(e) => setParentCategoryId(e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
-                  style={{ fontFamily: 'Albert Sans' }}
-                  required
-                >
-                  <option value="">Select Parent Category</option>
-                  {mainCategories.map((cat: any) => (
-                    <option key={cat.category_id} value={cat.category_id}>
-                      {cat.category_name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500">Select a parent category for this subcategory</p>
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={() => {
-                  setShowAddModal(false)
-                  resetForm()
-                }}
-                variant="outline"
-                className="flex-1 border-gray-300 bg-white"
-                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveCategory}
-                disabled={!categoryName.trim() || createCategoryMutation.isPending || (isSubcategory && !parentCategoryId)}
-                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
-                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              >
-                {createCategoryMutation.isPending ? "Creating..." : "Create"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Category Modal */}
-      <Dialog open={showEditModal} onOpenChange={(open) => {
-        if (!open) {
-          // Blur active element to prevent validation on blur
-          if (document.activeElement && document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur()
-          }
-          resetForm() // Clear form and errors when closing
-        }
-        setShowEditModal(open)
-      }}>
-        <DialogContent className="max-w-md bg-white" style={{ fontFamily: 'Albert Sans' }}>
-          <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#fce4ec] mx-auto mb-4">
-              <Edit className="h-6 w-6 text-[#C62828]" />
-            </div>
-            <DialogTitle className="text-center text-xl font-semibold">
-              Edit Category
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <ValidatedInput
-              label="Category Name"
-              placeholder="Enter category name"
-              value={categoryName}
-              validationRule={ValidationRules.category.category_name}
-              fieldName="Category Name"
-              onChange={(value) => setCategoryName(value)}
-              className="h-11 border-gray-300 bg-white"
-            />
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Parent Category (Optional - Leave empty for main category)
-              </Label>
-              <select
-                value={parentCategoryId || ""}
-                onChange={(e) => setParentCategoryId(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
-                style={{ fontFamily: 'Albert Sans' }}
-              >
-                <option value="">None (Main Category)</option>
-                {mainCategories.filter((cat: any) => cat.category_id !== selectedCategory?.category_id).map((cat: any) => (
-                  <option key={cat.category_id} value={cat.category_id}>
-                    {cat.category_name}
-                  </option>
+          <div className="max-h-[60vh] overflow-y-auto px-1 py-1">
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={modalCategories.map((c) => c.category_id)} strategy={verticalListSortingStrategy}>
+                {modalCategories.map((category, index) => (
+                  <SortableItem key={category.category_id} category={category} index={index} />
                 ))}
-              </select>
-              <p className="text-xs text-gray-500">Select a parent category to make this a subcategory</p>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={() => {
-                  setShowEditModal(false)
-                  resetForm()
-                }}
-                variant="outline"
-                className="flex-1 border-gray-300 bg-white"
-                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveCategory}
-                disabled={!categoryName.trim() || updateCategoryMutation.isPending}
-                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white disabled:opacity-50"
-                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              >
-                {updateCategoryMutation.isPending ? "Updating..." : "Update"}
-              </Button>
-            </div>
+              </SortableContext>
+            </DndContext>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Delete Confirmation Modal */}
-      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 700 }}>
-              Delete Category
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#fce4ec]">
-                <AlertCircle className="h-6 w-6 text-[#C62828]" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>
-                  Are you sure you want to permanently delete this category? This action cannot be undone.
-                </p>
-                <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  {selectedCategory?.category_name}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-4 mt-8">
             <Button
               variant="outline"
-              onClick={() => {
-                setShowDeleteModal(false)
-                setSelectedCategory(null)
-              }}
-              className="border-gray-300"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={() => setShowReorderModal(false)}
+              className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleConfirmDelete}
-              disabled={deleteCategoryMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={handleSaveOrder}
+              disabled={reorderMutation.isPending}
+              className="flex-1 h-12 rounded-xl bg-[#c62828] hover:bg-[#b01f1f] text-white font-semibold"
             >
-              {deleteCategoryMutation.isPending ? "Deleting..." : "Delete"}
+              {reorderMutation.isPending ? "Saving..." : "Save Order"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Add/Edit Modals (using simplified versions for brevity) ────────── */}
+      <Dialog open={showAddModal || showEditModal} onOpenChange={(open) => { if (!open) resetForm(); setShowAddModal(open); setShowEditModal(open); }}>
+        <DialogContent className="max-w-md bg-white p-8 rounded-2xl">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <FolderOpen className="h-5 w-5 text-blue-600" />
+              {showEditModal ? "Edit Category" : isSubcategory ? "Add Subcategory" : "Add Main Category"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700">Category Name</Label>
+              <Input
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                placeholder="e.g. Coffee"
+                className="h-12 border-gray-200 focus:ring-blue-500"
+              />
+            </div>
+            {isSubcategory && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-700">Parent Category</Label>
+                <select
+                  value={parentCategoryId || ""}
+                  onChange={(e) => setParentCategoryId(Number(e.target.value))}
+                  className="w-full h-12 rounded-lg border border-gray-200 px-4 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Select Parent</option>
+                  {mainCategories.map(c => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+                </select>
+              </div>
+            )}
+            <div className="flex gap-4 pt-4">
+              <Button variant="outline" onClick={() => { setShowAddModal(false); setShowEditModal(false); resetForm(); }} className="flex-1 h-12 rounded-xl">Cancel</Button>
+              <Button onClick={handleSaveCategory} className="flex-1 h-12 rounded-xl bg-[#c62828] hover:bg-[#b01f1f] text-white font-semibold">
+                {showEditModal ? "Update" : "Create"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Modal ────────────────────────────────────────────────── */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="max-w-md bg-white p-8 rounded-2xl">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-6">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-900 mb-2">Delete Category?</DialogTitle>
+            <p className="text-gray-500 mb-8">This action cannot be undone. All subcategories and products might be affected.</p>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={() => setShowDeleteModal(false)} className="flex-1 h-12 rounded-xl">Keep it</Button>
+              <Button onClick={() => deleteCategoryMutation.mutate(selectedCategory!.category_id)} className="flex-1 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold">Delete</Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
