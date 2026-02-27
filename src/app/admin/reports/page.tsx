@@ -70,7 +70,7 @@ export default function ReportsPage() {
   const { data: companiesData } = useQuery({
     queryKey: ["companies-all"],
     queryFn: async () => {
-      const response = await api.get("/companies?limit=1000")
+      const response = await api.get("/admin/companies?limit=1000")
       return response.data
     },
   })
@@ -300,7 +300,7 @@ export default function ReportsPage() {
             >
               <option value="">Select Company</option>
               {companies.map((company: any) => (
-                <option key={company.company_id} value={company.company_id}>
+                <option key={company.company_id} value={company.company_name}>
                   {company.company_name}
                 </option>
               ))}
@@ -318,6 +318,7 @@ export default function ReportsPage() {
               <option value="">Select Statuses</option>
               <option value="1">New</option>
               <option value="7">Approved</option>
+              <option value="3">Completed</option>
               <option value="90">All minus paid</option>
               <option value="91">All minus cancelled</option>
               <option value="8">Rejected</option>
@@ -362,7 +363,7 @@ export default function ReportsPage() {
                 handleApplyFilters()
               }
             }}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#c32626] focus:border-[#c32626] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -395,14 +396,14 @@ export default function ReportsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#c32626',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#c32626]" />
           Print
         </Button>
       </div>
@@ -474,7 +475,7 @@ export default function ReportsPage() {
                   return (
                     <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <span className="text-xs text-[#055160] font-medium" style={{ fontFamily: 'Albert Sans' }}>
+                        <span className="text-xs text-[#c32626] font-medium" style={{ fontFamily: 'Albert Sans' }}>
                           #{report.order_id}
                         </span>
                       </td>

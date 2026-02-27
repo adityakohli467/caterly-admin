@@ -82,7 +82,9 @@ export default function ProductsPage() {
   const [shortDescription, setShortDescription] = useState("")
   const [roastLevel, setRoastLevel] = useState<string>("")
   const [showSpecifications, setShowSpecifications] = useState(false)
+  const [specificationsContent, setSpecificationsContent] = useState("")
   const [showOtherInfo, setShowOtherInfo] = useState(false)
+  const [otherInfoContent, setOtherInfoContent] = useState("")
   const [productPrice, setProductPrice] = useState("")
   const [retailPrice, setRetailPrice] = useState("")
   const [retailDiscountPercentage, setRetailDiscountPercentage] = useState("40")
@@ -298,7 +300,9 @@ export default function ProductsPage() {
     setShortDescription(product.short_description || "")
     setRoastLevel(product.roast_level || "")
     setShowSpecifications(product.show_specifications || false)
+    setSpecificationsContent((product as any).specifications_content || "")
     setShowOtherInfo(product.show_other_info || false)
+    setOtherInfoContent((product as any).other_info_content || "")
     setProductPrice(product.product_price ? product.product_price.toString() : "")
     setRetailPrice(product.retail_price?.toString() || "")
     setRetailDiscountPercentage(product.retail_discount_percentage?.toString() || "40")
@@ -432,7 +436,9 @@ export default function ProductsPage() {
       short_description: shortDescription || null,
       roast_level: roastLevel || null,
       show_specifications: showSpecifications,
+      specifications_content: showSpecifications ? specificationsContent : null,
       show_other_info: showOtherInfo,
+      other_info_content: showOtherInfo ? otherInfoContent : null,
       product_price: productPrice && productPrice.trim() ? parseFloat(productPrice) : 0,
       retail_price: finalRetailPrice,
       retail_discount_percentage: parseFloat(retailDiscountPercentage) || 40,
@@ -473,7 +479,9 @@ export default function ProductsPage() {
         formData.append('short_description', productData.short_description || '')
         formData.append('roast_level', productData.roast_level || '')
         formData.append('show_specifications', productData.show_specifications.toString())
+        formData.append('specifications_content', productData.specifications_content || '')
         formData.append('show_other_info', productData.show_other_info.toString())
+        formData.append('other_info_content', productData.other_info_content || '')
         formData.append('product_price', productData.product_price.toString())
         formData.append('retail_price', productData.retail_price?.toString() || '')
         formData.append('retail_discount_percentage', productData.retail_discount_percentage?.toString() || '40')
@@ -801,7 +809,9 @@ export default function ProductsPage() {
     setShortDescription("")
     setRoastLevel("")
     setShowSpecifications(false)
+    setSpecificationsContent("")
     setShowOtherInfo(false)
+    setOtherInfoContent("")
     setProductPrice("")
     setRetailPrice("")
     setRetailDiscountPercentage("40")
@@ -1404,7 +1414,7 @@ export default function ProductsPage() {
             />
 
             <p className="text-xs text-gray-500 -mt-2">This will be displayed prominently on the product detail page</p>
-{/* 
+            {/* 
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 Roast Level (Optional)
@@ -1439,6 +1449,19 @@ export default function ProductsPage() {
                     Show Specifications Tab
                   </span>
                 </label>
+                {showSpecifications && (
+                  <div className="ml-6 space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">Specifications Content</Label>
+                    <Textarea
+                      placeholder="Enter specifications details..."
+                      value={specificationsContent}
+                      onChange={(e) => setSpecificationsContent(e.target.value)}
+                      rows={4}
+                      className="border-gray-300 bg-white focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828]"
+                      style={{ fontFamily: 'Albert Sans' }}
+                    />
+                  </div>
+                )}
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1450,6 +1473,19 @@ export default function ProductsPage() {
                     Show Other Info Tab
                   </span>
                 </label>
+                {showOtherInfo && (
+                  <div className="ml-6 space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">Other Info Content</Label>
+                    <Textarea
+                      placeholder="Enter other info details..."
+                      value={otherInfoContent}
+                      onChange={(e) => setOtherInfoContent(e.target.value)}
+                      rows={4}
+                      className="border-gray-300 bg-white focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828]"
+                      style={{ fontFamily: 'Albert Sans' }}
+                    />
+                  </div>
+                )}
               </div>
               <p className="text-xs text-gray-500">Enable these options to show additional tabs on the product detail page</p>
             </div>

@@ -380,9 +380,9 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                                 </div>
                                             )}
                                             {order.delivery_address && (
-                                                <div>
+                                                <div className="min-w-0">
                                                     <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Address</p>
-                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
+                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700 break-words whitespace-pre-wrap">
                                                         {order.delivery_address}
                                                     </p>
                                                 </div>

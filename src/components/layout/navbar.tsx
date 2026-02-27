@@ -189,16 +189,16 @@ export function Navbar() {
                 {navigation.map((item) => {
                   // Check if parent route is active
                   const isParentActive = pathname === item.href || pathname.startsWith(item.href + "/")
-                  
+
                   // For dropdown menus, also check if any sub-item is active
                   let isActive = isParentActive
                   if (item.hasDropdown && item.items) {
-                    const hasActiveChild = item.items.some(subItem => 
+                    const hasActiveChild = item.items.some(subItem =>
                       pathname === subItem.href || pathname.startsWith(subItem.href + "/")
                     )
                     isActive = isParentActive || hasActiveChild
                   }
-                  
+
                   if (item.hasDropdown && item.items) {
                     return (
                       <div key={item.name} className="flex flex-col gap-1">
@@ -208,7 +208,7 @@ export function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                           className={cn(
                             "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                            isActive ? "bg-blue-50 text-[#055160]" : "text-[#212529] hover:bg-gray-50"
+                            isActive ? "bg-[#fce4ec] text-[#c32626]" : "text-[#212529] hover:bg-gray-50"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
@@ -225,9 +225,9 @@ export function Navbar() {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className={cn(
                                   "px-3 py-2 text-sm rounded-md transition-colors",
-                                  isSubItemActive 
-                                    ? "bg-blue-50 text-[#055160] font-medium" 
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-[#055160]"
+                                  isSubItemActive
+                                    ? "bg-[#fce4ec] text-[#c32626] font-medium"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-[#c32626]"
                                 )}
                                 style={{ fontFamily: "'Albert Sans', sans-serif" }}
                               >
@@ -248,7 +248,7 @@ export function Navbar() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                        isActive ? "bg-blue-50 text-[#055160]" : "text-[#212529] hover:bg-gray-50"
+                        isActive ? "bg-[#fce4ec] text-[#c32626]" : "text-[#212529] hover:bg-gray-50"
                       )}
                       style={{ fontFamily: "'Albert Sans', sans-serif" }}
                     >
@@ -261,17 +261,17 @@ export function Navbar() {
           </Sheet>
 
           {/* Logo */}
-<Link
-  href="/"
-  prefetch={true}
-  className="flex items-center justify-center flex-shrink-0"
->
-  <img
-    src="/assets/cat.svg"
-    alt="Caterly Logo"
-    className="h-[60px] w-auto"
-  />
-</Link>
+          <Link
+            href="/"
+            prefetch={true}
+            className="flex items-center justify-center flex-shrink-0"
+          >
+            <img
+              src="/assets/cat.svg"
+              alt="Caterly Logo"
+              className="h-[60px] w-auto"
+            />
+          </Link>
 
 
 
@@ -280,16 +280,16 @@ export function Navbar() {
             {navigation.map((item) => {
               // Check if parent route is active
               const isParentActive = pathname === item.href || pathname.startsWith(item.href + "/")
-              
+
               // For dropdown menus, also check if any sub-item is active
               let isActive = isParentActive
               if (item.hasDropdown && item.items) {
-                const hasActiveChild = item.items.some(subItem => 
+                const hasActiveChild = item.items.some(subItem =>
                   pathname === subItem.href || pathname.startsWith(subItem.href + "/")
                 )
                 isActive = isParentActive || hasActiveChild
               }
-              
+
               if (item.hasDropdown && item.items) {
                 return (
                   <DropdownMenu key={item.name}>
@@ -298,17 +298,17 @@ export function Navbar() {
                         <span
                           className={cn(
                             "font-medium text-base leading-[28px] whitespace-nowrap",
-                            isActive ? "text-[#055160] font-bold" : "text-[#212529]"
+                            isActive ? "text-[#c32626] font-bold" : "text-[#212529]"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
                           {item.name}
                         </span>
-                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-[#055160]" : "text-[#212529]")} />
+                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-[#c32626]" : "text-[#212529]")} />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="start" 
+                    <DropdownMenuContent
+                      align="start"
                       className="w-56"
                       style={{ fontFamily: "'Albert Sans', sans-serif" }}
                     >
@@ -316,12 +316,12 @@ export function Navbar() {
                         const isSubItemActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/")
                         return (
                           <DropdownMenuItem key={subItem.name} asChild>
-                            <Link 
+                            <Link
                               href={subItem.href}
                               prefetch={true}
                               className={cn(
                                 "cursor-pointer",
-                                isSubItemActive && "bg-blue-50 text-[#055160] font-medium"
+                                isSubItemActive && "bg-[#fce4ec] text-[#c32626] font-medium"
                               )}
                             >
                               {subItem.name}
@@ -344,7 +344,7 @@ export function Navbar() {
                   <span
                     className={cn(
                       "font-medium text-base leading-[28px] whitespace-nowrap",
-                      isActive ? "text-[#055160] font-bold" : "text-[#212529]"
+                      isActive ? "text-[#c32626] font-bold" : "text-[#212529]"
                     )}
                     style={{ fontFamily: "'Albert Sans', sans-serif" }}
                   >
@@ -361,11 +361,11 @@ export function Navbar() {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button 
+              <button
                 className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 group"
                 aria-label="Notifications"
               >
-                <Bell className="w-5 h-5 text-[#212529] transition-colors duration-200 group-hover:text-[#055160]" />
+                <Bell className="w-5 h-5 text-[#212529] transition-colors duration-200 group-hover:text-[#c32626]" />
                 {/* Notification Badge */}
                 {unreadCount > 0 && (
                   <>
@@ -380,8 +380,8 @@ export function Navbar() {
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
+            <DropdownMenuContent
+              align="end"
               className="w-80 sm:w-96 mt-2"
               style={{ fontFamily: "'Albert Sans', sans-serif" }}
             >
@@ -389,10 +389,10 @@ export function Navbar() {
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-base text-[#212529]">Notifications</h3>
                   {unreadCount > 0 && (
-                    <button 
+                    <button
                       onClick={() => markAllAsReadMutation.mutate()}
                       disabled={markAllAsReadMutation.isPending}
-                      className="text-xs text-[#055160] hover:underline font-medium disabled:opacity-50"
+                      className="text-xs text-[#c32626] hover:underline font-medium disabled:opacity-50"
                     >
                       Mark all as read
                     </button>
@@ -412,7 +412,7 @@ export function Navbar() {
                       onClick={() => handleNotificationClick(notification)}
                       className={cn(
                         "flex flex-col items-start p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100",
-                        !notification.read_status && "bg-blue-50/50"
+                        !notification.read_status && "bg-[#fce4ec]/50"
                       )}
                     >
                       <div className="flex items-start justify-between w-full mb-1">
@@ -434,9 +434,9 @@ export function Navbar() {
                 )}
               </div>
               <div className="px-4 py-3 border-t border-gray-200">
-                <Link 
-                  href="/notifications" 
-                  className="text-sm text-[#055160] hover:underline font-medium text-center block"
+                <Link
+                  href="/notifications"
+                  className="text-sm text-[#c32626] hover:underline font-medium text-center block"
                 >
                   View all notifications
                 </Link>

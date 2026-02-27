@@ -64,7 +64,7 @@ const customerGroups = ["Frontend", "Backend"]
 export default function CustomersPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedGroup, setSelectedGroup] = useState("Frontend")
+  const [selectedGroup, setSelectedGroup] = useState("Backend")
   const [activeTab, setActiveTab] = useState<"Active" | "Archived" | "Pending Approval">("Active")
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
