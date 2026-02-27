@@ -178,7 +178,6 @@ export default function CustomersPage() {
       return response.data
     },
   })
-
   // Fetch companies
   const { data: companiesData } = useQuery({
     queryKey: ["companies"],
