@@ -63,6 +63,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   const [email, setEmail] = useState("")
 
   // Modal states
+  const [showAddCustomerModalInternal, setShowAddCustomerModalInternal] = useState(false)
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false)
   const [showAddDepartmentModal, setShowAddDepartmentModal] = useState(false)
 
@@ -481,16 +482,15 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
                 </option>
               ))}
             </select>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              onClick={() => onOpenAddCustomerModal && onOpenAddCustomerModal()}
-              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d]"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={() => setShowAddCustomerModalInternal(true)}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
-              <span className="text-lg">+</span>
+              <span className="text-lg leading-none">+</span>
               Add New
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -504,7 +504,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               id="company"
               value={selectedCompany}
               onChange={(e) => handleCompanyChange(Number(e.target.value))}
-              disabled={loadingCompanies || selectedCustomer === 0}
+              disabled={loadingCompanies}
               className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
@@ -517,17 +517,15 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
                 </option>
               ))}
             </select>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              disabled={selectedCustomer === 0}
               onClick={() => setShowAddCompanyModal(true)}
-              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d] disabled:opacity-50"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
-              <span className="text-lg">+</span>
+              <span className="text-lg leading-none">+</span>
               Add New
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -541,7 +539,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               id="department"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(Number(e.target.value))}
-              disabled={selectedCompany === 0 || loadingDepartments}
+              disabled={loadingDepartments}
               className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
@@ -554,17 +552,15 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
                 </option>
               ))}
             </select>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              disabled={selectedCompany === 0}
               onClick={() => setShowAddDepartmentModal(true)}
-              className="gap-2 border-gray-300 text-[#055160] hover:text-[#04414d] disabled:opacity-50"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
-              <span className="text-lg">+</span>
+              <span className="text-lg leading-none">+</span>
               Add New
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -843,12 +839,13 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       </Dialog>
 
       {/* Add Customer Modal */}
-      <Dialog open={showAddCustomerModal} onOpenChange={(open) => {
+      <Dialog open={showAddCustomerModal || showAddCustomerModalInternal} onOpenChange={(open) => {
         if (!open) {
           // Blur active element to prevent validation on blur
           if (document.activeElement && document.activeElement instanceof HTMLElement) {
             document.activeElement.blur()
           }
+          setShowAddCustomerModalInternal(false)
           if (onCloseAddCustomerModal) {
             onCloseAddCustomerModal()
           }
