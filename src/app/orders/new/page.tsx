@@ -194,16 +194,7 @@ export default function NewOrderPage() {
             {currentStep === 3 && `Add Delivery details & send`}
           </p>
         </div>
-        {currentStep === 1 && (
-          <Button
-            onClick={() => setShowAddCustomerModal(true)}
-            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
-            style={{ fontWeight: 600 }}
-          >
-            <span className="text-lg">+</span>
-            Add Customer
-          </Button>
-        )}
+
         {currentStep === 2 && (
           <Button
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
@@ -260,6 +251,7 @@ export default function NewOrderPage() {
           onNext={handleNext}
           showAddCustomerModal={showAddCustomerModal}
           onCloseAddCustomerModal={() => setShowAddCustomerModal(false)}
+          onOpenAddCustomerModal={() => setShowAddCustomerModal(true)}
         />
       )}
       {currentStep === 2 && (
