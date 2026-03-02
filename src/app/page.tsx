@@ -274,24 +274,23 @@ export default function DashboardPage() {
 
   const handleMarkComplete = async (orderId: number) => {
     try {
-      await api.put(`/admin/orders/${orderId}/complete`)
+      await api.put(`/admin/orders/${orderId}/status`, { order_status: 5 })
       toast.success("Order marked as complete!")
-      // Refresh data
       fetchDashboardData()
     } catch (error: any) {
       console.error("Failed to mark order as complete:", error)
-      toast.error(error.response?.data?.message || "Failed to mark order as complete")
+      toast.error(error?.message || "Failed to mark order as complete")
     }
   }
 
   const handleMarkDelivered = async (orderId: number) => {
     try {
-      await api.put(`/admin/orders/${orderId}/deliver`)
+      await api.put(`/admin/orders/${orderId}`, { is_delivered: 1 })
       toast.success("Order marked as delivered!")
       fetchDashboardData()
     } catch (error: any) {
       console.error("Failed to mark order as delivered:", error)
-      toast.error(error.response?.data?.message || "Failed to mark order as delivered")
+      toast.error(error?.message || "Failed to mark order as delivered")
     }
   }
 
@@ -753,38 +752,34 @@ export default function DashboardPage() {
                             <ChefHat className="h-3.5 w-3.5 mr-1" />
                             Chef View
                           </Button>
-                          {order.is_completed !== 1 && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleMarkComplete(order.order_id)}
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                lineHeight: '20px',
-                              }}
-                              className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                              Complete
-                            </Button>
-                          )}
-                          {order.is_delivered !== 1 && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleMarkDelivered(order.order_id)}
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                lineHeight: '20px',
-                              }}
-                              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
-                            >
-                              <Truck className="h-3.5 w-3.5 mr-1" />
-                              Deliver
-                            </Button>
-                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkComplete(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            Complete
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkDelivered(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
+                          >
+                            <Truck className="h-3.5 w-3.5 mr-1" />
+                            Deliver
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -913,38 +908,34 @@ export default function DashboardPage() {
                             <ChefHat className="h-3.5 w-3.5 mr-1" />
                             Chef View
                           </Button>
-                          {order.is_completed !== 1 && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleMarkComplete(order.order_id)}
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                lineHeight: '20px',
-                              }}
-                              className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                              Complete
-                            </Button>
-                          )}
-                          {order.is_delivered !== 1 && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleMarkDelivered(order.order_id)}
-                              style={{
-                                fontFamily: 'Albert Sans',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                lineHeight: '20px',
-                              }}
-                              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
-                            >
-                              <Truck className="h-3.5 w-3.5 mr-1" />
-                              Deliver
-                            </Button>
-                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkComplete(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            Complete
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkDelivered(order.order_id)}
+                            style={{
+                              fontFamily: 'Albert Sans',
+                              fontWeight: 600,
+                              fontSize: '13px',
+                              lineHeight: '20px',
+                            }}
+                            className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
+                          >
+                            <Truck className="h-3.5 w-3.5 mr-1" />
+                            Deliver
+                          </Button>
                         </div>
                       </td>
                     </tr>

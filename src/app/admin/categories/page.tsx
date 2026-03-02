@@ -141,7 +141,7 @@ export default function CategoriesPage() {
     // Usually, reordering makes most sense for either all or just main. 
     // Let's allow reordering of the current viewed list or just all.
     // Screenshot shows simple names. Let's use all categories for now.
-    setModalCategories([...allCategories])
+    setModalCategories(allCategories.filter((cat) => !cat.parent_category_id))
     setShowReorderModal(true)
   }
 

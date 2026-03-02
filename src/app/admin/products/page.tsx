@@ -300,9 +300,9 @@ export default function ProductsPage() {
     setShortDescription(product.short_description || "")
     setRoastLevel(product.roast_level || "")
     setShowSpecifications(product.show_specifications || false)
-    setSpecificationsContent((product as any).specifications_content || "")
+    setSpecificationsContent((product as any).product_desc_1 || "")
     setShowOtherInfo(product.show_other_info || false)
-    setOtherInfoContent((product as any).other_info_content || "")
+    setOtherInfoContent((product as any).product_desc_2 || "")
     setProductPrice(product.product_price ? product.product_price.toString() : "")
     setRetailPrice(product.retail_price?.toString() || "")
     setRetailDiscountPercentage(product.retail_discount_percentage?.toString() || "40")
@@ -436,9 +436,9 @@ export default function ProductsPage() {
       short_description: shortDescription || null,
       roast_level: roastLevel || null,
       show_specifications: showSpecifications,
-      specifications_content: showSpecifications ? specificationsContent : null,
+      product_desc_1: showSpecifications ? specificationsContent : null,
       show_other_info: showOtherInfo,
-      other_info_content: showOtherInfo ? otherInfoContent : null,
+      product_desc_2: showOtherInfo ? otherInfoContent : null,
       product_price: productPrice && productPrice.trim() ? parseFloat(productPrice) : 0,
       retail_price: finalRetailPrice,
       retail_discount_percentage: parseFloat(retailDiscountPercentage) || 40,
@@ -479,9 +479,9 @@ export default function ProductsPage() {
         formData.append('short_description', productData.short_description || '')
         formData.append('roast_level', productData.roast_level || '')
         formData.append('show_specifications', productData.show_specifications.toString())
-        formData.append('specifications_content', productData.specifications_content || '')
+        formData.append('product_desc_1', productData.product_desc_1 || '')
         formData.append('show_other_info', productData.show_other_info.toString())
-        formData.append('other_info_content', productData.other_info_content || '')
+        formData.append('product_desc_2', productData.product_desc_2 || '')
         formData.append('product_price', productData.product_price.toString())
         formData.append('retail_price', productData.retail_price?.toString() || '')
         formData.append('retail_discount_percentage', productData.retail_discount_percentage?.toString() || '40')
