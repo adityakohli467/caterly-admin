@@ -54,6 +54,7 @@ const allNavigation = [
       { name: "Payments", href: "/admin/payments" },
       { name: "Reports", href: "/admin/reports" },
       { name: "Contact Enquiries", href: "/contact-inquiries" },
+      { name: "Requested Quotes", href: "/quote-requests" },
       // { name: "Wholesale Enquiries", href: "/wholesale-enquiries" }, // Hidden for kj3
       // { name: "API History", href: "/history" },
     ]

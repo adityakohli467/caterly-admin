@@ -38,16 +38,16 @@ api.interceptors.response.use(
     // Handle token expiration and unauthorized errors
     if (error.response?.status === 401) {
       const errorMessage = error.response.data?.message || 'Session expired. Please login again.'
-      
+
       // Clear auth state if token expired
       if (typeof window !== 'undefined') {
         // Clear localStorage
         localStorage.removeItem('caterly-auth')
         localStorage.removeItem('token')
-        
+
         // Clear cookie
         document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-        
+
         // Only redirect if not already on login page
         if (!window.location.pathname.includes('/login')) {
           // Store intended destination
@@ -57,17 +57,17 @@ api.interceptors.response.use(
           }
         }
       }
-      
+
       // Return error with clear message
       return Promise.reject(new Error(errorMessage))
     }
-    
+
     // Enhanced error handling
     if (error.response) {
       // Server responded with error status
       const status = error.response.status
       const message = error.response.data?.message || error.message
-      
+
       // Log error for debugging (only in development)
       if (process.env.NODE_ENV === 'development') {
         console.error(`❌ API Error [${status}]:`, {
@@ -76,7 +76,7 @@ api.interceptors.response.use(
           message,
         })
       }
-      
+
       // Return user-friendly error message
       const userMessage = message || `Request failed with status ${status}`
       return Promise.reject(new Error(userMessage))
@@ -173,7 +173,7 @@ export const companiesAPI = {
   create: (data: any) => api.post("/admin/companies", data),
   update: (id: number, data: any) => api.put(`/admin/companies/${id}`, data),
   delete: (id: number) => api.delete(`/admin/companies/${id}`),
-  getDepartments: (companyId?: number) => 
+  getDepartments: (companyId?: number) =>
     api.get("/admin/companies/departments/list", { params: { company_id: companyId } }),
   createDepartment: (data: any) => api.post("/admin/companies/departments", data),
   updateDepartment: (id: number, data: any) => api.put(`/admin/companies/departments/${id}`, data),
@@ -190,7 +190,7 @@ export const invoicesAPI = {
 export const paymentsAPI = {
   // Pin Payments methods
   getPinKey: (orderId: number) => api.get(`/store/payment/${orderId}/pin-key`),
-  processCharge: (orderId: number, cardToken: string, ipAddress: string) => 
+  processCharge: (orderId: number, cardToken: string, ipAddress: string) =>
     api.post(`/store/payment/${orderId}/charge`, { card_token: cardToken, ip_address: ipAddress }),
   // Legacy SecurePay payment processing (redirects to payment page)
   processPayment: (orderId: number) => {
@@ -199,15 +199,15 @@ export const paymentsAPI = {
   },
   getStatus: (orderId: number) =>
     api.get(`/admin/payments/order/${orderId}`),
-  getHistory: (params?: { 
-    order_id?: number; 
-    customer_id?: number; 
+  getHistory: (params?: {
+    order_id?: number;
+    customer_id?: number;
     payment_status?: string;
     payment_gateway?: string;
-    date_from?: string; 
-    date_to?: string; 
-    limit?: number; 
-    offset?: number 
+    date_from?: string;
+    date_to?: string;
+    limit?: number;
+    offset?: number
   }) =>
     api.get("/admin/payments/history", { params }),
   getOrderHistory: (orderId: number) =>
@@ -238,5 +238,12 @@ export const notificationsAPI = {
   getUnreadCount: () => api.get("/admin/notifications/unread-count"),
   markAsRead: (id: number) => api.put(`/admin/notifications/${id}/read`),
   markAllAsRead: () => api.put("/admin/notifications/mark-all-read"),
+}
+
+export const quotationsAPI = {
+  list: (params?: any) => api.get("/admin/quotation-inquiries", { params }),
+  get: (id: number) => api.get(`/admin/quotation-inquiries/${id}`),
+  updateStatus: (id: number, status: string) => api.patch(`/admin/quotation-inquiries/${id}/status`, { status }),
+  delete: (id: number) => api.delete(`/admin/quotation-inquiries/${id}`),
 }
 

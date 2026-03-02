@@ -285,7 +285,7 @@ export default function DashboardPage() {
 
   const handleMarkDelivered = async (orderId: number) => {
     try {
-      await api.put(`/admin/orders/${orderId}`, { is_delivered: 1 })
+      await api.put(`/admin/orders/${orderId}/status`, { order_status: 6 })
       toast.success("Order marked as delivered!")
       fetchDashboardData()
     } catch (error: any) {
@@ -375,7 +375,7 @@ export default function DashboardPage() {
       whiteSpace: 'nowrap' as const,
     }
 
-    if (order.is_delivered === 1) {
+    if (order.is_delivered === 1 || order.order_status === 6) {
       return (
         <span
           style={{
