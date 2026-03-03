@@ -683,28 +683,30 @@ export default function QuoteDetailPage() {
                     </tr>
                   )}
 
-                  <tr className="border-b border-gray-100">
-                    <td colSpan={5} className="px-4 py-3 text-right">
-                      <span className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-                        GST (10%)
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-                        ${Number(safeQuote.gst || 0).toFixed(2)}
-                      </span>
-                    </td>
-                  </tr>
+                  {Number(safeQuote.gst || 0) > 0 && (
+                    <tr className="border-b border-gray-100">
+                      <td colSpan={5} className="px-4 py-3 text-right">
+                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                          GST (10%) incl.
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                          ${Number(safeQuote.gst || 0).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
 
                   <tr className="border-b border-gray-200">
                     <td colSpan={5} className="px-4 py-3 text-right">
                       <span className="text-base font-semibold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
-                        Total
+                        Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-base font-bold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
-                        ${Number(safeQuote.calculated_total || safeQuote.order_total || 0).toFixed(2)}
+                        ${(Number(safeQuote.calculated_total || safeQuote.order_total || 0) - Number(safeQuote.gst || 0)).toFixed(2)}
                       </span>
                     </td>
                   </tr>

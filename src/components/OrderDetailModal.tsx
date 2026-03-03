@@ -389,16 +389,18 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                             </span>
                           </div>
                         )}
-                        <div className="flex justify-between">
-                          <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">GST (10%)</span>
-                          <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
-                            ${Number(order.gst || 0).toFixed(2)}
-                          </span>
-                        </div>
+                        {Number(order.gst || 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST (10%) incl.</span>
+                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">
+                              ${Number(order.gst || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        )}
                         <div className="flex justify-between pt-2 border-t border-gray-300">
-                          <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">Total</span>
+                          <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span></span>
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">
-                            ${Number(order.calculated_total || order.order_total || 0).toFixed(2)}
+                            ${(Number(order.calculated_total || order.order_total || 0) - Number(order.gst || 0)).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -408,7 +410,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
               </div>
 
               {/* Right: Order Details */}
-              <div className="space-y-4">
+              <div className="space-y-4 min-w-0 overflow-hidden">
                 <Card className="bg-white border border-gray-200">
                   <CardContent className="p-4">
                     <h3 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base font-semibold text-gray-900 mb-4">
@@ -453,7 +455,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-200">
+                <Card className="bg-white border border-gray-200 rounded-lg shadow-sm">
                   <CardContent className="p-4">
                     <h3 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base font-semibold text-gray-900 mb-4">
                       Delivery Details
@@ -478,7 +480,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                       {order.delivery_address && (
                         <div>
                           <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Address</p>
-                          <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
+                          <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700 break-words">
                             {order.delivery_address}
                           </p>
                         </div>

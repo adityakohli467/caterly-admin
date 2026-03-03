@@ -244,6 +244,7 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] })
+      queryClient.invalidateQueries({ queryKey: ["customers-count"] })
       toast.success("Customer archived successfully!")
     },
     onError: (error: any) => {
@@ -259,6 +260,7 @@ export default function CustomersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] })
+      queryClient.invalidateQueries({ queryKey: ["customers-count"] })
       toast.success("Customer restored successfully!")
     },
     onError: (error: any) => {
@@ -581,7 +583,7 @@ export default function CustomersPage() {
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
-          Active ({activeCountData?.count || 0})
+          Active ({activeTab === "Active" ? customers.length : (activeCountData?.count ?? activeCountData?.total ?? 0)})
         </button>
         <button
           onClick={() => setActiveTab("Archived")}
@@ -591,7 +593,7 @@ export default function CustomersPage() {
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
-          Archived ({archivedCountData?.count || 0})
+          Archived ({activeTab === "Archived" ? customers.length : (archivedCountData?.count ?? archivedCountData?.total ?? 0)})
         </button>
       </div>
 
