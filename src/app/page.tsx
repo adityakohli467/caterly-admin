@@ -51,7 +51,8 @@ interface DashboardStats {
 
 interface Order {
   order_id: number
-  customer_order_name: string
+  customer_order_name?: string
+  customer_order_telephone?: string
   order_total: string
   order_status: number
   date_added: string
@@ -60,9 +61,14 @@ interface Order {
   is_completed: number
   is_delivered?: number
   order_made_from?: string
-  customer: {
-    firstname: string
-    lastname: string
+  // Direct fields for guest/manual orders
+  telephone?: string
+  firstname?: string
+  lastname?: string
+  delivery_contact?: string
+  customer?: {
+    firstname?: string
+    lastname?: string
     email?: string
     telephone?: string
   }
@@ -702,12 +708,18 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.customer_order_name || `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() || 'N/A'}
+                          {order.customer_order_name ||
+                            `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
+                            'N/A'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer?.telephone || 'N/A'}
+                          {order.customer_order_telephone ||
+                            order.customer?.telephone ||
+                            order.telephone ||
+                            (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
+                            'N/A'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
@@ -858,12 +870,18 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.customer_order_name || `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() || 'N/A'}
+                          {order.customer_order_name ||
+                            `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
+                            'N/A'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer?.telephone || 'N/A'}
+                          {order.customer_order_telephone ||
+                            order.customer?.telephone ||
+                            order.telephone ||
+                            (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
+                            'N/A'}
                         </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">

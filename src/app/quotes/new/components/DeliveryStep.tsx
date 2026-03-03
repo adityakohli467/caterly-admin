@@ -1342,12 +1342,14 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 <span className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Delivery Fee</span>
                 <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>${deliveryFee.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>GST (10%)</span>
-                <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>${gst.toFixed(2)}</span>
-              </div>
+              {gst > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST (10%) incl.</span>
+                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>${gst.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>Total</span>
+                <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span></span>
                 <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>${total.toFixed(2)}</span>
               </div>
             </div>
