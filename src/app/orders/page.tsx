@@ -34,7 +34,9 @@ interface Order {
   email: string
   telephone: string
   company: string
+  company_name?: string
   department: string
+  department_name?: string
   location_name: string
   location_id: number
   delivery_date: string | null
@@ -898,10 +900,10 @@ export default function OrdersPage() {
                 <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
-                    if (sortField === 'company') {
+                    if (sortField === 'company_name') {
                       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
                     } else {
-                      setSortField('company')
+                      setSortField('company_name')
                       setSortDirection('asc')
                     }
                   }}
@@ -922,10 +924,10 @@ export default function OrdersPage() {
                 <th
                   className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
                   onClick={() => {
-                    if (sortField === 'department') {
+                    if (sortField === 'department_name') {
                       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
                     } else {
-                      setSortField('department')
+                      setSortField('department_name')
                       setSortDirection('asc')
                     }
                   }}
@@ -1128,7 +1130,7 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {order.company || 'N/A'}
+                          {order.company_name || order.company || 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -1140,7 +1142,7 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {order.department || 'N/A'}
+                          {order.department_name || order.department || 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
