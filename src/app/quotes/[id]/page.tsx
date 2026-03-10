@@ -441,12 +441,10 @@ export default function QuoteDetailPage() {
       </div>
     )
   }
-
   // Show skeleton while loading
   if (isLoading || !quote) {
     return null // Next.js loading.tsx will handle this
   }
-
   return (
     <div className="bg-gray-50 " style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
