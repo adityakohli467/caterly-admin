@@ -63,6 +63,7 @@ interface Order {
   order_made_from?: string
   // Direct fields for guest/manual orders
   telephone?: string
+  phone?: string
   firstname?: string
   lastname?: string
   delivery_contact?: string
@@ -718,6 +719,7 @@ export default function DashboardPage() {
                           {order.customer_order_telephone ||
                             order.customer?.telephone ||
                             order.telephone ||
+                            order.phone ||
                             (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
                             'N/A'}
                         </span>
@@ -880,6 +882,7 @@ export default function DashboardPage() {
                           {order.customer_order_telephone ||
                             order.customer?.telephone ||
                             order.telephone ||
+                            order.phone ||
                             (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
                             'N/A'}
                         </span>
