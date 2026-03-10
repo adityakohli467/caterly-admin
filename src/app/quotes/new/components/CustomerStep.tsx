@@ -43,6 +43,8 @@ interface Customer {
   email: string
   telephone: string
   customer_type?: string
+  company_id?: number
+  department_id?: number
 }
 
 interface Location {
@@ -131,6 +133,18 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   const departments = departmentsData?.departments || []
   const customers = customersData?.customers || []
   const locations = locationsData?.locations || []
+
+  // Get selected customer data to filter companies
+  const selectedCustomerData = customers.find((c: Customer) => c.customer_id === selectedCustomer)
+  const customerCompanyId = selectedCustomerData?.company_id
+
+  // Display only the associated company if the user has one.
+  // If a customer is selected but has NO company, an empty array is returned 
+  // so the dropdown only shows "Select", obligating the user to use "+ Add New"
+  // If NO customer is selected, no companies should show.
+  const displayedCompanies = selectedCustomer > 0
+    ? (customerCompanyId ? companies.filter((c: Company) => c.company_id === customerCompanyId) : [])
+    : []
 
   // Auto-select location if only one exists
   useEffect(() => {
@@ -403,15 +417,25 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
         setCustomerName(`${customer.firstname} ${customer.lastname}`)
         setPhone(customer.telephone || "")
         setEmail(customer.email || "")
-        // Update customer_type immediately when customer is selected
+
+        // Update customer_type and company details immediately when customer is selected
         onUpdate({
           customer_id: customerId,
           customer_name: `${customer.firstname} ${customer.lastname}`,
           customer_type: customer.customer_type || "Retail",
           phone: customer.telephone || "",
           email: customer.email || "",
+          company_id: customer.company_id || undefined,
+          department_id: customer.department_id || undefined,
         })
       }
+    } else if (customerId === 0) {
+      // Clear data when deselected
+      setCustomerName("")
+      setPhone("")
+      setEmail("")
+      setSelectedCompany(0)
+      setSelectedDepartment(0)
     }
   }
 
@@ -504,14 +528,14 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               id="company"
               value={selectedCompany}
               onChange={(e) => handleCompanyChange(Number(e.target.value))}
-              disabled={loadingCompanies}
+              disabled={loadingCompanies || (selectedCustomer > 0 && displayedCompanies.length === 0)}
               className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
               <option value={0}>
                 {loadingCompanies ? "Loading..." : "Select"}
               </option>
-              {companies.map((company: Company) => (
+              {displayedCompanies.map((company: Company) => (
                 <option key={company.company_id} value={company.company_id}>
                   {company.company_name}
                 </option>
