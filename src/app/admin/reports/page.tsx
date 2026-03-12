@@ -27,6 +27,8 @@ interface Report {
   discount: number
   gst: number
   total: number
+  order_total?: number
+  late_fee?: number
 }
 
 export default function ReportsPage() {
@@ -38,7 +40,7 @@ export default function ReportsPage() {
   const [deliveryDateFrom, setDeliveryDateFrom] = useState<Date | null>(null)
   const [deliveryDateTo, setDeliveryDateTo] = useState<Date | null>(null)
   const [selectedLocation, setSelectedLocation] = useState("")
-  const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState("2")
   const [selectedCompany, setSelectedCompany] = useState("")
 
   // Applied filters (for API call)
@@ -48,7 +50,7 @@ export default function ReportsPage() {
     delivery_date_from: "",
     delivery_date_to: "",
     location_id: "",
-    status: "",
+    status: "2",
     company: "",
     search: ""
   })
@@ -123,7 +125,7 @@ export default function ReportsPage() {
     setDeliveryDateFrom(null)
     setDeliveryDateTo(null)
     setSelectedLocation("")
-    setSelectedStatus("")
+    setSelectedStatus("2")
     setSelectedCompany("")
     setSearchQuery("")
     setAppliedFilters({
@@ -132,7 +134,7 @@ export default function ReportsPage() {
       delivery_date_from: "",
       delivery_date_to: "",
       location_id: "",
-      status: "",
+      status: "2",
       company: "",
       search: ""
     })
@@ -472,6 +474,18 @@ export default function ReportsPage() {
               ) : (
                 reports.map((report: Report, index: number) => {
                   const statusInfo = getStatusBadge(report.order_status)
+                  
+                  // Use order_total if available, as it's the correct total from the backend
+                  const displayTotal = Number(report.order_total || report.total || 0)
+                  const deliveryFee = Number(report.delivery_fee || 0)
+                  const discount = Number(report.discount || 0)
+                  const lateFee = Number(report.late_fee || 0)
+                  
+                  // Derive subtotal: Total = Subtotal + Delivery + Late - Discount
+                  // So Subtotal = Total - Delivery - Late + Discount
+                  const displaySubtotal = displayTotal - deliveryFee - lateFee + discount
+                  const displayGst = displaySubtotal * 0.1
+
                   return (
                     <tr key={index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
@@ -516,27 +530,30 @@ export default function ReportsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          ${report.subtotal.toFixed(2)}
+                          ${displaySubtotal.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          ${report.delivery_fee.toFixed(2)}
+                          ${deliveryFee.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          ${report.discount.toFixed(2)}
+                          ${discount.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          ${report.gst.toFixed(2)}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                            ${displayGst.toFixed(2)}
+                          </span>
+                          <span className="text-[10px] text-gray-500 italic">(incl.)</span>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-900 font-semibold" style={{ fontFamily: 'Albert Sans' }}>
-                          ${report.total.toFixed(2)}
+                          ${displayTotal.toFixed(2)}
                         </span>
                       </td>
                     </tr>

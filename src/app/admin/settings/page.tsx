@@ -409,7 +409,7 @@ export default function SettingsPage() {
                     style={{ fontFamily: 'Albert Sans' }}
                   />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
                   <Select 
                     value={currentSettings.currency || "AUD"} 
@@ -426,7 +426,7 @@ export default function SettingsPage() {
                       <SelectItem value="CAD">CAD (C$)</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>

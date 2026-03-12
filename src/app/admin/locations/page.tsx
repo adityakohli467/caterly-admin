@@ -14,8 +14,8 @@ import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Search, Printer, Plus, MapPin, Edit, Trash2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-import { validateRequired, validateEmail, validateAustralianPhone, validateABN, validateAustralianPostcode } from "@/lib/validations"
-import { formatAustralianPhone, cleanPhoneNumber, getPhonePlaceholder, getPhoneValidationError } from "@/lib/phone-mask"
+import { validateRequired, validateEmail, validateABN } from "@/lib/validations"
+// Simplified phone handling
 import { printTableData } from "@/lib/print-utils"
 
 interface Location {
@@ -195,12 +195,9 @@ export default function LocationsPage() {
       newErrors.account_number = "Account number must be 1000 characters or less"
     }
     
-    // Validate contact number (optional, Australian format, max 15 chars)
-    if (contactNumber && contactNumber.trim() !== '') {
-      const phoneValidation = validateAustralianPhone(contactNumber)
-      if (!phoneValidation.valid) {
-        newErrors.contact = phoneValidation.error || "Please enter a valid Australian phone number"
-      }
+    // Validate contact number (optional, max 100 chars for flexibility)
+    if (contactNumber && contactNumber.length > 100) {
+      newErrors.contact = "Contact number must be 100 characters or less"
     }
     
     // Validate ABN (optional, 11 digits)
@@ -241,7 +238,7 @@ export default function LocationsPage() {
       remittance_email: remittanceEmail.trim() || undefined,
       account_name: accountName.trim() || undefined,
       account_number: accountNumber.trim() || undefined,
-      contact: cleanPhoneNumber(contactNumber) || undefined,
+      contact: contactNumber.trim() || undefined,
       abn: abn.trim() || undefined,
       company_name: companyName.trim() || undefined,
       bsb: bsb.trim() || undefined,
@@ -592,22 +589,18 @@ export default function LocationsPage() {
               <ValidatedInput
                 label="Contact Number"
                 type="tel"
-                placeholder={getPhonePlaceholder()}
+                placeholder="Enter Contact Number"
                 value={contactNumber}
-                validationRule={{ type: 'phone' as const, maxLength: 15 }}
+                validationRule={{ maxLength: 100 }}
                 fieldName="Contact Number"
                 error={errors.contact}
-                onChange={(value, isValid) => {
-                  const previousValue = contactNumber
-                  const formatted = formatAustralianPhone(value, previousValue)
-                  setContactNumber(formatted)
-                  if (isValid) {
-                    setErrors(prev => {
-                      const newErrors = { ...prev }
-                      delete newErrors.contact
-                      return newErrors
-                    })
-                  }
+                onChange={(value) => {
+                  setContactNumber(value)
+                  setErrors(prev => {
+                    const newErrors = { ...prev }
+                    delete newErrors.contact
+                    return newErrors
+                  })
                 }}
                 className="h-11 border-gray-300 bg-white"
               />
@@ -803,7 +796,7 @@ export default function LocationsPage() {
                 </Label>
                 <Input
                   id="editContactNumber"
-                  placeholder="Enter number"
+                  placeholder="Enter Contact Number"
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   className="h-11 border-gray-300 bg-white"

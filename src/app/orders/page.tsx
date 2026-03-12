@@ -1133,7 +1133,7 @@ export default function OrdersPage() {
               ) : (
                 orders.map((order: any) => {
                   // Highlight frontend orders (placed by customer online) in light blue
-                  const isFrontendOrder = order.user_id != null && order.user_id !== 0
+                  const isFrontendOrder = !order.user_id || order.user_id === 0
                   return (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${isFrontendOrder ? 'bg-blue-50' : 'hover:bg-gray-50'
                       }`}>

@@ -40,6 +40,7 @@ interface Quote {
   order_status: number
   date_added: string
   date_modified: string
+  gst?: number
 }
 
 interface Location {
@@ -778,7 +779,7 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        ${Number(quote.order_total || 0).toFixed(2)}
+                        ${(Number(quote.order_total || 0) - Number(quote.gst || 0)).toFixed(2)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
