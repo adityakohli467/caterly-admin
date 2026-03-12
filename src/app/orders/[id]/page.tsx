@@ -361,17 +361,17 @@ export default function OrderDetailPage() {
   // Calculate totals if not provided - order is guaranteed to exist here
   if (!order) return null
 
-  // Use backend calculated values if available, otherwise calculate
-  const subtotal = typeof order.subtotal === 'number' ? order.subtotal : parseFloat(order.subtotal || '0')
+  // Ensure products array exists
+  const products = order.products || order.order_products || []
+
+  // Use frontend calculated values to ensure accuracy
+  const subtotal = products.reduce((sum, p) => sum + Number(p.total), 0)
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
   const couponDiscount = typeof order.coupon_discount === 'number' ? order.coupon_discount : parseFloat(String(order.coupon_discount || '0'))
   const deliveryFee = parseFloat(String(order.delivery_fee || '0'))
   const lateFee = parseFloat(String(order.late_fee || '0'))
   const gst = typeof order.gst === 'number' ? order.gst : parseFloat(String(order.gst || '0'))
-  const total = typeof order.calculated_total === 'number' ? order.calculated_total : parseFloat(String(order.calculated_total || order.order_total || '0'))
-
-  // Ensure products array exists
-  const products = order.products || order.order_products || []
+  const total = subtotal + deliveryFee + lateFee - wholesaleDiscount - couponDiscount
 
   return (
     <div className="bg-gray-50 " style={{ fontFamily: 'Albert Sans' }}>
@@ -479,10 +479,8 @@ export default function OrderDetailPage() {
                 <tbody>
                   {products && products.length > 0 ? (
                     products.map((product: OrderProduct, index: number) => {
-                      const productTotal = parseFloat(product.total?.toString() || '0')
-                      const optionsTotal = product.options?.reduce((sum, opt) =>
-                        sum + (parseFloat(opt.option_price?.toString() || '0') * parseFloat(opt.option_quantity?.toString() || '0')), 0) || 0
-                      const totalWithOptions = productTotal + optionsTotal
+                      const baseTotal = Number(product.price) * Number(product.quantity)
+                      const totalWithOptions = baseTotal // Renamed internally for clarity in the cell but we'll use baseTotal for top line
 
                       return (
                         <tr key={product.order_product_id} className="border-b border-gray-100">
@@ -555,7 +553,7 @@ export default function OrderDetailPage() {
                           <td className="px-4 py-4 align-top text-right">
                             <div>
                               <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                                ${totalWithOptions.toFixed(2)}
+                                ${baseTotal.toFixed(2)}
                               </p>
                               {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
@@ -687,7 +685,7 @@ export default function OrderDetailPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-base font-bold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
-                        ${(total - gst).toFixed(2)}
+                        ${total.toFixed(2)}
                       </span>
                     </td>
                   </tr>

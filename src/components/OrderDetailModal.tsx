@@ -329,9 +329,20 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                   </span>
                                 </td>
                                 <td className="px-4 py-4 text-right">
-                                  <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
-                                    ${Number(product.total).toFixed(2)}
-                                  </span>
+                                  <div>
+                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
+                                      ${(Number(product.price) * Number(product.quantity)).toFixed(2)}
+                                    </p>
+                                    {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
+                                      <div className="mt-2 space-y-1">
+                                        {product.options.filter(o => Number(o.option_price) > 0).map((option, optIdx) => (
+                                          <div key={optIdx} style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-600">
+                                            ${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))
@@ -352,7 +363,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <div className="flex justify-between">
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">Sub Total</span>
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
-                            ${Number(order.subtotal).toFixed(2)}
+                            ${(order.order_products?.reduce((sum, p) => sum + Number(p.total), 0) || Number(order.subtotal) || 0).toFixed(2)}
                           </span>
                         </div>
                         {Number(order.wholesale_discount) > 0 && (
@@ -400,7 +411,13 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <div className="flex justify-between pt-2 border-t border-gray-300">
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span></span>
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">
-                            ${(Number(order.calculated_total || order.order_total || 0) - Number(order.gst || 0)).toFixed(2)}
+                            ${(
+                              (order.order_products?.reduce((sum, p) => sum + Number(p.total), 0) || Number(order.subtotal) || 0) +
+                              Number(order.delivery_fee || 0) +
+                              Number(order.late_fee || 0) -
+                              Number(order.wholesale_discount || 0) -
+                              Number(order.coupon_discount || 0)
+                            ).toFixed(2)}
                           </span>
                         </div>
                       </div>

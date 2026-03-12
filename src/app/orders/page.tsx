@@ -42,6 +42,9 @@ interface Order {
   delivery_date: string | null
   delivery_time: string | null
   order_total: number
+  gst?: number
+  delivery_fee?: number
+  subtotal?: number
   order_status: number
   standing_order: number
   customer_type?: string
@@ -116,6 +119,7 @@ export default function OrdersPage() {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([])
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteOrderId, setDeleteOrderId] = useState<number | null>(null)
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showOrderDetailModal, setShowOrderDetailModal] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
@@ -289,6 +293,31 @@ export default function OrdersPage() {
       toast.error(error.response?.data?.message || "Failed to delete order")
     }
   })
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      await Promise.all(ids.map(id => api.delete(`/admin/orders/${id}`)))
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      toast.success(`${selectedOrders.length} order${selectedOrders.length !== 1 ? 's' : ''} deleted successfully`)
+      setShowBulkDeleteModal(false)
+      setSelectedOrders([])
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete selected orders")
+    }
+  })
+
+  const handleBulkDeleteClick = () => {
+    if (selectedOrders.length === 0) return
+    setShowBulkDeleteModal(true)
+  }
+
+  const handleConfirmBulkDelete = () => {
+    bulkDeleteMutation.mutate(selectedOrders)
+  }
 
   // Update status mutation
   const updateStatusMutation = useMutation({
@@ -836,6 +865,34 @@ export default function OrdersPage() {
         ))}
       </div>
 
+      {/* Bulk Selection Action Bar */}
+      {selectedOrders.length > 0 && (
+        <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3 bg-[#055160] text-white rounded-xl shadow-md">
+          <span className="text-sm font-semibold" style={{ fontFamily: 'Albert Sans' }}>
+            {selectedOrders.length} order{selectedOrders.length !== 1 ? 's' : ''} selected
+          </span>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedOrders([])}
+              className="h-9 px-4 text-sm bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              Deselect All
+            </Button>
+            <Button
+              onClick={handleBulkDeleteClick}
+              disabled={bulkDeleteMutation.isPending}
+              className="h-9 px-4 text-sm bg-red-600 hover:bg-red-700 text-white border-0"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <Card className="border border-gray-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -1310,6 +1367,42 @@ export default function OrdersPage() {
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <Dialog open={showBulkDeleteModal} onOpenChange={setShowBulkDeleteModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Albert Sans', fontWeight: 700 }}>Delete {selectedOrders.length} Order{selectedOrders.length !== 1 ? 's' : ''}?</DialogTitle>
+            <DialogDescription style={{ fontFamily: 'Albert Sans' }}>
+              You are about to permanently delete <strong>{selectedOrders.length}</strong> selected order{selectedOrders.length !== 1 ? 's' : ''}. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <p className="text-sm text-red-700" style={{ fontFamily: 'Albert Sans' }}>
+              Order ID{selectedOrders.length !== 1 ? 's' : ''}: {selectedOrders.map(id => `#${id}`).join(', ')}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteModal(false)}
+              disabled={bulkDeleteMutation.isPending}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              {bulkDeleteMutation.isPending ? "Deleting..." : `Delete ${selectedOrders.length} Order${selectedOrders.length !== 1 ? 's' : ''}`}
             </Button>
           </DialogFooter>
         </DialogContent>
