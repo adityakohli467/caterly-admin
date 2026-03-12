@@ -155,6 +155,22 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
     }
   }, [locations, selectedLocation, loadingLocations])
 
+  // Update customer mutation
+  const updateCustomerMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: any }) => {
+      const response = await customersAPI.update(id, data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+      // No toast here as this is usually a background update triggered by other actions
+    },
+    onError: (error: any) => {
+      console.error("Error updating customer:", error)
+      toast.error("Failed to link customer to the new record")
+    }
+  })
+
   // Create company mutation
   const createCompanyMutation = useMutation({
     mutationFn: async (companyData: any) => {
@@ -165,10 +181,26 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       queryClient.invalidateQueries({ queryKey: ['companies'] })
       toast.success("Company added successfully!")
       setShowAddCompanyModal(false)
-      // Select the newly created company
-      if (data?.company?.company_id) {
-        setSelectedCompany(data.company.company_id)
+      
+      const newCompanyId = data?.company?.company_id
+      if (newCompanyId) {
+        setSelectedCompany(newCompanyId)
+        
+        // If a customer is selected, link this new company to them
+        if (selectedCustomer > 0) {
+          const customer = customers.find((c: Customer) => c.customer_id === selectedCustomer)
+          if (customer) {
+            updateCustomerMutation.mutate({
+              id: selectedCustomer,
+              data: {
+                ...customer,
+                company_id: newCompanyId
+              }
+            })
+          }
+        }
       }
+      
       // Reset form
       setCompanyName("")
       setCompanyAbn("")
@@ -191,10 +223,27 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       queryClient.invalidateQueries({ queryKey: ['departments', selectedCompany] })
       toast.success("Department added successfully!")
       setShowAddDepartmentModal(false)
-      // Select the newly created department
-      if (data?.department?.department_id) {
-        setSelectedDepartment(data.department.department_id)
+      
+      const newDeptId = data?.department?.department_id
+      if (newDeptId) {
+        setSelectedDepartment(newDeptId)
+        
+        // If a customer is selected, link this new department to them
+        if (selectedCustomer > 0) {
+          const customer = customers.find((c: Customer) => c.customer_id === selectedCustomer)
+          if (customer) {
+            updateCustomerMutation.mutate({
+              id: selectedCustomer,
+              data: {
+                ...customer,
+                company_id: selectedCompany,
+                department_id: newDeptId
+              }
+            })
+          }
+        }
       }
+      
       // Reset form
       setDepartmentName("")
       setDepartmentComments("")
@@ -249,7 +298,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       return response.data
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['customers', selectedCompany] })
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
       toast.success("Customer added successfully!")
       if (onCloseAddCustomerModal) {
         onCloseAddCustomerModal()

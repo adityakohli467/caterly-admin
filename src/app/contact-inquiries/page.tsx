@@ -97,6 +97,19 @@ export default function ContactInquiriesPage() {
 
   const inquiries: ContactInquiry[] = data?.inquiries || []
 
+  // Derived statistics
+  const stats = {
+    new: inquiries.filter(i => i.status === 'new').length,
+    read: inquiries.filter(i => i.status === 'read').length,
+    replied: inquiries.filter(i => i.status === 'replied').length,
+    total: inquiries.length
+  }
+
+  // Sort by created_at descending (latest first)
+  const sortedInquiries = [...inquiries].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+
   const handleViewDetails = (inquiry: ContactInquiry) => {
     setSelectedInquiry(inquiry)
     setShowDetailModal(true)
@@ -120,8 +133,39 @@ export default function ContactInquiriesPage() {
         <p className="text-gray-600 mt-2">View and manage contact form submissions</p>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card className="p-4 border-l-4 border-l-blue-500 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>New Enquiries</p>
+            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.new}</h2>
+          </div>
+          <div className="bg-blue-50 p-2 rounded-full">
+            <Mail className="w-5 h-5 text-blue-500" />
+          </div>
+        </Card>
+        <Card className="p-4 border-l-4 border-l-yellow-500 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Read</p>
+            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.read}</h2>
+          </div>
+          <div className="bg-yellow-50 p-2 rounded-full">
+            <Eye className="w-5 h-5 text-yellow-500" />
+          </div>
+        </Card>
+        <Card className="p-4 border-l-4 border-l-green-500 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Replied</p>
+            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.replied}</h2>
+          </div>
+          <div className="bg-green-50 p-2 rounded-full">
+            <Check className="w-5 h-5 text-green-500" />
+          </div>
+        </Card>
+      </div>
+
       {/* Filters */}
-      <Card className="p-4 mb-6">
+      <Card className="p-4 mb-6 bg-white border border-gray-100 shadow-sm rounded-xl">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -130,7 +174,8 @@ export default function ContactInquiriesPage() {
                 placeholder="Search by name, email, or message..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11 border-gray-200 rounded-lg focus:ring-[#C62828] focus:border-[#C62828]"
+                style={{ fontFamily: 'Albert Sans' }}
               />
             </div>
           </div>
@@ -138,7 +183,8 @@ export default function ContactInquiriesPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-2 h-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] text-sm"
+              style={{ fontFamily: 'Albert Sans' }}
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -161,32 +207,32 @@ export default function ContactInquiriesPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {inquiries.map((inquiry) => (
-            <Card key={inquiry.id} className="p-6 hover:shadow-lg transition-shadow">
+          {sortedInquiries.map((inquiry) => (
+            <Card key={inquiry.id} className="p-6 hover:shadow-lg transition-all border-gray-100 rounded-2xl bg-white shadow-sm">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                       {inquiry.first_name} {inquiry.last_name}
                     </h3>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(inquiry.status)}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(inquiry.status)}`} style={{ fontFamily: 'Albert Sans' }}>
                       {inquiry.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mb-3" style={{ fontFamily: 'Albert Sans' }}>
                     <div className="flex items-center gap-1">
-                      <Mail className="w-4 h-4" />
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
                       <span>{inquiry.email}</span>
                     </div>
                     {inquiry.phone_number && (
                       <div className="flex items-center gap-1">
-                        <Phone className="w-4 h-4" />
+                        <Phone className="w-3.5 h-3.5 text-gray-400" />
                         <span>{inquiry.phone_number}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(inquiry.created_at), "MMM dd, yyyy HH:mm")}</span>
+                    <div className="flex items-center gap-1 font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Submitted on: {format(new Date(inquiry.created_at), "MMM dd, yyyy HH:mm")}</span>
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 line-clamp-2">{inquiry.message}</p>

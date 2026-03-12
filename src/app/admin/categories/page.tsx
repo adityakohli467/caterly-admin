@@ -234,6 +234,7 @@ export default function CategoriesPage() {
     setSelectedCategory(category)
     setCategoryName(category.category_name)
     setParentCategoryId(category.parent_category_id || null)
+    setIsSubcategory(true) // Always allow parent selection in edit mode
     setShowEditModal(true)
   }
 
@@ -409,7 +410,7 @@ export default function CategoriesPage() {
         <DialogContent className="max-w-md bg-white p-8 rounded-2xl">
           <DialogHeader className="mb-6">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <FolderOpen className="h-5 w-5 text-blue-600" />
+              <FolderOpen className="h-5 w-5 text-red-600" />
               {showEditModal ? "Edit Category" : isSubcategory ? "Add Subcategory" : "Add Main Category"}
             </DialogTitle>
           </DialogHeader>
@@ -423,16 +424,23 @@ export default function CategoriesPage() {
                 className="h-12 border-gray-200 focus:ring-blue-500"
               />
             </div>
-            {isSubcategory && (
+            {(isSubcategory || showEditModal) && (
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-gray-700">Parent Category</Label>
                 <select
                   value={parentCategoryId || ""}
-                  onChange={(e) => setParentCategoryId(Number(e.target.value))}
+                  onChange={(e) => setParentCategoryId(e.target.value ? Number(e.target.value) : null)}
                   className="w-full h-12 rounded-lg border border-gray-200 px-4 focus:ring-blue-500 outline-none"
                 >
                   <option value="">Select Parent</option>
-                  {mainCategories.map(c => <option key={c.category_id} value={c.category_id}>{c.category_name}</option>)}
+                  {mainCategories
+                    .filter(c => c.category_id !== selectedCategory?.category_id)
+                    .map(c => (
+                      <option key={c.category_id} value={c.category_id}>
+                        {c.category_name}
+                      </option>
+                    ))
+                  }
                 </select>
               </div>
             )}

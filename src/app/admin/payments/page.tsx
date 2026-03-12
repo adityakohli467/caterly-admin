@@ -123,7 +123,7 @@ export default function PaymentsPage() {
   })
 
   // Fetch statistics
-  const { data: statisticsData } = useQuery({
+  const { data: statisticsData, isLoading: isStatsLoading, error: statsError } = useQuery({
     queryKey: ['payment-statistics', dateFrom, dateTo],
     queryFn: async () => {
       const params: any = {}
@@ -134,9 +134,12 @@ export default function PaymentsPage() {
     },
   })
 
-  const payments: Payment[] = paymentsData?.payments || []
-  const pagination = paymentsData?.pagination || { total: 0, limit: 50, offset: 0, has_more: false }
-  const statistics: PaymentStatistics | null = statisticsData?.statistics || null
+  // Data processing
+  const payments: Payment[] = paymentsData?.payments || (Array.isArray(paymentsData) ? paymentsData : [])
+  const pagination = paymentsData?.pagination || { total: payments.length, limit: 50, offset: 0, has_more: false }
+
+  const statistics: PaymentStatistics | null = statisticsData?.statistics || 
+    (statisticsData?.total_transactions !== undefined ? statisticsData as unknown as PaymentStatistics : null)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -189,59 +192,68 @@ export default function PaymentsPage() {
       </div>
 
       {/* Statistics Cards */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Revenue</p>
-                  <p className="text-2xl font-bold text-green-600">{formatCurrency(statistics.total_revenue || 0)}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {isStatsLoading ? (
+          Array(4).fill(0).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </CardContent>
+            </Card>
+          ))
+        ) : statsError ? (
+          <div className="col-span-full bg-red-50 border border-red-100 rounded-lg p-4 text-red-600 text-center">
+            <XCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p className="font-semibold text-sm">Error loading statistics</p>
+            <p className="text-xs">{(statsError as any)?.response?.data?.message || "Please refresh the page"}</p>
+          </div>
+        ) : (
+          <>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-500">Total Revenue</p>
+                  <DollarSign className="w-4 h-4 text-gray-400" />
                 </div>
-                <DollarSign className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
+                <h3 className="text-2xl font-bold text-green-600">{formatCurrency(statistics?.total_revenue || 0)}</h3>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Net Revenue</p>
-                  <p className="text-2xl font-bold text-[#055160]">{formatCurrency(statistics.net_revenue || 0)}</p>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-500">Net Revenue</p>
+                  <TrendingUp className="w-4 h-4 text-gray-400" />
                 </div>
-                <TrendingUp className="w-8 h-8 text-[#055160]" />
-              </div>
-            </CardContent>
-          </Card>
+                <h3 className="text-2xl font-bold text-[#055160]">{formatCurrency(statistics?.net_revenue || 0)}</h3>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Successful Payments</p>
-                  <p className="text-2xl font-bold">{statistics.successful_payments || 0}</p>
-                  <p className="text-xs text-gray-500">of {statistics.total_transactions || 0} total</p>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-500">Successful Payments</p>
+                  <CheckCircle2 className="w-4 h-4 text-gray-400" />
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
+                <h3 className="text-2xl font-bold">{statistics?.successful_payments || 0}</h3>
+                <p className="text-xs text-gray-500">{statistics?.total_transactions || 0} total</p>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Failed Payments</p>
-                  <p className="text-2xl font-bold text-[#055160]">{statistics.failed_payments || 0}</p>
-                  <p className="text-xs text-gray-500">{statistics.refunded_payments || 0} refunded</p>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-gray-500">Failed Payments</p>
+                  <XCircle className="w-4 h-4 text-gray-400" />
                 </div>
-                <XCircle className="w-8 h-8 text-[#055160]" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                <h3 className="text-2xl font-bold text-[#B71C1C]">{statistics?.failed_payments || 0}</h3>
+                <p className="text-xs text-gray-500">{statistics?.refunded_payments || 0} refunded</p>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
 
       {/* Filters */}
       <Card className="mb-6">
@@ -272,7 +284,7 @@ export default function PaymentsPage() {
               </Select>
             </div>
 
-            <div>
+            {/* <div>
               <Label>Gateway</Label>
               <Select value={selectedGateway} onValueChange={setSelectedGateway}>
                 <SelectTrigger>
@@ -286,7 +298,7 @@ export default function PaymentsPage() {
                   <SelectItem value="manual">Manual</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             <div>
               <Label>Date From</Label>
@@ -321,8 +333,22 @@ export default function PaymentsPage() {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8">
-              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p>Loading payments...</p>
+              <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-[#C62828]" />
+              <p className="text-gray-600">Loading payments...</p>
+            </div>
+          ) : (paymentsData instanceof Error || !paymentsData) && !isLoading && !payments.length ? (
+            <div className="text-center py-8 text-red-500 bg-red-50 rounded-lg border border-red-100 p-4">
+              <XCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="font-semibold">Error loading payments</p>
+              <p className="text-sm">Could not fetch payment records. Please try again or contact support.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-4 border-red-200 text-red-600 hover:bg-red-100"
+                onClick={() => refetch()}
+              >
+                Retry
+              </Button>
             </div>
           ) : payments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
@@ -350,7 +376,7 @@ export default function PaymentsPage() {
                       <tr key={payment.payment_history_id} className="border-b hover:bg-gray-50">
                         <td className="p-3">
                           <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {payment.payment_transaction_id.substring(0, 20)}...
+                            {payment.payment_transaction_id?.substring(0, 20)}...
                           </code>
                         </td>
                         <td className="p-3 font-medium">#{payment.order_id}</td>

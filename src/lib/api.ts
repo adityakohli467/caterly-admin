@@ -37,28 +37,9 @@ api.interceptors.response.use(
   (error) => {
     // Handle token expiration and unauthorized errors
     if (error.response?.status === 401) {
-      const errorMessage = error.response.data?.message || 'Session expired. Please login again.'
-
-      // Clear auth state if token expired
-      if (typeof window !== 'undefined') {
-        // Clear localStorage
-        localStorage.removeItem('caterly-auth')
-        localStorage.removeItem('token')
-
-        // Clear cookie
-        document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-
-        // Only redirect if not already on login page
-        if (!window.location.pathname.includes('/login')) {
-          // Store intended destination
-          const currentPath = window.location.pathname + window.location.search
-          if (currentPath !== '/login') {
-            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
-          }
-        }
-      }
-
-      // Return error with clear message
+      const errorMessage = error.response.data?.message || 'Session expired or invalid.'
+      // Removed automatic redirection and localStorage clearing to keep session persistent
+      // until the user explicitly logs out.
       return Promise.reject(new Error(errorMessage))
     }
 

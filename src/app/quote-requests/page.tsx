@@ -38,9 +38,9 @@ interface QuoteRequest {
 
 const statusOptions = [
     { value: "", label: "All Status" },
-    { value: "pending", label: "Pending" },
+    // { value: "pending", label: "Pending" },
     { value: "new", label: "New" },
-    { value: "reviewed", label: "Reviewed" },
+    // { value: "reviewed", label: "Reviewed" },
     { value: "replied", label: "Replied" },
 ]
 
@@ -197,7 +197,7 @@ export default function QuoteRequestsPage() {
                         <span className="text-green-600 font-bold text-sm">{repliedCount}</span>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">Replied</p>
+                        <p className="text-xs text-gray-400 font-medium">Mark Replied</p>
                         <p className="text-sm text-gray-700 font-semibold">Completed</p>
                     </div>
                 </div>

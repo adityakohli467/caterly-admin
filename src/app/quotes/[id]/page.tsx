@@ -699,7 +699,7 @@ export default function QuoteDetailPage() {
                   <tr className="border-b border-gray-200">
                     <td colSpan={5} className="px-4 py-3 text-right">
                       <span className="text-base font-semibold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
-                        Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span>
+                        Total Amount <span className="text-xs font-normal text-gray-500">(Excl. GST)</span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

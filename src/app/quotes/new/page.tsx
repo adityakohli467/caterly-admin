@@ -182,6 +182,7 @@ export default function NewQuotePage() {
         )} */}
         {currentStep === 2 && (
           <Button
+            onClick={() => router.push("/admin/products?add=true")}
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >

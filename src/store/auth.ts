@@ -43,9 +43,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
           })
 
-          // Also set a cookie for middleware (4 hours expiration to match JWT)
+          // Also set a cookie for middleware (30 days expiration for persistence)
           if (typeof document !== 'undefined') {
-            document.cookie = `caterly-auth=${token}; path=/; max-age=${60 * 60 * 4}; SameSite=Lax`
+            document.cookie = `caterly-auth=${token}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
           }
         } catch (error: any) {
           const message = error.response?.data?.message || "Login failed"
@@ -95,20 +95,11 @@ export const useAuthStore = create<AuthState>()(
               return
             }
             
-            // Clear auth on 401 (token expired/invalid)
+            // Keep auth even on 401 to wait for manual logout
             if (error.response?.status === 401) {
-              set({
-                user: null,
-                token: null,
-                isAuthenticated: false,
-              })
-              
-              // Clear storage
-              if (typeof window !== 'undefined') {
-                localStorage.removeItem('caterly-auth')
-                localStorage.removeItem('token')
-                document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-              }
+              // Silently allow the state to remain so the user isn't kicked out immediately
+              // This relies on the backend still validating tokens for protected actions
+              set({ isAuthenticated: true })
               return
             }
           }
