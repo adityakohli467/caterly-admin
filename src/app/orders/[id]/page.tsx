@@ -25,6 +25,7 @@ interface OrderProduct {
   price: number
   total: number
   product_comment?: string
+  item_comments?: string
   options?: Array<{
     option_name: string
     option_value: string
@@ -469,6 +470,9 @@ export default function OrderDetailPage() {
                       Quantity
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                      Item Comments
+                    </th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                       Price
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
@@ -533,6 +537,11 @@ export default function OrderDetailPage() {
                                 </div>
                               )}
                             </div>
+                          </td>
+                          <td className="px-4 py-4 align-top text-right">
+                            <span className="text-sm font-medium text-orange-600" style={{ fontFamily: 'Albert Sans' }}>
+                              {product.item_comments || '-'}
+                            </span>
                           </td>
                           <td className="px-4 py-4 align-top text-right">
                             <div>

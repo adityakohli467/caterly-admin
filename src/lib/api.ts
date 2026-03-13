@@ -228,3 +228,11 @@ export const quotationsAPI = {
   delete: (id: number) => api.delete(`/admin/quotation-inquiries/${id}`),
 }
 
+export const subscriptionsAPI = {
+  list: (params?: any) => api.get("/admin/subscriptions", { params }),
+  get: (id: number) => api.get(`/admin/subscriptions/${id}`),
+  cancel: (id: number, comment?: string) => api.post(`/admin/subscriptions/${id}/cancel`, { cancel_comment: comment }),
+  activate: (id: number) => api.post(`/admin/subscriptions/${id}/activate`),
+  delete: (id: number) => api.delete(`/admin/subscriptions/${id}`),
+}
+
