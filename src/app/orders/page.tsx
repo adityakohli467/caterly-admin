@@ -520,13 +520,17 @@ export default function OrdersPage() {
   const handleRefreshOrder = (orderId: number) => {
     console.log("Refresh order:", orderId)
     queryClient.invalidateQueries({ queryKey: ['orders'] })
-    queryClient.invalidateQueries({ queryKey: ['order', orderId] })
-    toast.success("Order refreshed")
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+      toast.success("Order refreshed")
   }
 
   const handleAttachImage = (orderId: number) => {
-    setImageUploadOrderId(orderId)
-    setShowImageUploadModal(true)
+    // Implement attach image logic here
+    toast.info(`Attach image for order #${orderId}`)
+  }
+
+  const handleReorder = (orderId: number) => {
+    router.push(`/orders/new?reorderId=${orderId}`)
   }
 
   const handleImageFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1316,6 +1320,13 @@ export default function OrdersPage() {
                               >
                                 <ImageIcon className="h-4 w-4 mr-2" />
                                 Attach Image
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleReorder(order.order_id)}
+                                className="cursor-pointer"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Reorder
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDeleteClick(order.order_id)}

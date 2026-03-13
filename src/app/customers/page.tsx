@@ -37,6 +37,8 @@ interface Customer {
   company_id?: number
   department_id?: number
   created_from?: string
+  auth_level?: number
+  role_id?: number
   approved?: boolean
   company?: {
     company_id: number
@@ -317,6 +319,11 @@ export default function CustomersPage() {
     const rawCustomers = customersData?.customers || []
 
     return rawCustomers.filter((c: Customer) => {
+      // Exclude staff members (anyone who has a role_id assigned)
+      if (c.role_id) return false
+      // Also exclude explicit staff auth levels
+      if (c.auth_level && [1, 2, 3].includes(c.auth_level)) return false
+
       const isFrontend = c.created_from === 'storefront'
       if (selectedGroup === "Frontend") return isFrontend
       return !isFrontend

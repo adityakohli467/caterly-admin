@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { CustomerStep } from "../../quotes/new/components/CustomerStep"
@@ -9,7 +9,7 @@ import { ProductsStep } from "../../quotes/new/components/ProductsStep"
 import { DeliveryStep } from "./components/DeliveryStepOrder"
 import { Check } from "lucide-react"
 import { toast } from "sonner"
-import { ordersAPI } from "@/lib/api"
+import api, { ordersAPI } from "@/lib/api"
 
 export interface OrderData {
   // Customer Details
@@ -59,11 +59,71 @@ export interface OrderData {
 export default function NewOrderPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const reorderId = searchParams.get("reorderId")
   const [currentStep, setCurrentStep] = useState(1)
   const [orderData, setOrderData] = useState<OrderData>({
     products: [],
   })
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
+  const [isReloading, setIsReloading] = useState(false)
+
+  // Handle reorder logic
+  useEffect(() => {
+    const fetchOriginalOrder = async () => {
+      if (!reorderId) return
+      
+      setIsReloading(true)
+      try {
+        const response = await api.get(`/admin/orders/${reorderId}`)
+        const originalOrder = response.data.order
+        
+        if (originalOrder) {
+          // Find customer type from customer_name or other fields if available
+          // (Backend response might vary, this is a best-effort mapping)
+          const mappedOrderData: OrderData = {
+            company_id: originalOrder.company_id,
+            department_id: originalOrder.department_id,
+            customer_id: originalOrder.customer_id,
+            customer_name: originalOrder.customer_order_name,
+            customer_type: originalOrder.customer_type || "Wholesaler",
+            phone: originalOrder.customer_order_telephone,
+            email: originalOrder.customer_order_email,
+            location_id: originalOrder.location_id,
+            delivery_address: originalOrder.delivery_address,
+            delivery_method: originalOrder.delivery_method || "delivery",
+            delivery_contact: originalOrder.customer_order_name,
+            delivery_details: originalOrder.order_comments,
+            cost_center: originalOrder.cost_center,
+            products: (originalOrder.order_products || []).map((p: any) => ({
+              product_id: p.product_id,
+              name: p.product_name,
+              category: "", // Backend usually doesn't return category in order details
+              price: Number(p.price),
+              quantity: p.quantity,
+              comment: p.product_comment,
+              add_ons: (p.options || []).map((opt: any) => ({
+                name: opt.option_name,
+                price: Number(opt.option_price),
+                quantity: opt.option_quantity
+              }))
+            }))
+          }
+          
+          setOrderData(mappedOrderData)
+          setCurrentStep(2) // Jump to product review step
+          toast.success("Order details pre-populated for reorder")
+        }
+      } catch (error) {
+        console.error("Error fetching reorder data:", error)
+        toast.error("Failed to fetch original order details")
+      } finally {
+        setIsReloading(false)
+      }
+    }
+
+    fetchOriginalOrder()
+  }, [reorderId])
 
   const steps = [
     { number: 1, label: "Select Customer" },

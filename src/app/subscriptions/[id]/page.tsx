@@ -316,6 +316,7 @@ export default function SubscriptionDetailPage() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Product Name</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Frequency</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Options</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Item Comments</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Quantity</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Price</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>Total Amount</th>
@@ -331,6 +332,9 @@ export default function SubscriptionDetailPage() {
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                         {product.options?.map((o: any) => o.option_value).join(', ') || '-'}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-700 font-medium text-orange-600" style={{ fontFamily: 'Albert Sans' }}>
+                        {product.item_comments || '-'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>{product.quantity}</td>
                       <td className="px-4 py-4 text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>${parseFloat(product.price || 0).toFixed(2)}</td>

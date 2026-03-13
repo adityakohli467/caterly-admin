@@ -22,6 +22,7 @@ interface OrderProduct {
   price: number
   total: number
   product_comment?: string
+  item_comments?: string
   is_prepared?: boolean
   options?: Array<{
     option_name: string
@@ -99,6 +100,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
           ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map(o => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity}, $${Number(o.option_price).toFixed(2)})`).join(', ') + '</small>' : ''}
           ${p.product_comment ? '<br/><em>Note: ' + p.product_comment + '</em>' : ''}
         </td>
+        <td>${p.item_comments || '-'}</td>
         <td style="text-align:center">${p.quantity}</td>
         <td style="text-align:right">$${Number(p.price).toFixed(2)}</td>
         <td style="text-align:right">$${Number(p.total).toFixed(2)}</td>
@@ -137,7 +139,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
             ${order.delivery_address ? `<div class="info-item"><label>Delivery Address</label><span>${order.delivery_address}</span></div>` : ''}
           </div>
           <table>
-            <thead><tr><th>No.</th><th>Product</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
+            <thead><tr><th>No.</th><th>Product</th><th>Item Comments</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
             <tbody>${productsHtml}</tbody>
           </table>
           <table class="totals">
@@ -272,6 +274,9 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                             <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-center px-4 py-3 text-sm text-gray-700">
                               Quantity
                             </th>
+                            <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-4 py-3 text-sm text-gray-700">
+                              Item Comments
+                            </th>
                             <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-right px-4 py-3 text-sm text-gray-700">
                               Price
                             </th>
@@ -321,6 +326,11 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                 <td className="px-4 py-4 text-center">
                                   <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-900">
                                     {product.quantity}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-4">
+                                  <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-orange-600">
+                                    {product.item_comments || '-'}
                                   </span>
                                 </td>
                                 <td className="px-4 py-4 text-right">

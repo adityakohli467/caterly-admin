@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import api from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,11 +9,13 @@ import { Label } from "@/components/ui/label"
 import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Printer, Plus, Edit, Trash2, AlertCircle, User } from "lucide-react"
+import { Search, Printer, Plus, Edit, Trash2, AlertCircle, User as UserIcon, UserCheck } from "lucide-react"
 import { toast } from "sonner"
 import { validateRequired, validateEmail } from "@/lib/validations"
+import api, { authAPI, customersAPI, ordersAPI } from "@/lib/api"
 import { printTableData } from "@/lib/print-utils"
 import { useAuthStore } from "@/store/auth"
+import { useRouter } from "next/navigation"
 
 interface User {
   user_id: number
@@ -29,6 +30,7 @@ interface User {
   }
   company_name?: string
   account_email?: string
+  created_from?: string
   created_at: string
   updated_at: string
 }
@@ -157,8 +159,14 @@ export default function UsersPage() {
     },
   })
 
-  const users = usersData?.users || []
-  const totalCount = usersData?.count || 0
+  const users = (usersData?.users || []).filter((u: User) => {
+    // Staff members must have a role_id assigned in the admin panel
+    const hasStaffRole = !!u.role_id
+    // Secondary safety: auth_level should be staff level (1, 2, 3)
+    const isStaffLevel = [1, 2, 3].includes(u.auth_level)
+    return hasStaffRole && isStaffLevel
+  })
+  const totalCount = users.length
   const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   // Create user mutation
@@ -167,7 +175,32 @@ export default function UsersPage() {
       const response = await api.post("/admin/users", userData)
       return response.data
     },
-    onSuccess: () => {
+    onSuccess: async (data: any, variables: any) => {
+      // Create a corresponding Customer profile so staff can place orders on the frontend
+      try {
+        const nameParts = variables.username.trim().split(/\s+/)
+        const firstname = nameParts[0] || "Staff"
+        const lastname = nameParts.slice(1).join(" ") || "User"
+        
+        const userId = data.user_id || data.user?.user_id || variables.user_id
+        
+        await customersAPI.create({
+          firstname,
+          lastname,
+          email: variables.email || null,
+          customer_type: "Frontend",
+          status: 1,
+          approved: true,
+          user_id: userId,
+          role_id: variables.role_id,
+          auth_level: variables.auth_level,
+          created_from: "storefront"
+        })
+      } catch (customerError) {
+        console.error("Error creating linked customer profile:", customerError)
+        // We don't block the user success toast but log it
+      }
+
       queryClient.invalidateQueries({ queryKey: ["users"] })
       toast.success("User created successfully!")
       setShowAddModal(false)
@@ -209,6 +242,35 @@ export default function UsersPage() {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete user")
+    },
+  })
+
+  // Repair customer profile mutation for existing staff
+  const repairProfileMutation = useMutation({
+    mutationFn: async (user: User) => {
+      const nameParts = user.username.trim().split(/\s+/)
+      const firstname = nameParts[0] || "Staff"
+      const lastname = nameParts.slice(1).join(" ") || "User"
+      
+      const response = await customersAPI.create({
+        firstname,
+        lastname,
+        email: user.email || null,
+        customer_type: "Frontend",
+        status: 1,
+        approved: true,
+        user_id: user.user_id,
+        role_id: user.role_id,
+        auth_level: user.auth_level,
+        created_from: "storefront"
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success("Customer profile linked successfully! This user can now place orders on the frontend.")
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to link customer profile")
     },
   })
 
@@ -533,6 +595,14 @@ export default function UsersPage() {
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             )}
+                            <button
+                              onClick={() => repairProfileMutation.mutate(user)}
+                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              title="Repair Order Profile (use if 'Customer not found' error occurs on frontend)"
+                              disabled={repairProfileMutation.isPending}
+                            >
+                              <UserCheck className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       )}
@@ -617,7 +687,7 @@ export default function UsersPage() {
         >
           <DialogHeader>
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <User className="h-6 w-6 text-[#055160]" />
+              <UserIcon className="h-6 w-6 text-[#055160]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add New User
