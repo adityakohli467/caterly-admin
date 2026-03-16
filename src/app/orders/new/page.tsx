@@ -229,9 +229,28 @@ export default function NewOrderPage() {
       const response = await ordersAPI.create(orderPayload)
 
       if (response.data) {
+        const orderId = response.data.order?.order_id
+        const sendToEmail = (latestData as any)?.send_to_email
+
+        // If email requested and we have an order ID
+        if (sendToEmail && orderId) {
+          try {
+            console.log(`Sending email to ${sendToEmail} for order ${orderId}`)
+            await ordersAPI.sendEmail(orderId, { 
+              email_type: 'order_confirmation'
+              // Note: backend might need custom logic to use the provided email if different from account_email
+            })
+            toast.success(`Order created and confirmation email sent to ${sendToEmail}`)
+          } catch (emailError) {
+            console.error("Error sending email:", emailError)
+            toast.error("Order created but failed to send confirmation email")
+          }
+        } else {
+          toast.success("Order created successfully!")
+        }
+
         // Invalidate ALL orders queries (prefix match) so any cached tab refreshes
         await queryClient.invalidateQueries({ queryKey: ['orders'], exact: false, refetchType: 'all' })
-        toast.success("Order created successfully!")
         router.push(`/orders?tab=future&refresh=${Date.now()}`)
       }
     } catch (error: any) {

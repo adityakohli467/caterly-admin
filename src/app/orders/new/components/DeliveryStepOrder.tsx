@@ -621,6 +621,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       order_comments: orderComments,
       standing_order: standingOrder,
       location_id: selectedLocation || (deliveryMethod === 'pickup' ? selectedPickupLocation : undefined),
+      send_to_email: sendEmail, // Pass the email to send to
     }
 
     // Call onSave to create the order with latest data
