@@ -401,10 +401,10 @@ export default function PaymentsPage() {
                         <td className="p-3">{getStatusBadge(payment.payment_status)}</td>
                         <td className="p-3">{getGatewayBadge(payment.payment_gateway)}</td>
                         <td className="p-3 text-sm text-gray-600">
-                          {new Date(payment.created_at).toLocaleDateString()}
+                         {new Date(payment.created_at).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney', day: '2-digit', month: 'short', year: 'numeric' })}
                           <br />
                           <span className="text-xs">
-                            {new Date(payment.created_at).toLocaleTimeString()}
+                            {new Date(payment.created_at).toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </td>
                         <td className="p-3">
@@ -505,12 +505,12 @@ export default function PaymentsPage() {
                 </div>
                 <div>
                   <Label className="text-gray-600">Created</Label>
-                  <p>{new Date(selectedPayment.created_at).toLocaleString()}</p>
+                  <p>{new Date(selectedPayment.created_at).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' })}</p>
                 </div>
                 {selectedPayment.processed_at && (
                   <div>
                     <Label className="text-gray-600">Processed</Label>
-                    <p>{new Date(selectedPayment.processed_at).toLocaleString()}</p>
+                    <p>{new Date(selectedPayment.processed_at).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' })}</p>
                   </div>
                 )}
               </div>

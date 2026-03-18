@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CustomerStep } from "../../quotes/new/components/CustomerStep"
 import { ProductsStep } from "../../quotes/new/components/ProductsStep"
 import { DeliveryStep } from "./components/DeliveryStepOrder"
+import { AddProductModal } from "./components/AddProductModal"
 import { Check } from "lucide-react"
 import { toast } from "sonner"
 import api, { ordersAPI } from "@/lib/api"
@@ -67,6 +68,7 @@ export default function NewOrderPage() {
   })
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
   const [isReloading, setIsReloading] = useState(false)
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
 
   // Handle reorder logic
   useEffect(() => {
@@ -276,7 +278,7 @@ export default function NewOrderPage() {
 
         {currentStep === 2 && (
           <Button
-            onClick={() => router.push("/admin/products?add=true")}
+            onClick={() => setShowAddProductModal(true)}
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
@@ -350,6 +352,12 @@ export default function NewOrderPage() {
           onBack={handleBack}
         />
       )}
+
+      {/* Add Product Modal - inline so order flow state is preserved */}
+      <AddProductModal
+        open={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+      />
     </div>
   )
 }

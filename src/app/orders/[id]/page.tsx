@@ -941,7 +941,7 @@ export default function OrderDetailPage() {
                             Refunded: ${parseFloat(payment.refund_amount || 0).toFixed(2)}
                           </div>
                         )}
-                        <div>Date: {new Date(payment.created_at).toLocaleString()}</div>
+                        <div>Date: {new Date(payment.created_at).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' })}</div>
                       </div>
                     </div>
                   </div>

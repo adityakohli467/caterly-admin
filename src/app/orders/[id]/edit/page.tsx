@@ -136,7 +136,21 @@ export default function EditOrderPage() {
             })) || []
           })) || []
 
-          const deliveryDateTime = order.delivery_date_time ? new Date(order.delivery_date_time) : null
+          // Extract date and time directly from the raw string to avoid timezone shifts.
+          // Using new Date() would apply the browser's local timezone and change the time.
+          let rawDate: string | undefined = undefined
+          let rawTime: string | undefined = undefined
+          if (order.delivery_date_time) {
+            // delivery_date_time may be "2026-03-20 14:30:00" or ISO "2026-03-20T14:30:00Z"
+            const dtStr = order.delivery_date_time.toString()
+            const normalized = dtStr.replace('T', ' ').replace('Z', '').split('+'[0])[0]
+            const parts = normalized.split(' ')
+            rawDate = parts[0] // "2026-03-20"
+            rawTime = parts[1] ? parts[1].slice(0, 5) : undefined // "14:30"
+          } else if (order.delivery_date) {
+            rawDate = order.delivery_date.toString().split('T')[0]
+            rawTime = order.delivery_time?.slice(0, 5)
+          }
           
           const mappedOrderData: OrderData = {
             company_id: order.company_id,
@@ -149,8 +163,8 @@ export default function EditOrderPage() {
             location: order.location_name,
             location_id: order.location_id,
             products: mappedProducts,
-            delivery_date: deliveryDateTime ? deliveryDateTime.toISOString().split('T')[0] : undefined,
-            delivery_time: deliveryDateTime ? deliveryDateTime.toTimeString().slice(0, 5) : undefined,
+            delivery_date: rawDate,
+            delivery_time: rawTime,
             delivery_address: order.delivery_address || '',
             delivery_fee: parseFloat(order.delivery_fee || 0),
             coupon_code: order.coupon_code || '',

@@ -581,10 +581,11 @@ export default function WholesaleOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('en-GB', {
+                          {order.delivery_date ? new Date(order.delivery_date).toLocaleDateString('en-AU', {
                             day: '2-digit',
                             month: '2-digit',
-                            year: 'numeric'
+                            year: 'numeric',
+                            timeZone: 'Australia/Sydney'
                           }) : 'N/A'}
                         </span>
                       </td>
