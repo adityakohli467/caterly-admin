@@ -165,9 +165,11 @@ export default function SubscriptionsPage() {
   }
 
   const getFrequencyText = (days: number) => {
-    if (days === 7) return "Every Week"
+    if (days === 7) return "Once a week"
     if (days === 14) return "Every 2 Weeks"
-    if (days === 30) return "Every Month"
+    if (days === 21) return "Every 3 Weeks"
+    if (days === 28) return "Every 4 Weeks"
+    if (days === 30) return "Every 4 Weeks" // Fallback for legacy data
     return `Every ${days} days`
   }
 
@@ -199,7 +201,7 @@ export default function SubscriptionsPage() {
                 <p className="font-semibold text-gray-900 mt-3">To create a subscription:</p>
                 <ol className="list-decimal list-inside space-y-1 ml-2 text-gray-700">
                   <li>Create a new order with the products you want</li>
-                  <li>Set the "Standing Order" field to the frequency (7 for weekly, 14 for bi-weekly, 30 for monthly)</li>
+                  <li>Set the "Standing Order" field to the frequency (7 for weekly, 14 for 2 weeks, 21 for 3 weeks, 28 for 4 weeks)</li>
                   <li>Choose the delivery date and time</li>
                   <li>Save the order - it will automatically appear here as a subscription</li>
                 </ol>
@@ -483,7 +485,7 @@ export default function SubscriptionsPage() {
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-gray-700 text-center" style={{ fontFamily: 'Albert Sans' }}>
-              To create a subscription, create a new order and set the "Standing Order" field to the desired frequency (7 for weekly, 14 for bi-weekly, 30 for monthly).
+              To create a subscription, create a new order and set the "Standing Order" field to the desired frequency (7 for weekly, 14 for 2 weeks, 21 for 3 weeks, 28 for 4 weeks).
             </p>
           </div>
           <div className="flex gap-3 justify-end">

@@ -167,13 +167,14 @@ export default function HistoryPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
+    return new Date(dateString).toLocaleString("en-AU", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
+      timeZone: "Australia/Sydney",
     })
   }
 

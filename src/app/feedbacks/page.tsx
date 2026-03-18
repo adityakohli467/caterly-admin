@@ -562,7 +562,7 @@ export default function FeedbacksPage() {
         </div>
         {feedbacks.length > 0 && (
           <div className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
-            Last updated: {new Date().toLocaleTimeString()}
+            Last updated: {new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit' })}
           </div>
         )}
       </div>
@@ -600,7 +600,7 @@ export default function FeedbacksPage() {
                   {feedbackDetail.delivery_date && (
                     <div>
                       <p className="text-sm font-medium text-gray-600">Delivery Date</p>
-                      <p className="text-sm text-gray-900">{new Date(feedbackDetail.delivery_date).toLocaleDateString()}</p>
+                      <p className="text-sm text-gray-900">{new Date(feedbackDetail.delivery_date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney', day: '2-digit', month: 'short', year: 'numeric' })}</p>
                     </div>
                   )}
                   {feedbackDetail.deliveredontime && (

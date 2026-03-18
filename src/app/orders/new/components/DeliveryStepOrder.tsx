@@ -1181,9 +1181,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   style={{ fontFamily: 'Albert Sans' }}
                 >
                   <option value="0">One-time Order</option>
-                  <option value="7">Weekly (Every 7 days)</option>
-                  <option value="14">Bi-weekly (Every 14 days)</option>
-                  <option value="30">Monthly (Every 30 days)</option>
+                  <option value="7">Once a week</option>
+                  <option value="14">Every 2 Weeks</option>
+                  <option value="21">Every 3 Weeks</option>
+                  <option value="28">Every 4 Weeks</option>
                 </select>
                 {standingOrder > 0 && (
                   <p className="text-xs text-[#055160] mt-1" style={{ fontFamily: 'Albert Sans' }}>

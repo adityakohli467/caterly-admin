@@ -167,20 +167,23 @@ export default function SubscriptionDetailPage() {
   }
 
   const getFrequencyText = (days: number) => {
-    if (days === 7) return "Every Week"
+    if (days === 7) return "Once a week"
     if (days === 14) return "Every 2 Weeks"
-    if (days === 30) return "Every Month"
+    if (days === 21) return "Every 3 Weeks"
+    if (days === 28) return "Every 4 Weeks"
+    if (days === 30) return "Every 4 Weeks" // Fallback for legacy data
     return `Every ${days} days`
   }
 
   const formatDate = (dateString: string) => {
     if (!dateString) return ""
-    return new Date(dateString).toLocaleDateString("en-US", {
+    return new Date(dateString).toLocaleString("en-AU", {
       year: "numeric",
       month: "long",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Australia/Sydney",
     })
   }
 
@@ -460,9 +463,10 @@ export default function SubscriptionDetailPage() {
                     style={{ fontFamily: 'Albert Sans' }}
                   >
                     <option value="0">One-time Order</option>
-                    <option value="7">Weekly (Every 7 days)</option>
-                    <option value="14">Bi-weekly (Every 14 days)</option>
-                    <option value="30">Monthly (Every 30 days)</option>
+                    <option value="7">Once a week</option>
+                    <option value="14">Every 2 Weeks</option>
+                    <option value="21">Every 3 Weeks</option>
+                    <option value="28">Every 4 Weeks</option>
                   </select>
                 ) : (
                   <p className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
