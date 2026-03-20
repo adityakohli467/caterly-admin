@@ -570,25 +570,6 @@ export default function DashboardPage() {
 
       {/* Stats Grid - Modern Clean Design */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {/* Today's Orders */}
-        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
-            <div className="flex items-start justify-between mb-3 md:mb-4">
-              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs sm:text-sm text-gray-600">
-                Today's Orders
-              </p>
-              {stats && (
-                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs px-2 py-1 rounded-full ${stats.todayOrders > 0 ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-600'}`}>
-                  {stats.todayOrders > 0 ? `+${stats.todayOrders}` : '0'}
-                </span>
-              )}
-            </div>
-            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
-              {stats?.todayOrders || 0}
-            </h2>
-          </CardContent>
-        </Card>
-
         {/* Today's Deliveries */}
         <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
@@ -604,6 +585,25 @@ export default function DashboardPage() {
             </div>
             <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
               {stats?.deliveriesToday || 0}
+            </h2>
+          </CardContent>
+        </Card>
+
+        {/* Today's Orders */}
+        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+            <div className="flex items-start justify-between mb-3 md:mb-4">
+              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs sm:text-sm text-gray-600">
+                Today's Orders
+              </p>
+              {stats && (
+                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs px-2 py-1 rounded-full ${stats.todayOrders > 0 ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-600'}`}>
+                  {stats.todayOrders > 0 ? `+${stats.todayOrders}` : '0'}
+                </span>
+              )}
+            </div>
+            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
+              {stats?.todayOrders || 0}
             </h2>
           </CardContent>
         </Card>
@@ -705,7 +705,13 @@ export default function DashboardPage() {
                   }).map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm font-medium text-[#055160]">#{order.order_id}</span>
+                        <span 
+                          onClick={() => handleViewOrder(order.order_id)}
+                          style={{ fontFamily: 'Albert Sans' }} 
+                          className="text-xs sm:text-sm font-medium text-[#055160] cursor-pointer hover:underline"
+                        >
+                          #{order.order_id}
+                        </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
@@ -736,21 +742,6 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <div className="flex items-center gap-2 flex-nowrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewOrder(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-                          >
-                            <Eye className="h-3.5 w-3.5 mr-1" />
-                            View Order
-                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
@@ -868,7 +859,13 @@ export default function DashboardPage() {
                   }).map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm font-medium text-[#055160]">#{order.order_id}</span>
+                        <span 
+                          onClick={() => handleViewOrder(order.order_id)}
+                          style={{ fontFamily: 'Albert Sans' }} 
+                          className="text-xs sm:text-sm font-medium text-[#055160] cursor-pointer hover:underline"
+                        >
+                          #{order.order_id}
+                        </span>
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
@@ -902,21 +899,6 @@ export default function DashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleViewOrder(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs border border-gray-300 text-gray-700 hover:bg-gray-50 whitespace-nowrap"
-                          >
-                            <Eye className="h-3.5 w-3.5 mr-1" />
-                            View Order
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => handleChefView(order.order_id)}
                             style={{
                               fontFamily: 'Albert Sans',
@@ -928,34 +910,6 @@ export default function DashboardPage() {
                           >
                             <ChefHat className="h-3.5 w-3.5 mr-1" />
                             Chef View
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkComplete(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                            Complete
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkDelivered(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
-                          >
-                            <Truck className="h-3.5 w-3.5 mr-1" />
-                            Deliver
                           </Button>
                         </div>
                       </td>
