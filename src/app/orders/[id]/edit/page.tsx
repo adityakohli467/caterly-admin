@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CustomerStep } from "../../../quotes/new/components/CustomerStep"
 import { ProductsStep } from "../../../quotes/new/components/ProductsStep"
 import { DeliveryStep } from "../../new/components/DeliveryStepOrder"
+import { AddProductModal } from "../../new/components/AddProductModal"
 import { Check, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import { ordersAPI } from "@/lib/api"
@@ -67,6 +68,7 @@ export default function EditOrderPage() {
   })
   const [isDataLoaded, setIsDataLoaded] = useState(false)
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
 
   const steps = [
     { number: 1, label: "Select Customer" },
@@ -395,6 +397,7 @@ export default function EditOrderPage() {
         )}
         {currentStep === 2 && (
           <Button 
+            onClick={() => setShowAddProductModal(true)}
             className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-lg"
             style={{ fontWeight: 600 }}
           >
@@ -475,6 +478,12 @@ export default function EditOrderPage() {
           onBack={handleBack}
         />
       )}
+
+      {/* Add Product Modal - inline so order flow state is preserved */}
+      <AddProductModal
+        open={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+      />
     </div>
   )
 }

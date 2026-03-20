@@ -264,15 +264,61 @@ export default function OrdersPage() {
   }
 
   // Trust the backend's order_type classification — only sort client-side
-  // Sort by order_id descending (latest order on top)
   const orders: Order[] = (() => {
-    let list = applyDateFilter(
-      [...rawOrders].sort((a, b) => (b.order_id || 0) - (a.order_id || 0))
-    )
+    let list = applyDateFilter([...rawOrders]);
+
     // Paid filter: status 2 (Paid via payment gateway) OR 3 (Marked as paid manually)
     if (showPaidOnly) {
       list = list.filter(o => o.order_status === 2 || o.order_status === 3)
     }
+
+    // Sort the list based on sortField and sortDirection
+    list.sort((a, b) => {
+      let valA: any = a.order_id || 0;
+      let valB: any = b.order_id || 0;
+
+      if (sortField) {
+        switch (sortField) {
+          case 'order_id':
+            valA = a.order_id || 0;
+            valB = b.order_id || 0;
+            break;
+          case 'customer_name':
+            valA = (a.customer_name || `${a.customer_firstname || ''} ${a.customer_lastname || ''}`).trim().toLowerCase();
+            valB = (b.customer_name || `${b.customer_firstname || ''} ${b.customer_lastname || ''}`).trim().toLowerCase();
+            break;
+          case 'company_name':
+            valA = (a.company_name || a.company || '').toLowerCase();
+            valB = (b.company_name || b.company || '').toLowerCase();
+            break;
+          case 'department_name':
+            valA = (a.department_name || a.department || '').toLowerCase();
+            valB = (b.department_name || b.department || '').toLowerCase();
+            break;
+          case 'delivery_date':
+          case 'delivery_time':
+            valA = parseDeliveryDT(a).getTime();
+            valB = parseDeliveryDT(b).getTime();
+            break;
+          case 'order_total':
+            valA = Number(a.order_total) || 0;
+            valB = Number(b.order_total) || 0;
+            break;
+          case 'order_status':
+            valA = a.order_status || 0;
+            valB = b.order_status || 0;
+            break;
+        }
+      } else {
+        // Default sort: order_id descending
+        return (b.order_id || 0) - (a.order_id || 0);
+      }
+
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
     return list
   })()
 

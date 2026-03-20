@@ -105,13 +105,12 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
 
         const productsHtml = (order.order_products || []).map((p: any, i: number) => `
             <tr>
-                <td>${i + 1}</td>
+                <td style="text-align:center; font-size:16px; font-weight:700">${p.quantity}</td>
                 <td>
                     ${p.product_name}
                     ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map((o: any) => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity})`).join(', ') + '</small>' : ''}
                     ${p.product_comment ? '<br/><em>Note: ' + p.product_comment + '</em>' : ''}
                 </td>
-                <td style="text-align:center; font-size:16px; font-weight:700">${p.quantity}</td>
             </tr>
         `).join('')
 
@@ -141,7 +140,7 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                         ${order.order_comments ? `<div class="info-item"><label>Notes</label><span>${order.order_comments}</span></div>` : ''}
                     </div>
                     <table>
-                        <thead><tr><th>No.</th><th>Product</th><th style="text-align:center">Qty</th></tr></thead>
+                        <thead><tr><th style="text-align:center">Qty</th><th>Product</th></tr></thead>
                         <tbody>${productsHtml}</tbody>
                     </table>
                 </body>
@@ -217,20 +216,6 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                     </div>
                 ) : order ? (
                     <div className="space-y-6">
-                        {/* Order Status */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.order_status)}`}>
-                                    {getStatusText(order.order_status)}
-                                </span>
-                                {order.is_completed === 1 && (
-                                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700">
-                                        Completed
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Left: Products Table — NO price/total columns */}
                             <div className="lg:col-span-2">
@@ -240,14 +225,11 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                             <table className="w-full">
                                                 <thead>
                                                     <tr className="bg-gray-50 border-b border-gray-200">
-                                                        <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-4 py-3 text-sm text-gray-700">
-                                                            No.
+                                                        <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-center px-4 py-3 text-sm text-gray-700 w-24">
+                                                            Quantity
                                                         </th>
                                                         <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-4 py-3 text-sm text-gray-700">
                                                             Product Name
-                                                        </th>
-                                                        <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-center px-4 py-3 text-sm text-gray-700">
-                                                            Quantity
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -255,9 +237,9 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                                     {order.order_products && order.order_products.length > 0 ? (
                                                         order.order_products.map((product, index) => (
                                                             <tr key={product.order_product_id} className="border-b border-gray-100">
-                                                                <td className="px-4 py-4">
-                                                                    <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
-                                                                        {index + 1}
+                                                                <td className="px-4 py-4 text-center">
+                                                                    <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-lg text-gray-900">
+                                                                        {product.quantity}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-4">
@@ -289,16 +271,11 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                                                         )}
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-4 py-4 text-center">
-                                                                    <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-900">
-                                                                        {product.quantity}
-                                                                    </span>
-                                                                </td>
                                                             </tr>
                                                         ))
                                                     ) : (
                                                         <tr>
-                                                            <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                                                            <td colSpan={2} className="px-4 py-8 text-center text-gray-500">
                                                                 <span style={{ fontFamily: 'Albert Sans' }}>No products in this order</span>
                                                             </td>
                                                         </tr>
