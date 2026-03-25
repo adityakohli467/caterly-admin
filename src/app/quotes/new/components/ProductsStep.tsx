@@ -119,7 +119,7 @@ function SortableCartItem({ item, index, onRemove, onQuantityChange, onAddOnQuan
             </div>
             <button
               onClick={() => onRemove(index)}
-              className="text-[#055160] hover:text-[#055160] ml-2"
+              className="text-[#C62828] hover:text-[#B71C1C] ml-2"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -399,35 +399,16 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
       }
     }
 
-    // Check if an item with the same product_id and options already exists in cart
-    console.log("🛒 CART ITEM BUILT:", JSON.stringify({
-      name: newCartItem.name,
-      price: newCartItem.price,
-      quantity: newCartItem.quantity,
-      add_ons: newCartItem.add_ons.map(a => ({ name: a.name, price: a.price, base_price: (a as any).base_price, qty: a.quantity }))
-    }, null, 2))
-    const existingItemIndex = cart.findIndex(item => areCartItemsEqual(item, newCartItem))
-
-    if (existingItemIndex !== -1) {
-      // Item already exists, increase quantity
-      const updatedCart = [...cart]
-      updatedCart[existingItemIndex].quantity += newCartItem.quantity
-      setCart(updatedCart)
+    // Always add as a new item, do not merge
+    setCart(prevCart => {
+      const updatedCart = [...prevCart, newCartItem]
       onUpdate({ products: updatedCart })
-      toast.success(selectedOptionsList.length > 0
-        ? "Product quantity increased in cart"
-        : "Product quantity increased in cart")
-    } else {
-      // New item, add to cart
-      setCart(prevCart => {
-        const updatedCart = [...prevCart, newCartItem]
-        onUpdate({ products: updatedCart })
-        return updatedCart
-      })
-      toast.success(selectedOptionsList.length > 0
-        ? "Product with options added to cart"
-        : "Product added to cart")
-    }
+      return updatedCart
+    })
+    
+    toast.success(selectedOptionsList.length > 0
+      ? "Product with options added to cart"
+      : "Product added to cart")
 
     setQuantities({ ...quantities, [product.product_id]: 1 })
     setExpandedProduct(null)
@@ -466,12 +447,14 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
     const newCart = [...cart]
     newCart[index].quantity = Math.max(1, newCart[index].quantity + delta)
     setCart(newCart)
+    onUpdate({ products: newCart })
   }
 
   const handleCartAddOnQuantityChange = (cartIndex: number, addonIndex: number, delta: number) => {
     const newCart = [...cart]
     newCart[cartIndex].add_ons[addonIndex].quantity = Math.max(1, newCart[cartIndex].add_ons[addonIndex].quantity + delta)
     setCart(newCart)
+    onUpdate({ products: newCart })
   }
 
   const handleCartCommentChange = (index: number, comment: string) => {
@@ -546,19 +529,19 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
               <p className="text-sm text-gray-500">Loading categories...</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                <button
+                {/* <button
                   onClick={() => {
                     setSelectedCategory(0)
                     setSearchQuery("") // Clear search when selecting all
                   }}
                   className={`px-3 py-1.5 text-xs rounded-md border transition-all ${selectedCategory === 0
-                    ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
+                    ? "bg-[#C62828] text-white border-[#C62828] shadow-sm"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#C62828] hover:bg-gray-50"
                     }`}
                   style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
                 >
                   All Categories
-                </button>
+                </button> */}
                 {categories.map((category: Category) => (
                   <button
                     key={category.category_id}
@@ -567,8 +550,8 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                       setSearchQuery("") // Clear search when selecting category
                     }}
                     className={`px-3 py-1.5 text-xs rounded-md border transition-all ${selectedCategory === category.category_id
-                      ? "bg-[#C62828] text-white border-[#055160] shadow-sm"
-                      : "bg-white text-gray-700 border-gray-300 hover:border-[#055160] hover:bg-gray-50"
+                      ? "bg-[#C62828] text-white border-[#C62828] shadow-sm"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-[#C62828] hover:bg-gray-50"
                       }`}
                     style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
                   >
@@ -624,7 +607,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                               {product.product_name}
                             </span>
                             {product.options && product.options.length > 0 && (
-                              <span className="text-xs text-[#055160] cursor-help" title="Has options">ℹ️</span>
+                              <span className="text-xs text-[#C62828] cursor-help" title="Has options">ℹ️</span>
                             )}
                           </div>
                         </td>
@@ -663,7 +646,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                           {product.options && product.options.length > 0 ? (
                             <button
                               onClick={() => setExpandedProduct(expandedProduct === product.product_id ? null : product.product_id)}
-                              className="text-[#055160] hover:text-[#04414d] text-sm font-medium flex items-center gap-1"
+                              className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium flex items-center gap-1"
                               style={{ fontFamily: 'Albert Sans' }}
                             >
                               <ShoppingCart className="h-4 w-4" />
@@ -672,7 +655,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                           ) : (
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className="text-[#055160] hover:text-[#04414d] text-sm font-medium flex items-center gap-1"
+                              className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium flex items-center gap-1"
                               style={{ fontFamily: 'Albert Sans' }}
                             >
                               <ShoppingCart className="h-4 w-4" />
@@ -732,7 +715,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                               <div className="mt-4 flex justify-end">
                                 <button
                                   onClick={() => handleAddToCart(product)}
-                                  className="text-[#055160] hover:text-[#04414d] text-sm font-medium flex items-center gap-1"
+                                  className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium flex items-center gap-1"
                                   style={{ fontFamily: 'Albert Sans' }}
                                 >
                                   <ShoppingCart className="h-4 w-4" />

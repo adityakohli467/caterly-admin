@@ -337,7 +337,7 @@ export default function CouponsPage() {
             placeholder="Search coupons..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -353,14 +353,14 @@ export default function CouponsPage() {
               lineHeight: '20px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#055160',
+              color: '#C62828',
               backgroundColor: 'transparent',
               padding: 0,
               gap: '8px',
               opacity: 1
             }}
           >
-            <Printer className="h-5 w-5 text-[#055160]" />
+            <Printer className="h-5 w-5 text-[#C62828]" />
             Print
           </Button>
         </div>
@@ -372,7 +372,7 @@ export default function CouponsPage() {
           onClick={() => setActiveTab("Active")}
           className={`pb-3 text-xs sm:text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${
             activeTab === "Active"
-              ? "border-[#055160] text-[#055160]"
+              ? "border-[#C62828] text-[#C62828]"
               : "border-transparent text-gray-600 hover:text-gray-900"
           }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -383,7 +383,7 @@ export default function CouponsPage() {
           onClick={() => setActiveTab("Inactive")}
           className={`pb-3 text-xs sm:text-sm font-medium transition-colors border-b-2 whitespace-nowrap ${
             activeTab === "Inactive"
-              ? "border-[#055160] text-[#055160]"
+              ? "border-[#C62828] text-[#C62828]"
               : "border-transparent text-gray-600 hover:text-gray-900"
           }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -478,7 +478,7 @@ export default function CouponsPage() {
                       <div className="flex items-center gap-1 sm:gap-2">
                         <button
                           onClick={() => handleEditCoupon(coupon)}
-                          className="text-xs sm:text-sm text-[#055160] hover:text-[#04414d] font-medium flex items-center gap-1 whitespace-nowrap"
+                          className="text-xs sm:text-sm text-[#C62828] hover:text-[#04414d] font-medium flex items-center gap-1 whitespace-nowrap"
                           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                         >
                           <Edit2 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
@@ -497,7 +497,7 @@ export default function CouponsPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(coupon)}
-                          className="text-xs sm:text-sm text-[#055160] hover:text-red-800 font-medium p-1 flex-shrink-0"
+                          className="text-xs sm:text-sm text-[#C62828] hover:text-red-800 font-medium p-1 flex-shrink-0"
                           title="Delete"
                         >
                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -535,8 +535,8 @@ export default function CouponsPage() {
       }}>
         <DialogContent className="w-[95vw] sm:w-full max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto bg-white" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              {selectedCoupon ? <Edit2 className="h-6 w-6 text-[#055160]" /> : <Plus className="h-6 w-6 text-[#055160]" />}
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              {selectedCoupon ? <Edit2 className="h-6 w-6 text-[#C62828]" /> : <Plus className="h-6 w-6 text-[#C62828]" />}
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               {selectedCoupon ? "Edit Coupon" : "Add New Coupon"}
@@ -611,7 +611,7 @@ export default function CouponsPage() {
                 id="discountType"
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 <option value="">Select type</option>
@@ -661,10 +661,10 @@ export default function CouponsPage() {
           <div className="py-4">
             <div className="flex items-start gap-4">
               <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                confirmAction === "delete" ? "bg-[#e7f1ff]" : "bg-yellow-100"
+                confirmAction === "delete" ? "bg-[#FFEBEE]" : "bg-yellow-100"
               }`}>
                 {confirmAction === "delete" ? (
-                  <Trash2 className="h-6 w-6 text-[#055160]" />
+                  <Trash2 className="h-6 w-6 text-[#C62828]" />
                 ) : (
                   <span className="text-2xl">{confirmAction === "activate" ? "✓" : "✕"}</span>
                 )}

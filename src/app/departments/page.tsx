@@ -325,7 +325,7 @@ export default function DepartmentsPage() {
           <button
             className={`w-full sm:w-auto px-6 sm:px-10 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm lg:text-[15px] font-medium transition-all ${
               activeTab === "Departments"
-                ? "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
+                ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828]"
                 : "bg-white text-[#6c757d] border-2 border-[#e9ecef] hover:border-[#dee2e6]"
             }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
@@ -343,7 +343,7 @@ export default function DepartmentsPage() {
             placeholder="Search departments..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -358,14 +358,14 @@ export default function DepartmentsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -376,7 +376,7 @@ export default function DepartmentsPage() {
           <div className="inline-block min-w-full align-middle">
             <table className="w-full min-w-[500px]">
               <thead>
-                <tr className="bg-white border-b-2 border-[#055160]">
+                <tr className="bg-white border-b-2 border-[#C62828]">
                   <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-[#212529] whitespace-nowrap" style={{ fontFamily: 'Albert Sans', fontWeight: 600, lineHeight: '20px', letterSpacing: '0%' }}>
                     Department Name
                   </th>
@@ -393,7 +393,7 @@ export default function DepartmentsPage() {
                 <tr>
                   <td colSpan={3} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin text-[#055160]" />
+                      <Loader2 className="h-5 w-5 animate-spin text-[#C62828]" />
                       <span className="text-[14px] text-[#6c757d]" style={{ fontFamily: 'Albert Sans' }}>
                         Loading departments...
                       </span>
@@ -425,7 +425,7 @@ export default function DepartmentsPage() {
                       <div className="flex items-center gap-1 sm:gap-2">
                         <button 
                           onClick={() => handleEditDepartment(department)}
-                          className="p-2 text-[#055160] hover:bg-[#e7f1ff] rounded-md transition-colors" 
+                          className="p-2 text-[#C62828] hover:bg-[#FFEBEE] rounded-md transition-colors" 
                           title="Edit"
                         >
                           <Edit className="h-[18px] w-[18px]" />
@@ -433,7 +433,7 @@ export default function DepartmentsPage() {
                         <button 
                           onClick={() => handleDeleteDepartment(department.department_id, department.department_name)}
                           disabled={deleteDepartmentMutation.isPending}
-                          className="p-2 text-[#055160] hover:bg-[#e7f1ff] rounded-md transition-colors disabled:opacity-50" 
+                          className="p-2 text-[#C62828] hover:bg-[#FFEBEE] rounded-md transition-colors disabled:opacity-50" 
                           title="Delete"
                         >
                           <Trash2 className="h-[18px] w-[18px]" />
@@ -515,8 +515,8 @@ export default function DepartmentsPage() {
           }}
         >
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add Departments
@@ -545,7 +545,7 @@ export default function DepartmentsPage() {
                         setErrors({ ...errors, company_id: undefined })
                       }
                     }}
-                    className={`w-full h-11 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] ${
+                    className={`w-full h-11 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] ${
                       errors.company_id ? 'border-red-500' : 'border-gray-300'
                     } bg-white`}
                     style={{ fontFamily: 'Albert Sans' }}
@@ -558,7 +558,7 @@ export default function DepartmentsPage() {
                     ))}
                   </select>
                   {errors.company_id && (
-                    <p className="text-sm text-[#055160]">{errors.company_id}</p>
+                    <p className="text-sm text-[#C62828]">{errors.company_id}</p>
                   )}
                 </>
               )}
@@ -581,7 +581,7 @@ export default function DepartmentsPage() {
                 className="h-11 border-gray-300"
               />
               {errors.department_name && (
-                <p className="text-sm text-[#055160]">{errors.department_name}</p>
+                <p className="text-sm text-[#C62828]">{errors.department_name}</p>
               )}
             </div>
 
@@ -672,8 +672,8 @@ export default function DepartmentsPage() {
           }}
         >
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Edit className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Edit className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Update Departments
@@ -702,7 +702,7 @@ export default function DepartmentsPage() {
                         setErrors({ ...errors, company_id: undefined })
                       }
                     }}
-                    className={`w-full h-11 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] ${
+                    className={`w-full h-11 rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] ${
                       errors.company_id ? 'border-red-500' : 'border-gray-300'
                     } bg-white`}
                     style={{ fontFamily: 'Albert Sans' }}
@@ -715,7 +715,7 @@ export default function DepartmentsPage() {
                     ))}
                   </select>
                   {errors.company_id && (
-                    <p className="text-sm text-[#055160]">{errors.company_id}</p>
+                    <p className="text-sm text-[#C62828]">{errors.company_id}</p>
                   )}
                 </>
               )}
@@ -742,7 +742,7 @@ export default function DepartmentsPage() {
                 style={{ fontFamily: 'Albert Sans' }}
               />
               {errors.department_name && (
-                <p className="text-sm text-[#055160]">{errors.department_name}</p>
+                <p className="text-sm text-[#C62828]">{errors.department_name}</p>
               )}
             </div>
 
@@ -810,8 +810,8 @@ export default function DepartmentsPage() {
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent className="w-[95vw] sm:w-full max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <AlertTriangle className="h-8 w-8 text-[#055160]" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <AlertTriangle className="h-8 w-8 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold text-gray-900">
               Delete Department
@@ -822,7 +822,7 @@ export default function DepartmentsPage() {
             <p className="text-center text-[14px] text-[#6c757d]" style={{ fontFamily: 'Albert Sans' }}>
               Are you sure you want to delete <span className="font-semibold text-gray-900">"{departmentToDelete?.name}"</span>?
             </p>
-            <p className="text-center text-[13px] text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+            <p className="text-center text-[13px] text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
               This action cannot be undone.
             </p>
 

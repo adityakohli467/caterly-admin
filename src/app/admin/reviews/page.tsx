@@ -384,7 +384,7 @@ export default function ReviewsPage() {
                                 size="icon"
                                 onClick={() => rejectProductReviewMutation.mutate(review.review_id)}
                                 disabled={rejectProductReviewMutation.isPending}
-                                className="text-[#055160] hover:text-[#055160]"
+                                className="text-[#C62828] hover:text-[#C62828]"
                               >
                                 <X className="w-4 h-4" />
                               </Button>
@@ -394,7 +394,7 @@ export default function ReviewsPage() {
                             variant="outline"
                             size="icon"
                             onClick={() => handleDelete(review, "product")}
-                            className="text-[#055160] hover:text-[#055160]"
+                            className="text-[#C62828] hover:text-[#C62828]"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -470,7 +470,7 @@ export default function ReviewsPage() {
                                 size="icon"
                                 onClick={() => rejectGeneralReviewMutation.mutate(review.review_id)}
                                 disabled={rejectGeneralReviewMutation.isPending}
-                                className="text-[#055160] hover:text-[#055160]"
+                                className="text-[#C62828] hover:text-[#C62828]"
                               >
                                 <X className="w-4 h-4" />
                               </Button>
@@ -480,7 +480,7 @@ export default function ReviewsPage() {
                             variant="outline"
                             size="icon"
                             onClick={() => handleDelete(review, "general")}
-                            className="text-[#055160] hover:text-[#055160]"
+                            className="text-[#C62828] hover:text-[#C62828]"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

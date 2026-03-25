@@ -313,7 +313,7 @@ export default function LocationsPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -328,14 +328,14 @@ export default function LocationsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -442,14 +442,14 @@ export default function LocationsPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleEditLocation(location)}
-                          className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                          className="p-1.5 text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                           title="Edit"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteLocation(location)}
-                          className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                          className="p-1.5 text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -510,8 +510,8 @@ export default function LocationsPage() {
       }}>
         <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add New Location
@@ -718,8 +718,8 @@ export default function LocationsPage() {
       }}>
         <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Edit className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Edit className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Edit Location Details
@@ -900,8 +900,8 @@ export default function LocationsPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

@@ -12,9 +12,9 @@ export default function PaymentErrorPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
         <div className="mb-6">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#e7f1ff]">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#FFEBEE]">
             <svg
-              className="h-10 w-10 text-[#055160]"
+              className="h-10 w-10 text-[#C62828]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -37,7 +37,7 @@ export default function PaymentErrorPage() {
           Your payment for Order #{orderId || "N/A"} could not be processed.
         </p>
         
-        <p className="text-sm text-[#055160] mb-8">
+        <p className="text-sm text-[#C62828] mb-8">
           {error}
         </p>
         
@@ -49,7 +49,7 @@ export default function PaymentErrorPage() {
           {orderId && (
             <Link
               href={`/orders/${orderId}`}
-              className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+              className="block w-full bg-[#C62828] text-white py-2 px-4 rounded-md hover:bg-[#B71C1C] transition-colors"
             >
               Try Payment Again
             </Link>

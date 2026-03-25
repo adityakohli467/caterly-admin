@@ -236,7 +236,7 @@ export default function SubscriptionsPage() {
           onClick={() => setActiveTab("active")}
           className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
             activeTab === "active"
-              ? "bg-[#e7f1ff] text-[#055160]"
+              ? "bg-[#FFEBEE] text-[#C62828]"
               : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
           }`}
           style={{ fontWeight: 600 }}
@@ -247,7 +247,7 @@ export default function SubscriptionsPage() {
           onClick={() => setActiveTab("inactive")}
           className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
             activeTab === "inactive"
-              ? "bg-[#e7f1ff] text-[#055160]"
+              ? "bg-[#FFEBEE] text-[#C62828]"
               : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
           }`}
           style={{ fontWeight: 600 }}
@@ -264,7 +264,7 @@ export default function SubscriptionsPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -279,14 +279,14 @@ export default function SubscriptionsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -326,7 +326,7 @@ export default function SubscriptionsPage() {
                 filteredSubscriptions.map((sub: Subscription) => (
                   <tr key={sub.order_id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <span className="text-[#055160]" style={{ 
+                      <span className="text-[#C62828]" style={{ 
                         fontFamily: 'Albert Sans',
                         fontWeight: 400,
                         fontStyle: 'normal',
@@ -405,14 +405,14 @@ export default function SubscriptionsPage() {
                           • Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#e7f1ff] text-[#055160]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FFEBEE] text-[#C62828]">
                           • Inactive
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       {sub.sent_to_customer ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#e7f1ff] text-[#055160]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FFEBEE] text-[#C62828]">
                           ✓ Sent
                         </span>
                       ) : (
@@ -426,7 +426,7 @@ export default function SubscriptionsPage() {
                         <Link
                           href={`/subscriptions/${sub.order_id}`}
                           prefetch={true}
-                          className="p-1 text-[#055160] hover:bg-[#e7f1ff] rounded"
+                          className="p-1 text-[#C62828] hover:bg-[#FFEBEE] rounded"
                           title="View"
                         >
                           <Eye className="h-4 w-4" />
@@ -434,7 +434,7 @@ export default function SubscriptionsPage() {
                         {isActive(sub.order_status) ? (
                           <button
                             onClick={() => openModal("cancel", sub)}
-                            className="p-1 text-[#055160] hover:bg-[#e7f1ff] rounded"
+                            className="p-1 text-[#C62828] hover:bg-[#FFEBEE] rounded"
                             title="Cancel"
                           >
                             <X className="h-4 w-4" />
@@ -476,8 +476,8 @@ export default function SubscriptionsPage() {
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 700 }}>
               Create New Subscription
@@ -524,14 +524,14 @@ export default function SubscriptionsPage() {
           <div className="py-4">
             <div className="flex items-start gap-4">
               <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                modalType === "activate" ? "bg-green-100" : "bg-[#e7f1ff]"
+                modalType === "activate" ? "bg-green-100" : "bg-[#FFEBEE]"
               }`}>
                 {modalType === "activate" ? (
                   <Check className="h-6 w-6 text-green-600" />
                 ) : modalType === "cancel" ? (
-                  <X className="h-6 w-6 text-[#055160]" />
+                  <X className="h-6 w-6 text-[#C62828]" />
                 ) : (
-                  <AlertCircle className="h-6 w-6 text-[#055160]" />
+                  <AlertCircle className="h-6 w-6 text-[#C62828]" />
                 )}
               </div>
               <div className="flex-1">

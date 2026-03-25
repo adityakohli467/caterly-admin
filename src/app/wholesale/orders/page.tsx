@@ -55,7 +55,7 @@ const orderStatusMap: Record<number, { label: string; color: string; bgColor: st
   2: { label: "Awaiting Approval", color: "text-yellow-700", bgColor: "bg-yellow-50" },
   3: { label: "Approved", color: "text-green-700", bgColor: "bg-green-50" },
   4: { label: "Complete", color: "text-purple-700", bgColor: "bg-purple-50" },
-  5: { label: "Cancelled", color: "text-[#055160]", bgColor: "bg-[#e7f1ff]" },
+  5: { label: "Cancelled", color: "text-[#C62828]", bgColor: "bg-[#FFEBEE]" },
   6: { label: "In Progress", color: "text-orange-700", bgColor: "bg-orange-50" },
   7: { label: "Completed", color: "text-green-700", bgColor: "bg-green-50" },
 }
@@ -516,7 +516,7 @@ export default function WholesaleOrdersPage() {
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <span className="text-sm text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-sm text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         Error loading orders
                       </span>
                       <Button
@@ -658,7 +658,7 @@ export default function WholesaleOrdersPage() {
                             className="p-1 hover:bg-gray-100 rounded"
                             title="Delete"
                           >
-                            <Trash2 className="h-4 w-4 text-[#055160]" />
+                            <Trash2 className="h-4 w-4 text-[#C62828]" />
                           </button>
                         </div>
                       </td>
@@ -717,8 +717,8 @@ export default function WholesaleOrdersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>

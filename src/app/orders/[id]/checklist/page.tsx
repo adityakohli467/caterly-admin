@@ -179,7 +179,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
             <h1 className="text-2xl font-bold text-gray-900" style={{ fontWeight: 700 }}>
               Order Checklist
             </h1>
-            <p className="text-lg text-[#055160]" style={{ fontWeight: 600 }}>
+            <p className="text-lg text-[#C62828]" style={{ fontWeight: 600 }}>
               Order #{orderId}
             </p>
           </div>
@@ -365,7 +365,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
               <CardTitle className="text-base font-bold" style={{ fontWeight: 700 }}>
                 Order Details
               </CardTitle>
-              <Button variant="link" className="text-sm text-[#055160] p-0 h-auto" style={{ fontWeight: 600 }}>
+              <Button variant="link" className="text-sm text-[#C62828] p-0 h-auto" style={{ fontWeight: 600 }}>
                 View Customer
               </Button>
             </div>
@@ -393,7 +393,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
             </div>
             {order?.pickup_delivery_notes && (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm font-semibold text-[#055160] mb-2" style={{ fontWeight: 600 }}>
+                <p className="text-sm font-semibold text-[#C62828] mb-2" style={{ fontWeight: 600 }}>
                   Approval Comments
                 </p>
                 <p className="text-sm text-gray-600">{order.pickup_delivery_notes}</p>
@@ -438,7 +438,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
               <p className="text-sm text-gray-700">{order?.delivery_address || 'Order Date'}</p>
             </div>
             <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm font-semibold text-[#055160] mb-2" style={{ fontWeight: 600 }}>
+              <p className="text-sm font-semibold text-[#C62828] mb-2" style={{ fontWeight: 600 }}>
                 Delivery Notes
               </p>
               <div className="text-sm text-gray-600 space-y-1">

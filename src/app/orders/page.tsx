@@ -59,13 +59,13 @@ interface Location {
 // Order status mapping
 const orderStatusMap: Record<number, { label: string; color: string; bgColor: string; borderColor: string }> = {
   0: { label: "Cancelled", color: "text-red-700", bgColor: "bg-red-50", borderColor: "border-red-300" },
-  1: { label: "New", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-300" },
+  1: { label: "New", color: "text-[#C62828]", bgColor: "bg-[#FFEBEE]", borderColor: "border-[#FFEBEE]" },
   2: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-300" },
   3: { label: "Paid", color: "text-green-700", bgColor: "bg-green-50", borderColor: "border-green-300" },
   4: { label: "Awaiting Approval", color: "text-yellow-700", bgColor: "bg-yellow-50", borderColor: "border-yellow-300" },
   5: { label: "Processing", color: "text-orange-700", bgColor: "bg-orange-50", borderColor: "border-orange-300" },
-  6: { label: "Delivered", color: "text-teal-700", bgColor: "bg-teal-50", borderColor: "border-teal-300" },
-  7: { label: "Approved", color: "text-purple-700", bgColor: "bg-purple-50", borderColor: "border-purple-300" },
+  6: { label: "Delivered", color: "text-gray-700", bgColor: "bg-gray-50", borderColor: "border-gray-300" },
+  7: { label: "Approved", color: "text-[#C62828]", bgColor: "bg-[#FFEBEE]", borderColor: "border-[#FFEBEE]" },
   8: { label: "Rejected", color: "text-red-800", bgColor: "bg-red-100", borderColor: "border-red-400" },
 }
 
@@ -689,7 +689,7 @@ export default function OrdersPage() {
             className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${selectedTab === tab.key
               ? tab.key === 'wholesale'
                 ? "bg-purple-100 text-purple-700 border-2 border-purple-500"
-                : "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
+                : "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828]"
               : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
               }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
@@ -723,7 +723,7 @@ export default function OrdersPage() {
               placeholder="Search Order ID, Customer ID, Status etc."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-[300px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+              className="w-full sm:w-[300px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
               style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
             />
           </div>
@@ -733,12 +733,12 @@ export default function OrdersPage() {
             <Button
               variant="outline"
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className={`gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto ${(dateFrom || dateTo) ? 'border-[#055160] text-[#055160]' : ''
+              className={`gap-2 border border-gray-200 bg-white whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto ${(dateFrom || dateTo) ? 'border-[#C62828] text-[#C62828]' : ''
                 }`}
               style={{
                 fontFamily: 'Albert Sans',
                 fontWeight: 600,
-                color: dateFrom || dateTo ? '#055160' : '#6b7280',
+                color: dateFrom || dateTo ? '#C62828' : '#6b7280',
                 minWidth: '185px',
                 height: '54px',
                 paddingTop: '8px',
@@ -846,7 +846,7 @@ export default function OrdersPage() {
 
           <Button
             onClick={handleClearFilters}
-            className="text-[#055160] hover:text-[#04414d] bg-transparent border-0 shadow-none p-0 h-auto whitespace-nowrap"
+            className="text-[#C62828] hover:text-[#04414d] bg-transparent border-0 shadow-none p-0 h-auto whitespace-nowrap"
             style={{
               fontFamily: 'Albert Sans',
               fontWeight: 600,
@@ -868,14 +868,14 @@ export default function OrdersPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -888,7 +888,7 @@ export default function OrdersPage() {
             setPage(1)
           }}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === null
-            ? "border-[#055160] text-[#055160]"
+            ? "border-[#C62828] text-[#C62828]"
             : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -904,7 +904,7 @@ export default function OrdersPage() {
               setPage(1)
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
-              ? "border-[#055160] text-[#055160]"
+              ? "border-[#C62828] text-[#C62828]"
               : "border-transparent text-gray-600 hover:text-gray-900"
               }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -917,7 +917,7 @@ export default function OrdersPage() {
 
       {/* Bulk Selection Action Bar */}
       {selectedOrders.length > 0 && (
-        <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3 bg-[#055160] text-white rounded-xl shadow-md">
+        <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3 bg-[#C62828] text-white rounded-xl shadow-md">
           <span className="text-sm font-semibold" style={{ fontFamily: 'Albert Sans' }}>
             {selectedOrders.length} order{selectedOrders.length !== 1 ? 's' : ''} selected
           </span>
@@ -1196,7 +1196,7 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-4 py-4">
                         <Link href={`/orders/${order.order_id}`} prefetch={true} onClick={(e) => e.stopPropagation()}>
-                          <span className="text-[#055160] hover:underline cursor-pointer" style={{
+                          <span className="text-[#C62828] hover:underline cursor-pointer" style={{
                             fontFamily: 'Albert Sans',
                             fontWeight: 400,
                             fontStyle: 'normal',
@@ -1376,7 +1376,7 @@ export default function OrdersPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDeleteClick(order.order_id)}
-                                className="cursor-pointer text-[#055160] focus:text-[#055160]"
+                                className="cursor-pointer text-[#C62828] focus:text-[#C62828]"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete Order

@@ -212,7 +212,7 @@ export default function NewQuotePage() {
                 )}
               </div>
               <span
-                className={`text-xs mt-2 whitespace-nowrap ${currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
+                className={`text-xs mt-2 whitespace-nowrap ${currentStep === step.number ? "text-[#C62828] font-semibold" : "text-gray-600"
                   }`}
                 style={{ fontFamily: 'Albert Sans' }}
               >

@@ -163,7 +163,7 @@ export default function QuoteDetailPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#055160] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C62828] mx-auto mb-4"></div>
           <p className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Loading quote details...</p>
           {quoteId && (
             <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: 'Albert Sans' }}>
@@ -180,7 +180,7 @@ export default function QuoteDetailPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <p className="text-[#055160] mb-2" style={{ fontFamily: 'Albert Sans' }}>
+          <p className="text-[#C62828] mb-2" style={{ fontFamily: 'Albert Sans' }}>
             Failed to load quote details
           </p>
           {quoteId && (
@@ -429,10 +429,10 @@ export default function QuoteDetailPage() {
     return (
       <div className="flex items-center justify-center">
         <div className="text-center">
-          <p className="text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>Failed to load quote details</p>
+          <p className="text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>Failed to load quote details</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 text-[#055160] hover:underline"
+            className="mt-4 text-[#C62828] hover:underline"
             style={{ fontFamily: 'Albert Sans' }}
           >
             Go Back
@@ -461,7 +461,7 @@ export default function QuoteDetailPage() {
               Viewing Quote Details
             </h1>
             <p className="text-gray-600 mt-1">
-              Order <span className="text-[#055160] font-semibold">#{safeQuote.order_id}</span>
+              Order <span className="text-[#C62828] font-semibold">#{safeQuote.order_id}</span>
             </p>
           </div>
         </div>
@@ -698,12 +698,12 @@ export default function QuoteDetailPage() {
 
                   <tr className="border-b border-gray-200">
                     <td colSpan={5} className="px-4 py-3 text-right">
-                      <span className="text-base font-semibold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-base font-semibold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         Total Amount <span className="text-xs font-normal text-gray-500">(Excl. GST)</span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="text-base font-bold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-base font-bold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         ${(Number(safeQuote.calculated_total || safeQuote.order_total || 0) - Number(safeQuote.gst || 0)).toFixed(2)}
                       </span>
                     </td>

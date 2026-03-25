@@ -201,7 +201,7 @@ export default function SubscriptionDetailPage() {
     return (
       <div className="bg-gray-50 min-h-screen flex items-center justify-center" style={{ fontFamily: 'Albert Sans' }}>
         <div className="text-center">
-          <p className="text-[#055160] mb-4">Subscription not found</p>
+          <p className="text-[#C62828] mb-4">Subscription not found</p>
           <Button onClick={() => router.push("/subscriptions")}>Back to Subscriptions</Button>
         </div>
       </div>
@@ -294,7 +294,7 @@ export default function SubscriptionDetailPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowCancelModal(true)}
-                  className="gap-2 border-red-300 text-[#055160] hover:bg-[#e7f1ff]"
+                  className="gap-2 border-red-300 text-[#C62828] hover:bg-[#FFEBEE]"
                   style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                 >
                   <X className="h-4 w-4" />
@@ -363,8 +363,8 @@ export default function SubscriptionDetailPage() {
                 </span>
               </div>
               <div className="flex justify-end gap-32">
-                <span className="text-sm text-[#055160] font-semibold" style={{ fontFamily: 'Albert Sans' }}>Total (Inc GST)</span>
-                <span className="text-sm text-[#055160] font-semibold" style={{ fontFamily: 'Albert Sans' }}>
+                <span className="text-sm text-[#C62828] font-semibold" style={{ fontFamily: 'Albert Sans' }}>Total (Inc GST)</span>
+                <span className="text-sm text-[#C62828] font-semibold" style={{ fontFamily: 'Albert Sans' }}>
                   ${parseFloat(subscription.order_total || 0).toFixed(2)}
                 </span>
               </div>
@@ -402,7 +402,7 @@ export default function SubscriptionDetailPage() {
               </h3>
               <Link
                 href={`/customers/${subscription.customer_id}`}
-                className="text-[#055160] hover:text-[#04414d] text-sm font-medium"
+                className="text-[#C62828] hover:text-[#04414d] text-sm font-medium"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 View Customer
@@ -459,7 +459,7 @@ export default function SubscriptionDetailPage() {
                   <select
                     value={standingOrder}
                     onChange={(e) => setStandingOrder(Number(e.target.value))}
-                    className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                    className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                     style={{ fontFamily: 'Albert Sans' }}
                   >
                     <option value="0">One-time Order</option>

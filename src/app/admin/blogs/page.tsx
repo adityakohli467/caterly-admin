@@ -386,7 +386,7 @@ export default function BlogsPage() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleDelete(blog)}
-                        className="text-[#055160] hover:text-[#055160]"
+                        className="text-[#C62828] hover:text-[#C62828]"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -529,7 +529,7 @@ export default function BlogsPage() {
                 <div className="border-2 border-dashed rounded-lg p-8 text-center">
                   <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                   <Label htmlFor="image-upload" className="cursor-pointer">
-                    <span className="text-[#055160] hover:text-[#055160]">Click to upload</span>
+                    <span className="text-[#C62828] hover:text-[#C62828]">Click to upload</span>
                     <input
                       id="image-upload"
                       type="file"

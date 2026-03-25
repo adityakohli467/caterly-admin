@@ -72,12 +72,12 @@ const getStatusLabel = (status: number) => {
 
 const getStatusColor = (status: number) => {
   switch (status) {
-    case 1: return "bg-[#e7f1ff] text-[#055160]"   // New
+    case 1: return "bg-[#FFEBEE] text-[#C62828]"   // New
     case 4: return "bg-yellow-50 text-yellow-700"  // Awaiting Approval
     case 7: return "bg-emerald-50 text-emerald-700"  // Approved
-    case 8: return "bg-[#e7f1ff] text-[#055160]"    // Rejected
+    case 8: return "bg-[#FFEBEE] text-[#C62828]"    // Rejected
     case 9: return "bg-orange-50 text-orange-700"  // Modify
-    case 5: return "bg-[#e7f1ff] text-[#055160]"    // Cancelled
+    case 5: return "bg-[#FFEBEE] text-[#C62828]"    // Cancelled
     default: return "bg-gray-50 text-gray-700"
   }
 }
@@ -326,7 +326,7 @@ export default function QuotesPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:max-w-md h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full sm:max-w-md h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -385,7 +385,7 @@ export default function QuotesPage() {
                     setSelectedStatus(option.value)
                     setShowStatusFilter(false)
                   }}
-                  className={`w-full text-left px-4 py-2 rounded hover:bg-gray-100 ${selectedStatus === option.value ? 'bg-[#e7f1ff] text-[#055160]' : ''
+                  className={`w-full text-left px-4 py-2 rounded hover:bg-gray-100 ${selectedStatus === option.value ? 'bg-[#FFEBEE] text-[#C62828]' : ''
                     }`}
                   style={{ fontFamily: 'Albert Sans' }}
                 >
@@ -408,14 +408,14 @@ export default function QuotesPage() {
               lineHeight: '20px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#055160',
+              color: '#C62828',
               backgroundColor: 'transparent',
               padding: 0,
               gap: '8px',
               opacity: 1
             }}
           >
-            <Printer className="h-5 w-5 text-[#055160]" />
+            <Printer className="h-5 w-5 text-[#C62828]" />
             Print
           </Button>
         </div>
@@ -429,7 +429,7 @@ export default function QuotesPage() {
             setCurrentPage(1)
           }}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === 0
-            ? "border-[#055160] text-[#055160]"
+            ? "border-[#C62828] text-[#C62828]"
             : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -445,7 +445,7 @@ export default function QuotesPage() {
               setCurrentPage(1)
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
-              ? "border-[#055160] text-[#055160]"
+              ? "border-[#C62828] text-[#C62828]"
               : "border-transparent text-gray-600 hover:text-gray-900"
               }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -687,7 +687,7 @@ export default function QuotesPage() {
                         href={`/quotes/${quote.order_id}`}
                         prefetch={false}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-[#055160] hover:text-[#04414d] hover:underline cursor-pointer"
+                        className="text-[#C62828] hover:text-[#04414d] hover:underline cursor-pointer"
                         style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
@@ -847,7 +847,7 @@ export default function QuotesPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteQuote(quote)}
-                              className="cursor-pointer text-[#055160] focus:text-[#055160]"
+                              className="cursor-pointer text-[#C62828] focus:text-[#C62828]"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete Quote
@@ -915,7 +915,7 @@ export default function QuotesPage() {
                       onClick={() => setCurrentPage(page)}
                       className={
                         currentPage === page
-                          ? "bg-[#C62828] text-white border-[#055160] hover:bg-[#B71C1C]"
+                          ? "bg-[#C62828] text-white border-[#C62828] hover:bg-[#B71C1C]"
                           : "text-gray-700"
                       }
                       style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -964,8 +964,8 @@ export default function QuotesPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

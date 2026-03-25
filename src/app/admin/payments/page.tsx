@@ -146,11 +146,11 @@ export default function PaymentsPage() {
       case 'succeeded':
         return <Badge className="bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1" />Succeeded</Badge>
       case 'failed':
-        return <Badge className="bg-[#e7f1ff] text-red-800"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>
+        return <Badge className="bg-[#FFEBEE] text-red-800"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Pending</Badge>
       case 'refunded':
-        return <Badge className="bg-[#e7f1ff] text-[#B71C1C]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
+        return <Badge className="bg-[#FFEBEE] text-[#B71C1C]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -159,7 +159,7 @@ export default function PaymentsPage() {
   const getGatewayBadge = (gateway: string) => {
     const colors: Record<string, string> = {
       netcomplete: "bg-purple-100 text-purple-800",
-      pinpayments: "bg-[#e7f1ff] text-[#B71C1C]",
+      pinpayments: "bg-[#FFEBEE] text-[#B71C1C]",
       securepay: "bg-gray-100 text-gray-800",
       manual: "bg-orange-100 text-orange-800",
     }
@@ -226,7 +226,7 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Net Revenue</p>
                   <TrendingUp className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#055160]">{formatCurrency(statistics?.net_revenue || 0)}</h3>
+                <h3 className="text-2xl font-bold text-[#C62828]">{formatCurrency(statistics?.net_revenue || 0)}</h3>
               </CardContent>
             </Card>
 
@@ -392,7 +392,7 @@ export default function PaymentsPage() {
                           <div>
                             <span className="font-bold">{formatCurrency(payment.amount)}</span>
                             {payment.refund_amount > 0 && (
-                              <span className="text-xs text-[#055160] ml-2">
+                              <span className="text-xs text-[#C62828] ml-2">
                                 (Refunded: {formatCurrency(payment.refund_amount)})
                               </span>
                             )}
@@ -478,7 +478,7 @@ export default function PaymentsPage() {
                 </div>
                 <div>
                   <Label className="text-gray-600">Refunded</Label>
-                  <p className={selectedPayment.refund_amount > 0 ? "text-[#055160] font-bold" : "text-gray-500"}>
+                  <p className={selectedPayment.refund_amount > 0 ? "text-[#C62828] font-bold" : "text-gray-500"}>
                     {formatCurrency(selectedPayment.refund_amount)}
                   </p>
                 </div>
@@ -515,9 +515,9 @@ export default function PaymentsPage() {
                 )}
               </div>
               {selectedPayment.has_error && (
-                <div className="bg-[#e7f1ff] border border-red-200 rounded p-4">
+                <div className="bg-[#FFEBEE] border border-red-200 rounded p-4">
                   <Label className="text-red-800 font-bold">Error Occurred</Label>
-                  <p className="text-sm text-[#055160] mt-1">
+                  <p className="text-sm text-[#C62828] mt-1">
                     {selectedPayment.gateway_message || 'Payment failed'}
                   </p>
                 </div>

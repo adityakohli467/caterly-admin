@@ -191,7 +191,7 @@ export default function HistoryPage() {
       POST: "bg-green-500",
       PUT: "bg-yellow-500",
       PATCH: "bg-orange-500",
-      DELETE: "bg-[#e7f1ff]0",
+      DELETE: "bg-[#FFEBEE]0",
     }
     return <Badge className={colors[method] || "bg-gray-500"}>{method}</Badge>
   }
@@ -229,7 +229,7 @@ export default function HistoryPage() {
           </Card>
           <Card className="p-4">
             <div className="text-sm text-gray-600 mb-1">Failed Requests</div>
-            <div className="text-2xl font-bold text-[#055160]">{(statistics.failed || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[#C62828]">{(statistics.failed || 0).toLocaleString()}</div>
           </Card>
           <Card className="p-4">
             <div className="text-sm text-gray-600 mb-1">Avg Response Time</div>
@@ -648,15 +648,15 @@ export default function HistoryPage() {
 
               {selectedEntry.error_message && (
                 <div>
-                  <Label className="text-[#055160]">Error Message</Label>
-                  <div className="text-sm text-[#055160]">{selectedEntry.error_message}</div>
+                  <Label className="text-[#C62828]">Error Message</Label>
+                  <div className="text-sm text-[#C62828]">{selectedEntry.error_message}</div>
                 </div>
               )}
 
               {selectedEntry.error_stack && (
                 <div>
-                  <Label className="text-[#055160]">Error Stack</Label>
-                  <pre className="text-xs bg-[#e7f1ff] p-2 rounded overflow-x-auto max-h-40">
+                  <Label className="text-[#C62828]">Error Stack</Label>
+                  <pre className="text-xs bg-[#FFEBEE] p-2 rounded overflow-x-auto max-h-40">
                     {selectedEntry.error_stack}
                   </pre>
                 </div>
