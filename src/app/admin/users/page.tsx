@@ -477,7 +477,7 @@ export default function UsersPage() {
             placeholder="Search users"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -492,14 +492,14 @@ export default function UsersPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#055160',
+            color: '#C62828',
             backgroundColor: 'transparent',
             padding: 0,
             gap: '8px',
             opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#055160]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -570,7 +570,7 @@ export default function UsersPage() {
                         </td>
                       )}
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#e7f1ff] text-[#055160]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FFEBEE] text-[#C62828]">
                           {getRoleDisplay(user)}
                         </span>
                       </td>
@@ -580,7 +580,7 @@ export default function UsersPage() {
                             {permissions.canEditUsers && (
                               <button
                                 onClick={() => handleEditUser(user)}
-                                className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                                className="p-1.5 text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
@@ -589,7 +589,7 @@ export default function UsersPage() {
                             {permissions.canDeleteUsers && (
                               <button
                                 onClick={() => handleDeleteUser(user)}
-                                className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                                className="p-1.5 text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                                 title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -597,7 +597,7 @@ export default function UsersPage() {
                             )}
                             <button
                               onClick={() => repairProfileMutation.mutate(user)}
-                              className="p-1.5 text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                               title="Repair Order Profile (use if 'Customer not found' error occurs on frontend)"
                               disabled={repairProfileMutation.isPending}
                             >
@@ -686,8 +686,8 @@ export default function UsersPage() {
           }}
         >
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <UserIcon className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <UserIcon className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add New User
@@ -753,7 +753,7 @@ export default function UsersPage() {
                       else setAuthLevel('3')
                     }
                   }}
-                  className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                  className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                   style={{ fontFamily: 'Albert Sans' }}
                   required
                 >
@@ -863,8 +863,8 @@ export default function UsersPage() {
           }}
         >
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Edit className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Edit className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Edit User
@@ -939,7 +939,7 @@ export default function UsersPage() {
                       else setAuthLevel('3')
                     }
                   }}
-                  className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160]"
+                  className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
                   style={{ fontFamily: 'Albert Sans' }}
                   required
                 >
@@ -1021,8 +1021,8 @@ export default function UsersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

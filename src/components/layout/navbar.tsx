@@ -209,7 +209,7 @@ export function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                           className={cn(
                             "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                            isActive ? "bg-[#fce4ec] text-[#c32626]" : "text-[#212529] hover:bg-gray-50"
+                            isActive ? "bg-[#FFEBEE] text-[#C62828]" : "text-[#212529] hover:bg-gray-50"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
@@ -227,8 +227,8 @@ export function Navbar() {
                                 className={cn(
                                   "px-3 py-2 text-sm rounded-md transition-colors",
                                   isSubItemActive
-                                    ? "bg-[#fce4ec] text-[#c32626] font-medium"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-[#c32626]"
+                                    ? "bg-[#FFEBEE] text-[#C62828] font-medium"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-[#C62828]"
                                 )}
                                 style={{ fontFamily: "'Albert Sans', sans-serif" }}
                               >
@@ -249,7 +249,7 @@ export function Navbar() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                        isActive ? "bg-[#fce4ec] text-[#c32626]" : "text-[#212529] hover:bg-gray-50"
+                        isActive ? "bg-[#FFEBEE] text-[#C62828]" : "text-[#212529] hover:bg-gray-50"
                       )}
                       style={{ fontFamily: "'Albert Sans', sans-serif" }}
                     >
@@ -299,13 +299,13 @@ export function Navbar() {
                         <span
                           className={cn(
                             "font-medium text-base leading-[28px] whitespace-nowrap",
-                            isActive ? "text-[#c32626] font-bold" : "text-[#212529]"
+                            isActive ? "text-[#C62828] font-bold" : "text-[#212529]"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
                           {item.name}
                         </span>
-                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-[#c32626]" : "text-[#212529]")} />
+                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-[#C62828]" : "text-[#212529]")} />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -322,7 +322,7 @@ export function Navbar() {
                               prefetch={true}
                               className={cn(
                                 "cursor-pointer",
-                                isSubItemActive && "bg-[#fce4ec] text-[#c32626] font-medium"
+                                isSubItemActive && "bg-[#FFEBEE] text-[#C62828] font-medium"
                               )}
                             >
                               {subItem.name}
@@ -345,7 +345,7 @@ export function Navbar() {
                   <span
                     className={cn(
                       "font-medium text-base leading-[28px] whitespace-nowrap",
-                      isActive ? "text-[#c32626] font-bold" : "text-[#212529]"
+                      isActive ? "text-[#C62828] font-bold" : "text-[#212529]"
                     )}
                     style={{ fontFamily: "'Albert Sans', sans-serif" }}
                   >
@@ -366,7 +366,7 @@ export function Navbar() {
                 className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 group"
                 aria-label="Notifications"
               >
-                <Bell className="w-5 h-5 text-[#212529] transition-colors duration-200 group-hover:text-[#c32626]" />
+                <Bell className="w-5 h-5 text-[#212529] transition-colors duration-200 group-hover:text-[#C62828]" />
                 {/* Notification Badge */}
                 {unreadCount > 0 && (
                   <>
@@ -393,7 +393,7 @@ export function Navbar() {
                     <button
                       onClick={() => markAllAsReadMutation.mutate()}
                       disabled={markAllAsReadMutation.isPending}
-                      className="text-xs text-[#c32626] hover:underline font-medium disabled:opacity-50"
+                      className="text-xs text-[#C62828] hover:underline font-medium disabled:opacity-50"
                     >
                       Mark all as read
                     </button>
@@ -413,7 +413,7 @@ export function Navbar() {
                       onClick={() => handleNotificationClick(notification)}
                       className={cn(
                         "flex flex-col items-start p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100",
-                        !notification.read_status && "bg-[#fce4ec]/50"
+                        !notification.read_status && "bg-[#FFEBEE]/50"
                       )}
                     >
                       <div className="flex items-start justify-between w-full mb-1">
@@ -437,7 +437,7 @@ export function Navbar() {
               <div className="px-4 py-3 border-t border-gray-200">
                 <Link
                   href="/notifications"
-                  className="text-sm text-[#c32626] hover:underline font-medium text-center block"
+                  className="text-sm text-[#C62828] hover:underline font-medium text-center block"
                 >
                   View all notifications
                 </Link>

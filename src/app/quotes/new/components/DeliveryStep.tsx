@@ -105,6 +105,19 @@ function SortableProductItem({ product, index, onReorder }: {
 export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepProps) {
   const [products, setProducts] = useState(data.products || [])
 
+  const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
+    const totalMinutes = (6 * 60) + (i * 15)
+    const hour24 = Math.floor(totalMinutes / 60) % 24
+    const min = totalMinutes % 60
+    const displayHour = hour24 % 12 || 12
+    const ampm = hour24 < 12 ? 'AM' : 'PM'
+    const displayMin = min.toString().padStart(2, '0')
+    return {
+      display: `${displayHour}:${displayMin} ${ampm}`,
+      value: `${hour24.toString().padStart(2, '0')}:${displayMin}`
+    }
+  })
+
   // Use a ref to prevent infinite loops when updating
   const isUpdatingRef = useRef(false)
 
@@ -746,7 +759,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
             {/* Customer Info */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                Ordering for <span className="text-[#055160]">{data.customer_name || "John Doe"}</span>
+                Ordering for <span className="text-[#C62828]">{data.customer_name || "John Doe"}</span>
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
@@ -815,207 +828,38 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 <Label htmlFor="deliveryTime" className="text-sm font-medium text-gray-700">
                   Delivery Time
                 </Label>
-                <Input
-                  id="deliveryTime"
-                  type="text"
-                  placeholder="HH:mm (e.g., 14:30)"
+                <Select
                   value={deliveryTime}
-                  maxLength={5}
-                  onChange={(e) => {
-                    const input = e.target.value
-                    const cursorPos = e.target.selectionStart || 0
-                    const oldValue = deliveryTime
-
-                    // Allow empty input
-                    if (input === '') {
-                      setDeliveryTime('')
-                      onUpdate({
-                        delivery_date: deliveryDate || undefined,
-                        delivery_time: undefined,
-                        delivery_date_time: undefined,
-                        delivery_method: deliveryMethod
-                      })
-                      return
-                    }
-
-                    // Extract only digits
-                    const digits = input.replace(/\D/g, '')
-
-                    // If user is deleting (input is shorter), allow it
-                    if (input.length < oldValue.length) {
-                      // Check if colon was deleted
-                      if (oldValue.includes(':') && !input.includes(':')) {
-                        // User deleted colon, allow partial input
-                        setDeliveryTime(digits)
-                        return
-                      }
-                      // Normal deletion - allow
-                      setDeliveryTime(input)
-                      return
-                    }
-
-                    // Limit to 4 digits
-                    if (digits.length > 4) {
-                      return // Don't update if exceeds limit
-                    }
-
-                    let formatted = ''
-
-                    if (digits.length === 0) {
-                      formatted = ''
-                    } else if (digits.length === 1) {
-                      // Single digit - allow editing
-                      const num = parseInt(digits)
-                      formatted = num > 2 ? '2' : digits
-                    } else if (digits.length === 2) {
-                      // Two digits - check if valid hour
-                      const hours = parseInt(digits)
-                      if (hours > 23) {
-                        formatted = '23'
-                      } else {
-                        formatted = digits
-                      }
-                    } else if (digits.length === 3) {
-                      // Three digits - format as H:MM
-                      const hours = parseInt(digits[0])
-                      const minutes = parseInt(digits.slice(1, 3))
-                      const validHours = Math.min(hours, 2)
-                      const validMinutes = Math.min(minutes, 59)
-                      formatted = `${validHours}:${String(validMinutes).padStart(2, '0')}`
-                    } else if (digits.length === 4) {
-                      // Four digits - format as HH:mm
-                      const hours = parseInt(digits.slice(0, 2))
-                      const minutes = parseInt(digits.slice(2, 4))
-                      const validHours = Math.min(hours, 23)
-                      const validMinutes = Math.min(minutes, 59)
-                      formatted = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
-                    }
-
-                    setDeliveryTime(formatted)
-
-                    // Update parent if we have a complete time
-                    if (formatted.length === 5) {
-                      const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
-                      if (timePattern.test(formatted)) {
-                        const dateTime = deliveryDate && formatted ? `${deliveryDate} ${formatted}:00` : undefined
-                        onUpdate({
-                          delivery_date: deliveryDate || undefined,
-                          delivery_time: formatted || undefined,
-                          delivery_date_time: dateTime,
-                          delivery_method: deliveryMethod
-                        })
-                      }
-                    }
-
-                    // Smart cursor positioning
-                    setTimeout(() => {
-                      const inputEl = e.target as HTMLInputElement
-                      if (inputEl) {
-                        let newPos = cursorPos
-
-                        // If colon was added, adjust position
-                        if (formatted.includes(':') && !oldValue.includes(':')) {
-                          const colonIndex = formatted.indexOf(':')
-                          if (cursorPos <= colonIndex) {
-                            newPos = Math.min(cursorPos, colonIndex)
-                          } else {
-                            newPos = Math.min(cursorPos + 1, formatted.length)
-                          }
-                        } else if (formatted.length === 5 && oldValue.length < 5) {
-                          // Complete time entered, position at end
-                          newPos = formatted.length
-                        } else {
-                          // Normal editing, maintain relative position
-                          newPos = Math.min(cursorPos, formatted.length)
-                        }
-
-                        inputEl.setSelectionRange(newPos, newPos)
-                      }
-                    }, 0)
+                  onValueChange={(value) => {
+                    setDeliveryTime(value)
+                    const dateTime = deliveryDate && value ? `${deliveryDate} ${value}:00` : undefined
+                    onUpdate({
+                      delivery_date: deliveryDate || undefined,
+                      delivery_time: value || undefined,
+                      delivery_date_time: dateTime,
+                      delivery_method: deliveryMethod
+                    })
                   }}
-                  onKeyDown={(e) => {
-                    // Allow backspace, delete, arrow keys, tab, etc.
-                    if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'].includes(e.key)) {
-                      return // Allow default behavior
-                    }
-
-                    // Allow Ctrl/Cmd + A, C, V, X
-                    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
-                      return // Allow default behavior
-                    }
-
-                    // Block non-digit characters
-                    if (!/[0-9]/.test(e.key) && !['Enter', 'Escape'].includes(e.key)) {
-                      e.preventDefault()
-                    }
-                  }}
-                  onBlur={(e) => {
-                    let timeValue = e.target.value.trim()
-
-                    // If empty, clear
-                    if (!timeValue) {
-                      setDeliveryTime('')
-                      onUpdate({
-                        delivery_date: deliveryDate || undefined,
-                        delivery_time: undefined,
-                        delivery_date_time: undefined,
-                        delivery_method: deliveryMethod
-                      })
-                      return
-                    }
-
-                    // Extract digits
-                    const digits = timeValue.replace(/\D/g, '')
-
-                    // Complete partial entries
-                    if (digits.length === 1) {
-                      // Single digit - pad to HH:00
-                      const hours = parseInt(digits) || 0
-                      const validHours = Math.min(hours, 23)
-                      timeValue = `${String(validHours).padStart(2, '0')}:00`
-                    } else if (digits.length === 2) {
-                      // Two digits - check if valid hour, then add :00
-                      const hours = parseInt(digits) || 0
-                      const validHours = Math.min(hours, 23)
-                      timeValue = `${String(validHours).padStart(2, '0')}:00`
-                    } else if (digits.length === 3) {
-                      // Three digits - format as HH:MM
-                      const hours = parseInt(digits[0]) || 0
-                      const minutes = parseInt(digits.slice(1, 3)) || 0
-                      const validHours = Math.min(hours, 2)
-                      const validMinutes = Math.min(minutes, 59)
-                      timeValue = `${validHours}:${String(validMinutes).padStart(2, '0')}`
-                    } else if (digits.length === 4) {
-                      // Four digits - format as HH:mm
-                      const hours = parseInt(digits.slice(0, 2)) || 0
-                      const minutes = parseInt(digits.slice(2, 4)) || 0
-                      const validHours = Math.min(hours, 23)
-                      const validMinutes = Math.min(minutes, 59)
-                      timeValue = `${String(validHours).padStart(2, '0')}:${String(validMinutes).padStart(2, '0')}`
-                    }
-
-                    // Validate final format
-                    const timePattern = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
-                    if (timePattern.test(timeValue)) {
-                      setDeliveryTime(timeValue)
-                      const dateTime = deliveryDate && timeValue ? `${deliveryDate} ${timeValue}:00` : undefined
-                      onUpdate({
-                        delivery_date: deliveryDate || undefined,
-                        delivery_time: timeValue || undefined,
-                        delivery_date_time: dateTime,
-                        delivery_method: deliveryMethod
-                      })
-                    } else if (timeValue.length > 0) {
-                      // Invalid format - try to fix or clear
-                      setDeliveryTime('')
-                    }
-                  }}
-                  className="h-11 border-gray-300"
-                  style={{ fontFamily: 'Albert Sans' }}
-                />
-                <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
-                  24-hour format (HH:mm), e.g., 09:00, 14:30, 23:59
-                </p>
+                >
+                  <SelectTrigger
+                    id="deliveryTime"
+                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
+                    style={{ fontFamily: 'Albert Sans' }}
+                  >
+                    <SelectValue placeholder="Add Time" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {timeOptions.map((opt) => (
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value}
+                        className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white"
+                      >
+                        {opt.display}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Delivery Contact Name */}
@@ -1117,7 +961,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                         setSelectedPickupLocation(0)
                         onUpdate({ delivery_method: newMethod, location_id: undefined })
                       }}
-                      className="w-4 h-4 text-[#055160]"
+                      className="w-4 h-4 text-[#C62828]"
                     />
                     <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                       Delivery
@@ -1134,7 +978,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                         setDeliveryMethod(newMethod)
                         onUpdate({ delivery_method: newMethod })
                       }}
-                      className="w-4 h-4 text-[#055160]"
+                      className="w-4 h-4 text-[#C62828]"
                     />
                     <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                       Pickup
@@ -1160,7 +1004,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                         setDeliveryAddress(location.pickup_address || '')
                       }
                     }}
-                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent"
+                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
                     style={{ fontFamily: 'Albert Sans' }}
                   >
                     <option value={0}>Select Pickup Location</option>
@@ -1173,7 +1017,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   {selectedPickupLocation > 0 && (
                     <div className="mt-2 p-3 bg-gray-50 rounded-md">
                       <p className="text-sm text-gray-600">
-                        <span className="font-medium">Pickup Address:</span>{' '}
+                        <span className="font-medium text-[#C62828]">Pickup Address:</span>{' '}
                         {locations.find((l: Location) => l.location_id === selectedPickupLocation)?.pickup_address || 'N/A'}
                       </p>
                     </div>
@@ -1286,7 +1130,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   <Button
                     onClick={handleRemoveCoupon}
                     variant="outline"
-                    className="text-[#055160] border-[#055160] px-6"
+                    className="text-[#C62828] border-[#C62828] px-6"
                     style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                   >
                     Remove
@@ -1303,7 +1147,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               )}
               <button
                 onClick={() => setShowCouponList(true)}
-                className="text-sm text-[#055160] hover:underline flex items-center gap-1"
+                className="text-sm text-[#C62828] hover:underline flex items-center gap-1"
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 <Tag className="h-3 w-3" />
@@ -1376,7 +1220,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               <Button
                 onClick={handleSaveQuote}
                 variant="outline"
-                className="w-full border-[#055160] text-[#055160] hover:bg-[#C62828] hover:text-white"
+                className="w-full border-[#C62828] text-[#C62828] hover:bg-[#C62828] hover:text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600, height: '50px' }}
               >
                 💾 Save Quote
@@ -1419,13 +1263,13 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   {activeCoupons.map((coupon: Coupon) => (
                     <div
                       key={coupon.coupon_id}
-                      className="border border-gray-200 rounded-lg p-4 hover:border-[#055160] transition-colors cursor-pointer"
+                      className="border border-gray-200 rounded-lg p-4 hover:border-[#C62828] transition-colors cursor-pointer"
                       onClick={() => handleSelectCoupon(coupon.coupon_id.toString())}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <Tag className="h-4 w-4 text-[#055160]" />
+                            <Tag className="h-4 w-4 text-[#C62828]" />
                             <span className="font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                               {coupon.coupon_code}
                             </span>
@@ -1472,8 +1316,8 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-[#e7f1ff] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-[#055160]" />
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+                <Plus className="h-6 w-6 text-[#C62828]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
                 Send to Customer

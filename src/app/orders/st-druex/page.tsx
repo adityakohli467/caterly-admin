@@ -154,10 +154,10 @@ export default function StDruexOrdersPage() {
           style={{
             ...baseStyle,
             backgroundColor: '#fef2f2',
-            color: '#055160',
+            color: '#C62828',
           }}
         >
-          <div className="w-1.5 h-1.5 bg-[#e7f1ff]0 rounded-full"></div>
+          <div className="w-1.5 h-1.5 bg-[#FFEBEE]0 rounded-full"></div>
           Not Paid
         </span>
       )
@@ -262,7 +262,7 @@ export default function StDruexOrdersPage() {
                     }`}
                   >
                     <td className="px-4 py-4">
-                      <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-[#055160]">
+                      <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-[#C62828]">
                         #{order.order_id}
                       </span>
                     </td>

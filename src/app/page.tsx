@@ -327,7 +327,7 @@ export default function DashboardPage() {
 
   const getCateringChecklistColor = (status: number) => {
     switch (status) {
-      case 1: return "bg-[#e7f1ff]0 hover:bg-red-600"
+      case 1: return "bg-[#FFEBEE] hover:bg-red-600"
       case 2: return "bg-orange-500 hover:bg-orange-600"
       case 3: return "bg-pink-500 hover:bg-pink-600"
       case 4: return "bg-green-500 hover:bg-green-600"
@@ -337,11 +337,11 @@ export default function DashboardPage() {
 
   const getStatusColor = (status: number) => {
     switch (status) {
-      case 1: return "text-[#055160]"
+      case 1: return "text-[#C62828]"
       case 2: return "text-green-600"
       case 4: return "text-yellow-600"
       case 7: return "text-green-700"
-      case 0: return "text-[#055160]"
+      case 0: return "text-[#C62828]"
       default: return "text-gray-600"
     }
   }
@@ -387,11 +387,11 @@ export default function DashboardPage() {
         <span
           style={{
             ...baseStyle,
-            backgroundColor: '#eff6ff',
-            color: '#1d4ed8',
+            backgroundColor: '#f9fafb',
+            color: '#374151',
           }}
         >
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+          <div className="w-1.5 h-1.5 bg-gray-500 rounded-full"></div>
           Delivered
         </span>
       )
@@ -418,11 +418,11 @@ export default function DashboardPage() {
           <span
             style={{
               ...baseStyle,
-              backgroundColor: '#e7f1ff',
-              color: '#055160',
+              backgroundColor: '#FFEBEE',
+              color: '#C62828',
             }}
           >
-            <div className="w-1.5 h-1.5 bg-[#e7f1ff]0 rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-[#FFEBEE] rounded-full"></div>
             {getStatusText(order.order_status)}
           </span>
         )
@@ -470,8 +470,8 @@ export default function DashboardPage() {
           <span
             style={{
               ...baseStyle,
-              backgroundColor: '#eff6ff',
-              color: '#2563eb',
+              backgroundColor: '#FFEBEE',
+              color: '#C62828',
             }}
           >
             <div className="w-1.5 h-1.5 bg-[#C62828] rounded-full"></div>
@@ -483,11 +483,11 @@ export default function DashboardPage() {
           <span
             style={{
               ...baseStyle,
-              backgroundColor: '#e7f1ff',
-              color: '#055160',
+              backgroundColor: '#FFEBEE',
+              color: '#C62828',
             }}
           >
-            <div className="w-1.5 h-1.5 bg-[#e7f1ff]0 rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-[#FFEBEE] rounded-full"></div>
             {getStatusText(order.order_status)}
           </span>
         )
@@ -496,8 +496,8 @@ export default function DashboardPage() {
           <span
             style={{
               ...baseStyle,
-              backgroundColor: '#eff6ff',
-              color: '#2563eb',
+              backgroundColor: '#FFEBEE',
+              color: '#C62828',
             }}
           >
             <div className="w-1.5 h-1.5 bg-[#C62828] rounded-full"></div>
@@ -569,7 +569,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid - Modern Clean Design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         {/* Today's Deliveries */}
         <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
@@ -578,7 +578,7 @@ export default function DashboardPage() {
                 Today's Deliveries
               </p>
               {stats && (
-                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs px-2 py-1 rounded-full ${stats.deliveriesToday > 0 ? 'bg-[#e7f1ff] text-[#055160]' : 'bg-gray-50 text-gray-600'}`}>
+                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs px-2 py-1 rounded-full ${stats.deliveriesToday > 0 ? 'bg-[#FFEBEE] text-[#C62828]' : 'bg-gray-50 text-gray-600'}`}>
                   {stats.deliveriesToday > 0 ? `${stats.deliveriesToday}` : '0'}
                 </span>
               )}
@@ -623,6 +623,25 @@ export default function DashboardPage() {
             </div>
             <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
               {tomorrowOrders.length || 0}
+            </h2>
+          </CardContent>
+        </Card>
+
+        {/* Request Quotes */}
+        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
+            <div className="flex items-start justify-between mb-3 md:mb-4">
+              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs sm:text-sm text-gray-600">
+                Request Quotes
+              </p>
+              {stats && stats.unapprovedQuotes > 0 && (
+                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-[#fef2f2] text-[#C62828] rounded-full border border-[#fca5a5]">
+                  {stats.unapprovedQuotes} New
+                </span>
+              )}
+            </div>
+            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
+              {stats?.unapprovedQuotes || 0}
             </h2>
           </CardContent>
         </Card>
@@ -708,7 +727,7 @@ export default function DashboardPage() {
                         <span 
                           onClick={() => handleViewOrder(order.order_id)}
                           style={{ fontFamily: 'Albert Sans' }} 
-                          className="text-xs sm:text-sm font-medium text-[#055160] cursor-pointer hover:underline"
+                          className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
                         >
                           #{order.order_id}
                         </span>
@@ -862,7 +881,7 @@ export default function DashboardPage() {
                         <span 
                           onClick={() => handleViewOrder(order.order_id)}
                           style={{ fontFamily: 'Albert Sans' }} 
-                          className="text-xs sm:text-sm font-medium text-[#055160] cursor-pointer hover:underline"
+                          className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
                         >
                           #{order.order_id}
                         </span>

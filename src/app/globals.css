@@ -103,12 +103,12 @@ body {
 
 .react-datepicker__day:hover {
   background-color: #f3f4f6 !important;
-  color: #055160 !important;
+  color: #C62828 !important;
   font-weight: 600 !important;
 }
 
 .react-datepicker__day--selected {
-  background-color: #055160 !important;
+  background-color: #C62828 !important;
   color: white !important;
   font-weight: 600 !important;
 }
@@ -119,8 +119,8 @@ body {
 
 .react-datepicker__day--today {
   font-weight: 600 !important;
-  color: #055160 !important;
-  background-color: #e7f1ff !important;
+  color: #C62828 !important;
+  background-color: #FFEBEE !important;
 }
 
 .react-datepicker__day--today:hover {
@@ -128,8 +128,8 @@ body {
 }
 
 .react-datepicker__day--keyboard-selected {
-  background-color: #e7f1ff !important;
-  color: #055160 !important;
+  background-color: #FFEBEE !important;
+  color: #C62828 !important;
 }
 
 .react-datepicker__day--outside-month {
@@ -169,14 +169,14 @@ body {
 }
 
 .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
-  border-color: #055160 !important;
+  border-color: #C62828 !important;
 }
 
 /* Old Calendar Component Styling (keeping for backward compatibility) */
 .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: #055160;
-  --rdp-background-color: #e7f1ff;
+  --rdp-accent-color: #C62828;
+  --rdp-background-color: #FFEBEE;
   margin: 0;
   padding: 1rem;
   font-family: 'Albert Sans', sans-serif;

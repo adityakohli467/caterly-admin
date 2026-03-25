@@ -130,7 +130,7 @@ export default function OrderDetailPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#055160] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C62828] mx-auto mb-4"></div>
           <p className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Loading order details...</p>
           {orderId && (
             <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: 'Albert Sans' }}>
@@ -147,7 +147,7 @@ export default function OrderDetailPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <p className="text-[#055160] mb-2" style={{ fontFamily: 'Albert Sans' }}>
+          <p className="text-[#C62828] mb-2" style={{ fontFamily: 'Albert Sans' }}>
             Failed to load order details
           </p>
           {orderId && (
@@ -172,7 +172,7 @@ export default function OrderDetailPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <p className="text-[#055160] mb-2" style={{ fontFamily: 'Albert Sans' }}>
+          <p className="text-[#C62828] mb-2" style={{ fontFamily: 'Albert Sans' }}>
             Order not found
           </p>
           {orderId && (
@@ -390,7 +390,7 @@ export default function OrderDetailPage() {
               Viewing Order Details
             </h1>
             <p className="text-gray-600 mt-1">
-              Order <span className="text-[#055160] font-semibold">#{order.order_id}</span>
+              Order <span className="text-[#C62828] font-semibold">#{order.order_id}</span>
             </p>
           </div>
         </div>
@@ -688,12 +688,12 @@ export default function OrderDetailPage() {
 
                   <tr className="border-b border-gray-200">
                     <td colSpan={5} className="px-4 py-3 text-right">
-                      <span className="text-base font-semibold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-base font-semibold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span>
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="text-base font-bold text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-base font-bold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         ${total.toFixed(2)}
                       </span>
                     </td>
@@ -937,7 +937,7 @@ export default function OrderDetailPage() {
                         <div>Gateway: {payment.payment_gateway}</div>
                         <div>Amount: ${parseFloat(payment.amount || 0).toFixed(2)}</div>
                         {payment.refund_amount > 0 && (
-                          <div className="text-[#055160]">
+                          <div className="text-[#C62828]">
                             Refunded: ${parseFloat(payment.refund_amount || 0).toFixed(2)}
                           </div>
                         )}
@@ -957,8 +957,8 @@ export default function OrderDetailPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-[#e7f1ff] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-[#055160]" />
+              <div className="w-16 h-16 bg-[#FFEBEE] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-8 w-8 text-[#C62828]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
                 Send Payment Link
@@ -1039,8 +1039,8 @@ export default function OrderDetailPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-[#e7f1ff] rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-[#055160]" />
+              <div className="w-16 h-16 bg-[#FFEBEE] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-8 w-8 text-[#C62828]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
                 Send Invoice

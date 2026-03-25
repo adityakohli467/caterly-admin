@@ -243,7 +243,7 @@ export default function ProductionFormPage() {
               Viewing Production Form
             </h1>
             <p style={{ fontFamily: 'Albert Sans' }} className="text-gray-600 mt-1">
-              Order <span className="text-[#055160]">#{order.order_id}</span>
+              Order <span className="text-[#C62828]">#{order.order_id}</span>
             </p>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function ProductionFormPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th colSpan={4} className="bg-[#e7f1ff] text-[#055160] px-6 py-4 text-center border-b border-red-200" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                  <th colSpan={4} className="bg-[#FFEBEE] text-[#C62828] px-6 py-4 text-center border-b border-red-200" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                     Production
                   </th>
                 </tr>

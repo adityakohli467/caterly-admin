@@ -336,7 +336,7 @@ export default function FeedbacksPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -380,7 +380,7 @@ export default function FeedbacksPage() {
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-6 w-6 animate-spin text-[#055160]" />
+                      <Loader2 className="h-6 w-6 animate-spin text-[#C62828]" />
                       <span>Loading feedbacks...</span>
                     </div>
                   </td>
@@ -480,7 +480,7 @@ export default function FeedbacksPage() {
                         feedback.deliveredontime?.toLowerCase() === 'yes' 
                           ? 'bg-green-50 text-green-700'
                           : feedback.deliveredontime?.toLowerCase() === 'no'
-                          ? 'bg-[#e7f1ff] text-[#055160]'
+                          ? 'bg-[#FFEBEE] text-[#C62828]'
                           : 'bg-gray-100 text-gray-600'
                       }`}>
                         {feedback.deliveredontime || '-'}
@@ -512,7 +512,7 @@ export default function FeedbacksPage() {
                       <div className="flex items-center gap-1 sm:gap-2">
                         <button
                           onClick={() => handleView(feedback)}
-                          className="p-1.5 sm:p-2 text-[#055160] hover:text-[#04414d] hover:bg-[#e7f1ff] rounded transition-colors"
+                          className="p-1.5 sm:p-2 text-[#C62828] hover:text-[#04414d] hover:bg-[#FFEBEE] rounded transition-colors"
                           title="View Details"
                         >
                           <Eye className="h-4 w-4" />
@@ -526,7 +526,7 @@ export default function FeedbacksPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(feedback)}
-                          className="p-1.5 sm:p-2 text-[#055160] hover:text-red-800 hover:bg-[#e7f1ff] rounded transition-colors"
+                          className="p-1.5 sm:p-2 text-[#C62828] hover:text-red-800 hover:bg-[#FFEBEE] rounded transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -606,7 +606,7 @@ export default function FeedbacksPage() {
                   {feedbackDetail.deliveredontime && (
                     <div>
                       <p className="text-sm font-medium text-gray-600">Delivered On Time</p>
-                      <p className={`text-sm ${feedbackDetail.deliveredontime.toLowerCase() === 'yes' ? 'text-green-600' : 'text-[#055160]'}`}>
+                      <p className={`text-sm ${feedbackDetail.deliveredontime.toLowerCase() === 'yes' ? 'text-green-600' : 'text-[#C62828]'}`}>
                         {feedbackDetail.deliveredontime}
                       </p>
                     </div>
@@ -809,8 +809,8 @@ export default function FeedbacksPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <Trash2 className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <Trash2 className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>

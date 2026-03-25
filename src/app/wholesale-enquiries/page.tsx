@@ -51,7 +51,7 @@ const getStatusColor = (status: string) => {
     case "new": return "bg-blue-50 text-blue-700"
     case "contacted": return "bg-yellow-50 text-yellow-700"
     case "approved": return "bg-green-50 text-green-700"
-    case "rejected": return "bg-[#e7f1ff] text-[#055160]"
+    case "rejected": return "bg-[#FFEBEE] text-[#C62828]"
     default: return "bg-gray-50 text-gray-700"
   }
 }
@@ -168,7 +168,7 @@ export default function WholesaleEnquiriesPage() {
         </div>
       ) : error ? (
         <Card className="p-12 text-center">
-          <p className="text-[#055160] mb-4">Error loading wholesale enquiries</p>
+          <p className="text-[#C62828] mb-4">Error loading wholesale enquiries</p>
           <p className="text-sm text-gray-500 mb-4">
             {(error as any)?.response?.data?.message || "Please check your connection and try again"}
           </p>
@@ -258,7 +258,7 @@ export default function WholesaleEnquiriesPage() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
-                        className="text-[#055160]"
+                        className="text-[#C62828]"
                         onClick={() => handleDelete(enquiry.id)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />

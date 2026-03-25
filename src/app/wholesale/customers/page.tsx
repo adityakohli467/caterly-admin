@@ -573,7 +573,7 @@ export default function WholesaleCustomersPage() {
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <span className="text-sm text-[#055160]" style={{ fontFamily: 'Albert Sans' }}>
+                      <span className="text-sm text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
                         Error loading customers
                       </span>
                       <Button
@@ -698,7 +698,7 @@ export default function WholesaleCustomersPage() {
                           className="p-1 hover:bg-gray-100 rounded" 
                           title="Delete"
                         >
-                          <Trash2 className="h-4 w-4 text-[#055160]" />
+                          <Trash2 className="h-4 w-4 text-[#C62828]" />
                         </button>
                         {customer.archived ? (
                           <button 
@@ -1214,8 +1214,8 @@ export default function WholesaleCustomersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#e7f1ff]">
-                <AlertCircle className="h-6 w-6 text-[#055160]" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#FFEBEE]">
+                <AlertCircle className="h-6 w-6 text-[#C62828]" />
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>

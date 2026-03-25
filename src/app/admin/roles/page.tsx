@@ -411,7 +411,7 @@ export default function RolesPage() {
                     <td className="p-4">{role.permission_count}</td>
                     <td className="p-4">
                       {role.is_system_role ? (
-                        <span className="rounded bg-[#e7f1ff] px-2 py-1 text-xs text-[#B71C1C]">
+                        <span className="rounded bg-[#FFEBEE] px-2 py-1 text-xs text-[#B71C1C]">
                           System
                         </span>
                       ) : (
@@ -444,7 +444,7 @@ export default function RolesPage() {
                           onClick={() => handleDelete(role)}
                           disabled={role.is_system_role}
                         >
-                          <Trash2 className="h-4 w-4 text-[#055160]" />
+                          <Trash2 className="h-4 w-4 text-[#C62828]" />
                         </Button>
                       </div>
                     </td>

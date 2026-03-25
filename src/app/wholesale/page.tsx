@@ -353,7 +353,7 @@ export default function WholesalePricingPage() {
                             )}
                             <button
                               onClick={() => handleDeleteListing(priceItem.customer_name, priceItem.option_name)}
-                              className="flex items-center gap-1 text-sm text-[#055160] hover:text-red-800 font-medium"
+                              className="flex items-center gap-1 text-sm text-[#C62828] hover:text-red-800 font-medium"
                               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -366,7 +366,7 @@ export default function WholesalePricingPage() {
                           {priceItem.isEditing && (
                             <button
                               onClick={() => handleDeleteRow(priceItem.customer_name, priceItem.option_name, optionIndex)}
-                              className="text-[#055160] hover:text-red-800"
+                              className="text-[#C62828] hover:text-red-800"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

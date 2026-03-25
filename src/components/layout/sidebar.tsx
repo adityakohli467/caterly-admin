@@ -33,7 +33,7 @@ export function Sidebar() {
           <span 
             className="text-2xl font-bold"
             style={{ 
-              color: '#055160',
+              color: '#C62828',
               fontFamily: "'Albert Sans', sans-serif",
               letterSpacing: '0.5px'
             }}

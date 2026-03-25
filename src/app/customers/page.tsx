@@ -534,7 +534,7 @@ export default function CustomersPage() {
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#055160] focus:border-[#055160] focus:outline-none"
+            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -550,14 +550,14 @@ export default function CustomersPage() {
               lineHeight: '20px',
               letterSpacing: '0%',
               textAlign: 'center',
-              color: '#055160',
+              color: '#C62828',
               backgroundColor: 'transparent',
               padding: 0,
               gap: '8px',
               opacity: 1
             }}
           >
-            <Printer className="h-5 w-5 text-[#055160]" />
+            <Printer className="h-5 w-5 text-[#C62828]" />
             Print
           </Button>
         </div>
@@ -570,7 +570,7 @@ export default function CustomersPage() {
             key={group}
             onClick={() => setSelectedGroup(group)}
             className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${selectedGroup === group
-              ? "bg-[#e7f1ff] text-[#055160] border-2 border-[#055160]"
+              ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828]"
               : "bg-white text-gray-700 border-2 border-gray-200 hover:border-gray-300"
               }`}
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
@@ -585,7 +585,7 @@ export default function CustomersPage() {
         <button
           onClick={() => setActiveTab("Active")}
           className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === "Active"
-            ? "border-[#055160] text-[#055160]"
+            ? "border-[#C62828] text-[#C62828]"
             : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -595,7 +595,7 @@ export default function CustomersPage() {
         <button
           onClick={() => setActiveTab("Archived")}
           className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === "Archived"
-            ? "border-[#055160] text-[#055160]"
+            ? "border-[#C62828] text-[#C62828]"
             : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
@@ -660,7 +660,7 @@ export default function CustomersPage() {
                             {customer.firstname} {customer.lastname}
                           </div>
                           {customer.created_from === 'storefront' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#e7f1ff] text-[#055160]">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#FFEBEE] text-[#C62828]">
                               Frontend
                             </span>
                           )}
@@ -732,7 +732,7 @@ export default function CustomersPage() {
                           <>
                             <button
                               onClick={() => handleEditCustomer(customer)}
-                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-gray-600 hover:text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                               title="Edit"
                             >
                               <Edit className="h-4 w-4" />
@@ -749,7 +749,7 @@ export default function CustomersPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(customer)}
-                              className="p-1.5 text-gray-600 hover:text-[#055160] hover:bg-[#e7f1ff] rounded transition-colors"
+                              className="p-1.5 text-gray-600 hover:text-[#C62828] hover:bg-[#FFEBEE] rounded transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -820,8 +820,8 @@ export default function CustomersPage() {
           }}
         >
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add New Customer
@@ -1103,8 +1103,8 @@ export default function CustomersPage() {
       }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Edit className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Edit className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Edit Customer
@@ -1365,12 +1365,12 @@ export default function CustomersPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="flex items-start gap-4">
-              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${confirmAction === "archive" ? "bg-yellow-100" : "bg-[#e7f1ff]"
+              <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${confirmAction === "archive" ? "bg-yellow-100" : "bg-[#FFEBEE]"
                 }`}>
                 {confirmAction === "archive" ? (
                   <Archive className={`h-6 w-6 text-yellow-600`} />
                 ) : (
-                  <Trash2 className={`h-6 w-6 text-[#055160]`} />
+                  <Trash2 className={`h-6 w-6 text-[#C62828]`} />
                 )}
               </div>
               <div className="flex-1">
@@ -1618,7 +1618,7 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-[#055160]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#C62828]" />
         <span className="ml-3 text-gray-600">Loading products and discounts...</span>
       </div>
     )
@@ -1628,7 +1628,7 @@ function ProductOptionDiscountsContent({ customerId, onClose }: ProductOptionDis
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return (
       <div className="text-center py-8">
-        <p className="text-[#055160] mb-2 font-semibold">Error loading product discounts</p>
+        <p className="text-[#C62828] mb-2 font-semibold">Error loading product discounts</p>
         <p className="text-sm text-gray-600 mb-4">{errorMessage}</p>
         <Button onClick={onClose} variant="outline">Close</Button>
       </div>

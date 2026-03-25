@@ -295,14 +295,14 @@ export default function ReportsPage() {
   const getStatusBadge = (status: number) => {
     const statusMap: { [key: number]: { label: string; class: string } } = {
       0: { label: "Cancelled", class: "bg-gray-100 text-gray-600" },
-      1: { label: "New", class: "bg-[#e7f1ff] text-[#055160]" },
-      2: { label: "Paid", class: "bg-[#e7f1ff] text-[#055160]" },
+      1: { label: "New", class: "bg-[#FFEBEE] text-[#C62828]" },
+      2: { label: "Paid", class: "bg-[#FFEBEE] text-[#C62828]" },
       3: { label: "Completed", class: "bg-green-50 text-green-700" },
       4: { label: "Awaiting Approval", class: "bg-yellow-50 text-yellow-700" },
       5: { label: "Processing", class: "bg-purple-50 text-purple-700" },
       6: { label: "Production", class: "bg-indigo-50 text-indigo-700" },
       7: { label: "Approved", class: "bg-green-50 text-green-700" },
-      8: { label: "Rejected", class: "bg-[#e7f1ff] text-[#055160]" },
+      8: { label: "Rejected", class: "bg-[#FFEBEE] text-[#C62828]" },
     }
     return statusMap[status] || { label: "Unknown", class: "bg-gray-100 text-gray-600" }
   }

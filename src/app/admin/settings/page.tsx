@@ -260,7 +260,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-[#055160]" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#C62828]" />
           <p className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Loading settings...</p>
         </div>
       </div>

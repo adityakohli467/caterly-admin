@@ -82,7 +82,7 @@ function PaymentSuccessContent() {
       <div className="container mx-auto px-4 py-16">
         <Card className="max-w-2xl mx-auto">
           <CardContent className="py-16 text-center">
-            <h2 className="text-2xl font-bold mb-4 text-[#055160]">Payment Verification Failed</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#C62828]">Payment Verification Failed</h2>
             <p className="text-gray-600 mb-6">
               We couldn't verify your payment. Please contact support if you've been charged.
             </p>

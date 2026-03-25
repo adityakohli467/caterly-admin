@@ -315,7 +315,7 @@ export default function EditOrderPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <p className="text-[#055160] mb-2" style={{ fontFamily: 'Albert Sans' }}>
+          <p className="text-[#C62828] mb-2" style={{ fontFamily: 'Albert Sans' }}>
             Invalid Order ID
           </p>
           {orderId && (
@@ -340,7 +340,7 @@ export default function EditOrderPage() {
     return (
       <div className="flex items-center justify-center bg-gray-50 min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#055160] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C62828] mx-auto mb-4"></div>
           <p className="text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>
             Loading order data...
           </p>
@@ -429,7 +429,7 @@ export default function EditOrderPage() {
               </div>
               <span
                 className={`text-xs mt-2 whitespace-nowrap ${
-                  currentStep === step.number ? "text-[#055160] font-semibold" : "text-gray-600"
+                  currentStep === step.number ? "text-[#C62828] font-semibold" : "text-gray-600"
                 }`}
                 style={{ fontFamily: 'Albert Sans' }}
               >

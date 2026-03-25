@@ -543,7 +543,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               value={selectedCustomer}
               onChange={(e) => handleCustomerChange(Number(e.target.value))}
               disabled={loadingCustomers}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
               <option value={0}>
@@ -559,7 +559,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               type="button"
               onClick={() => setShowAddCustomerModalInternal(true)}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
-              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#C62828] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
               <span className="text-lg leading-none">+</span>
               Add New
@@ -578,7 +578,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               value={selectedCompany}
               onChange={(e) => handleCompanyChange(Number(e.target.value))}
               disabled={loadingCompanies || (selectedCustomer > 0 && displayedCompanies.length === 0)}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
               <option value={0}>
@@ -594,7 +594,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               type="button"
               onClick={() => setShowAddCompanyModal(true)}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
-              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#C62828] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
               <span className="text-lg leading-none">+</span>
               Add New
@@ -613,7 +613,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(Number(e.target.value))}
               disabled={loadingDepartments}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
               style={{ fontFamily: 'Albert Sans' }}
             >
               <option value={0}>
@@ -629,7 +629,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               type="button"
               onClick={() => setShowAddDepartmentModal(true)}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
-              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#055160] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
+              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#C62828] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
             >
               <span className="text-lg leading-none">+</span>
               Add New
@@ -670,14 +670,14 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
         {/* Location */}
         <div className="space-y-2">
           <Label htmlFor="location" className="text-sm font-medium text-gray-700">
-            Location <span className="text-red-500">*</span>
+            Kitchen Location <span className="text-red-500">*</span>
           </Label>
           <select
             id="location"
             value={selectedLocation}
             onChange={(e) => setSelectedLocation(Number(e.target.value))}
             disabled={loadingLocations || selectedCustomer === 0}
-            className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             style={{ fontFamily: 'Albert Sans' }}
           >
             <option value={0}>
@@ -720,8 +720,8 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       }}>
         <DialogContent className="max-w-md" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add Company
@@ -828,8 +828,8 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       }}>
         <DialogContent className="max-w-md" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add Department
@@ -926,8 +926,8 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#e7f1ff] mx-auto mb-4">
-              <Plus className="h-6 w-6 text-[#055160]" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FFEBEE] mx-auto mb-4">
+              <Plus className="h-6 w-6 text-[#C62828]" />
             </div>
             <DialogTitle className="text-center text-xl font-semibold">
               Add Customer
@@ -995,7 +995,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
                   id="customerType"
                   value={customerType}
                   onChange={(e) => setCustomerType(e.target.value)}
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#055160] focus:border-transparent"
+                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
                   style={{ fontFamily: 'Albert Sans' }}
                 >
                   <option value="Retail">Retail</option>
