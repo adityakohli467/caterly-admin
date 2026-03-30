@@ -95,8 +95,6 @@ export default function QuotesPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showStatusFilter, setShowStatusFilter] = useState(false)
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(20)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
 
@@ -129,11 +127,10 @@ export default function QuotesPage() {
 
   // Fetch quotes
   const { data: quotesData, isLoading, refetch } = useQuery({
-    queryKey: ['quotes', searchQuery, selectedLocation, selectedStatus, startDate, endDate, currentPage, sortField, sortDirection],
+    queryKey: ['quotes', searchQuery, selectedLocation, selectedStatus, startDate, endDate, sortField, sortDirection],
     queryFn: async () => {
       const params = new URLSearchParams()
-      params.append('limit', itemsPerPage.toString())
-      params.append('offset', ((currentPage - 1) * itemsPerPage).toString())
+      params.append('limit', '1000')
 
       if (searchQuery) params.append('search', searchQuery)
       if (selectedLocation) params.append('location_id', selectedLocation.toString())
@@ -152,7 +149,6 @@ export default function QuotesPage() {
 
   const quotes = quotesData?.quotes || []
   const totalCount = quotesData?.count || 0
-  const totalPages = Math.ceil(totalCount / itemsPerPage)
 
   // Check for success from URL params and refetch quotes (toast is shown in new quote page)
   useEffect(() => {
@@ -178,9 +174,28 @@ export default function QuotesPage() {
       setShowDeleteModal(false)
       setDeleteQuoteId(null)
       setDeleteQuoteName("")
+      setSelectedQuotes((prev) => prev.filter(qId => qId !== deleteQuoteId))
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete quote")
+    },
+  })
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (quoteIds: number[]) => {
+      const promises = quoteIds.map(id => api.delete(`/admin/quotes/${id}`))
+      await Promise.all(promises)
+      return true
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quotes"] })
+      toast.success(`${selectedQuotes.length} quotes deleted successfully!`)
+      setSelectedQuotes([])
+      setShowDeleteModal(false)
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete quotes")
     },
   })
 
@@ -259,7 +274,15 @@ export default function QuotesPage() {
   const handleConfirmDelete = () => {
     if (deleteQuoteId) {
       deleteQuoteMutation.mutate(deleteQuoteId)
+    } else if (selectedQuotes.length > 0) {
+      bulkDeleteMutation.mutate(selectedQuotes)
     }
+  }
+
+  const handleBulkDeleteBtn = () => {
+    setDeleteQuoteId(null)
+    setDeleteQuoteName(`${selectedQuotes.length} Selected Quotes`)
+    setShowDeleteModal(true)
   }
 
   const handleConvertToOrder = (quote: Quote) => {
@@ -396,7 +419,17 @@ export default function QuotesPage() {
           )}
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
+          {selectedQuotes.length > 0 && (
+            <Button
+              onClick={handleBulkDeleteBtn}
+              className="gap-2 whitespace-nowrap border-0 shadow-none bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-md"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              <Trash2 className="h-5 w-5" />
+              Delete Selected
+            </Button>
+          )}
           <Button
             onClick={handlePrint}
             className="gap-2 whitespace-nowrap border-0 shadow-none"
@@ -426,7 +459,6 @@ export default function QuotesPage() {
         <button
           onClick={() => {
             setSelectedLocation(0)
-            setCurrentPage(1)
           }}
           className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === 0
             ? "border-[#C62828] text-[#C62828]"
@@ -442,7 +474,6 @@ export default function QuotesPage() {
             key={location.location_id}
             onClick={() => {
               setSelectedLocation(location.location_id)
-              setCurrentPage(1)
             }}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${selectedLocation === location.location_id
               ? "border-[#C62828] text-[#C62828]"
@@ -494,7 +525,6 @@ export default function QuotesPage() {
               <Button
                 onClick={() => {
                   setShowDatePicker(false)
-                  setCurrentPage(1) // Reset to first page when filter changes
                 }}
                 className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
               >
@@ -863,95 +893,6 @@ export default function QuotesPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-white">
-          <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-            Showing {totalCount > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} Entries
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-              className="text-gray-700 disabled:text-gray-400 disabled:opacity-50"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            >
-              Prev
-            </Button>
-            {totalPages > 0 && (
-              <>
-                {currentPage > 3 && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(1)}
-                      className="text-gray-700"
-                      style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-                    >
-                      1
-                    </Button>
-                    {currentPage > 4 && <span className="text-gray-500 px-2">...</span>}
-                  </>
-                )}
-                {[...Array(Math.min(totalPages, 5))].map((_, index) => {
-                  let page: number
-                  if (totalPages <= 5) {
-                    page = index + 1
-                  } else if (currentPage <= 3) {
-                    page = index + 1
-                  } else if (currentPage >= totalPages - 2) {
-                    page = totalPages - 4 + index
-                  } else {
-                    page = currentPage - 2 + index
-                  }
-                  if (page < 1 || page > totalPages) return null
-                  return (
-                    <Button
-                      key={page}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={
-                        currentPage === page
-                          ? "bg-[#C62828] text-white border-[#C62828] hover:bg-[#B71C1C]"
-                          : "text-gray-700"
-                      }
-                      style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-                    >
-                      {page}
-                    </Button>
-                  )
-                })}
-                {currentPage < totalPages - 2 && totalPages > 5 && (
-                  <>
-                    <span className="text-gray-500 px-2">...</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="text-gray-700"
-                      style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages || totalPages === 0}
-              onClick={() => setCurrentPage(currentPage + 1)}
-              className="text-gray-700 disabled:text-gray-400 disabled:opacity-50"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
       </Card>
 
       {/* Delete Confirmation Modal */}
@@ -969,7 +910,9 @@ export default function QuotesPage() {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Albert Sans' }}>
-                  Are you sure you want to permanently delete this quote? This action cannot be undone.
+                  {deleteQuoteId 
+                    ? "Are you sure you want to permanently delete this quote? This action cannot be undone."
+                    : `Are you sure you want to permanently delete ${selectedQuotes.length} quotes? This action cannot be undone.`}
                 </p>
                 <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                   {deleteQuoteName}
@@ -990,9 +933,9 @@ export default function QuotesPage() {
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700 text-white"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              disabled={deleteQuoteMutation.isPending}
+              disabled={deleteQuoteMutation.isPending || bulkDeleteMutation.isPending}
             >
-              {deleteQuoteMutation.isPending ? "Deleting..." : "Delete"}
+              {(deleteQuoteMutation.isPending || bulkDeleteMutation.isPending) ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </DialogContent>

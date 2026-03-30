@@ -297,10 +297,16 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             id="card-number"
             name="number"
             type="text"
+            inputMode="numeric"
             placeholder="4242 4242 4242 4242"
             required
             className="pl-10"
             maxLength={19}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '');
+              const formatted = val.match(/.{1,4}/g)?.join(' ') || '';
+              e.target.value = formatted.substring(0, 19);
+            }}
           />
           <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
@@ -313,10 +319,14 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             id="expiry-month"
             name="expiry_month"
             type="text"
+            inputMode="numeric"
             placeholder="MM"
             required
             maxLength={2}
             pattern="[0-9]{2}"
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\D/g, '').substring(0, 2);
+            }}
           />
         </div>
         <div className="space-y-2">
@@ -325,10 +335,14 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             id="expiry-year"
             name="expiry_year"
             type="text"
+            inputMode="numeric"
             placeholder="YY"
             required
             maxLength={2}
             pattern="[0-9]{2}"
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\D/g, '').substring(0, 2);
+            }}
           />
         </div>
       </div>
@@ -340,11 +354,15 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
             id="cvc"
             name="cvc"
             type="text"
+            inputMode="numeric"
             placeholder="123"
             required
             className="pl-10"
             maxLength={4}
             pattern="[0-9]{3,4}"
+            onChange={(e) => {
+              e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+            }}
           />
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>

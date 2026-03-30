@@ -627,20 +627,20 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Request Quotes */}
-        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        {/* Requested Quotes */}
+        <Card className={`bg-white border shadow-sm hover:shadow-md transition-shadow ${stats && stats.unapprovedQuotes > 0 ? 'border-[#C62828] bg-[#FFEBEE]/30' : 'border-gray-200'}`}>
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
             <div className="flex items-start justify-between mb-3 md:mb-4">
-              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs sm:text-sm text-gray-600">
-                Request Quotes
+              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs sm:text-sm ${stats && stats.unapprovedQuotes > 0 ? 'text-[#C62828]' : 'text-gray-600'}`}>
+                Requested Quotes
               </p>
               {stats && stats.unapprovedQuotes > 0 && (
-                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-[#fef2f2] text-[#C62828] rounded-full border border-[#fca5a5]">
+                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-[#C62828] text-white rounded-full shadow-sm">
                   {stats.unapprovedQuotes} New
                 </span>
               )}
             </div>
-            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-3xl sm:text-4xl text-gray-900">
+            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-3xl sm:text-4xl ${stats && stats.unapprovedQuotes > 0 ? 'text-[#C62828]' : 'text-gray-900'}`}>
               {stats?.unapprovedQuotes || 0}
             </h2>
           </CardContent>

@@ -49,6 +49,8 @@ interface OrderDetails {
     order_products?: OrderProduct[]
     order_status?: number
     is_completed?: number
+    delivery_contact?: string
+    delivery_details?: string
 }
 
 interface ChefViewModalProps {
@@ -137,6 +139,8 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                     <div class="info-grid">
                         <div class="info-item"><label>Customer</label><span>${order.customer_order_name || 'N/A'}</span></div>
                         ${order.location_name ? `<div class="info-item"><label>Location</label><span>${order.location_name}</span></div>` : ''}
+                        ${order.delivery_contact ? `<div class="info-item"><label>Delivery Contact</label><span>${order.delivery_contact.replace('|', ' - ')}</span></div>` : ''}
+                        ${order.delivery_details ? `<div class="info-item"><label>Delivery Notes</label><span>${order.delivery_details}</span></div>` : ''}
                         ${order.order_comments ? `<div class="info-item"><label>Notes</label><span>${order.order_comments}</span></div>` : ''}
                     </div>
                     <table>
@@ -361,6 +365,22 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                                     <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Address</p>
                                                     <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700 break-words whitespace-pre-wrap">
                                                         {order.delivery_address}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {order.delivery_contact && (
+                                                <div className="min-w-0">
+                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Contact</p>
+                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700 break-words whitespace-pre-wrap">
+                                                        {order.delivery_contact.replace('|', ' - ')}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {order.delivery_details && (
+                                                <div className="min-w-0">
+                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Notes</p>
+                                                    <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700 break-words whitespace-pre-wrap">
+                                                        {order.delivery_details}
                                                     </p>
                                                 </div>
                                             )}

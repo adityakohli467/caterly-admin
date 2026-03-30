@@ -1329,14 +1329,14 @@ export default function OrdersPage() {
                                 <DollarSign className="h-4 w-4 mr-2" />
                                 Process Payment
                               </DropdownMenuItem>
-                              <DropdownMenuItem
+{/* <DropdownMenuItem
                                 onClick={() => handleMarkAsPaid(order.order_id)}
-                                disabled={updateStatusMutation.isPending || order.order_status === 3}
+                                disabled={updateStatusMutation.isPending || order.order_status === 2 || order.order_status === 3}
                                 className="cursor-pointer"
                               >
                                 <CheckCircle2 className="h-4 w-4 mr-2" />
                                 Mark Paid
-                              </DropdownMenuItem>
+                              </DropdownMenuItem> */}
                               <DropdownMenuItem
                                 onClick={() => handleDownloadOrder(order.order_id)}
                                 disabled={downloadInvoiceMutation.isPending}
@@ -1376,7 +1376,7 @@ export default function OrdersPage() {
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDeleteClick(order.order_id)}
-                                className="cursor-pointer text-[#C62828] focus:text-[#C62828]"
+                                className="cursor-pointer text-[#C62828] focus:bg-[#C62828] focus:text-white"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete Order
