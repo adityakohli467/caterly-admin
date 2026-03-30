@@ -236,3 +236,10 @@ export const subscriptionsAPI = {
   delete: (id: number) => api.delete(`/admin/subscriptions/${id}`),
 }
 
+export const newsletterAPI = {
+  list: (params?: any) => api.get("/admin/newsletter", { params }),
+  stats: () => api.get("/admin/newsletter/stats"),
+  unsubscribe: (id: number) => api.put(`/admin/newsletter/${id}/unsubscribe`),
+  delete: (id: number) => api.delete(`/admin/newsletter/${id}`),
+}
+

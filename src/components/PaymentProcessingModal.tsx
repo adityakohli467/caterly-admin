@@ -57,7 +57,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
 
   const handleMarkAsPaid = () => {
     if (!orderId) return
-    markAsPaidMutation.mutate({ id: orderId, status: 2 })
+    markAsPaidMutation.mutate({ id: orderId, status: 3 })
   }
 
   const handlePaymentSuccess = () => {
@@ -115,8 +115,8 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
                   </div>
                   <div className="flex justify-between items-center">
                     <Label>Order Status</Label>
-                    <Badge variant={order.order_status === 2 ? "default" : "secondary"}>
-                      {order.order_status === 2 ? "Paid" : "Unpaid"}
+                    <Badge variant={(order.order_status === 2 || order.order_status === 3) ? "default" : "secondary"}>
+                      {(order.order_status === 2 || order.order_status === 3) ? "Paid" : "Unpaid"}
                     </Badge>
                   </div>
                   {order.payment_status && (
@@ -127,7 +127,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
                   )}
 
                   <div className="pt-2 border-t">
-                    {order.order_status === 2 ? (
+                    {(order.order_status === 2 || order.order_status === 3) ? (
                       <div className="text-center py-4">
                         <CheckCircle2 className="h-12 w-12 mx-auto text-green-500 mb-2" />
                         <p className="text-sm text-green-600 font-medium">

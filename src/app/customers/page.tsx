@@ -151,15 +151,25 @@ export default function CustomersPage() {
     queryFn: async () => {
       const params = new URLSearchParams({
         archived: "false",
-        limit: "0",
+        limit: "100",
       })
       if (selectedGroup === "Frontend") {
         params.append("created_from", "storefront")
       } else if (selectedGroup === "Backend") {
         params.append("created_from", "admin")
       }
+      params.append("exclude_pending_approval", "true")
+
       const response = await api.get(`/admin/customers?${params}`)
-      return response.data
+      const rawCustomers = response.data.customers || []
+      const filtered = rawCustomers.filter((c: Customer) => {
+        if (c.role_id) return false
+        if (c.auth_level && [1, 2, 3].includes(c.auth_level)) return false
+        const isFrontend = c.created_from === 'storefront'
+        if (selectedGroup === "Frontend") return isFrontend
+        return !isFrontend
+      })
+      return { count: filtered.length }
     },
   })
 
@@ -169,7 +179,7 @@ export default function CustomersPage() {
     queryFn: async () => {
       const params = new URLSearchParams({
         archived: "true",
-        limit: "0",
+        limit: "100",
       })
       if (selectedGroup === "Frontend") {
         params.append("created_from", "storefront")
@@ -177,7 +187,15 @@ export default function CustomersPage() {
         params.append("created_from", "admin")
       }
       const response = await api.get(`/admin/customers?${params}`)
-      return response.data
+      const rawCustomers = response.data.customers || []
+      const filtered = rawCustomers.filter((c: Customer) => {
+        if (c.role_id) return false
+        if (c.auth_level && [1, 2, 3].includes(c.auth_level)) return false
+        const isFrontend = c.created_from === 'storefront'
+        if (selectedGroup === "Frontend") return isFrontend
+        return !isFrontend
+      })
+      return { count: filtered.length }
     },
   })
   // Fetch companies
@@ -590,7 +608,7 @@ export default function CustomersPage() {
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
-          Active ({activeTab === "Active" ? customers.length : (activeCountData?.count ?? activeCountData?.total ?? 0)})
+          Active ({activeCountData?.count ?? 0})
         </button>
         <button
           onClick={() => setActiveTab("Archived")}
@@ -600,7 +618,7 @@ export default function CustomersPage() {
             }`}
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
-          Archived ({activeTab === "Archived" ? customers.length : (archivedCountData?.count ?? archivedCountData?.total ?? 0)})
+          Archived ({archivedCountData?.count ?? 0})
         </button>
       </div>
 

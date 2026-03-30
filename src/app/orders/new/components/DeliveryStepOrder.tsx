@@ -852,11 +852,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 <Label htmlFor="orderLocation" className="text-sm font-medium text-gray-700">
                   Kitchen Location <span className="text-red-500">*</span>
                 </Label>
-                <select
-                  id="orderLocation"
-                  value={selectedLocation}
-                  onChange={(e) => {
-                    const locId = Number(e.target.value)
+                <Select
+                  value={selectedLocation.toString()}
+                  onValueChange={(value) => {
+                    const locId = Number(value)
                     setSelectedLocation(locId)
                     if (deliveryMethod === 'pickup') {
                       setSelectedPickupLocation(locId)
@@ -867,17 +866,29 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                     }
                     onUpdate({ location_id: locId })
                   }}
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
-                  style={{ fontFamily: 'Albert Sans' }}
-                  required
                 >
-                  <option value={0}>Select Location</option>
-                  {locations.map((location: Location) => (
-                    <option key={location.location_id} value={location.location_id}>
-                      {location.location_name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="orderLocation"
+                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
+                    style={{ fontFamily: 'Albert Sans' }}
+                  >
+                    <SelectValue placeholder="Select Location" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    <SelectItem value="0" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">
+                      Select Location
+                    </SelectItem>
+                    {locations.map((location: Location) => (
+                      <SelectItem 
+                        key={location.location_id} 
+                        value={location.location_id.toString()}
+                        className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white"
+                      >
+                        {location.location_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {selectedLocation === 0 && (
                   <p className="text-xs text-red-500 mt-1">Please select a location</p>
                 )}
@@ -942,11 +953,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   <Label htmlFor="pickupLocation" className="text-sm font-medium text-gray-700">
                     Pickup Location <span className="text-red-500">*</span>
                   </Label>
-                  <select
-                    id="pickupLocation"
-                    value={selectedPickupLocation}
-                    onChange={(e) => {
-                      const locId = Number(e.target.value)
+                  <Select
+                    value={selectedPickupLocation.toString()}
+                    onValueChange={(value) => {
+                      const locId = Number(value)
                       setSelectedPickupLocation(locId)
                       setSelectedLocation(locId) // Also update main location
                       const location = locations.find((l: Location) => l.location_id === locId)
@@ -955,16 +965,29 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                       }
                       onUpdate({ location_id: locId })
                     }}
-                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
-                    style={{ fontFamily: 'Albert Sans' }}
                   >
-                    <option value={0}>Select Pickup Location</option>
-                    {locations.map((location: Location) => (
-                      <option key={location.location_id} value={location.location_id}>
-                        {location.location_name} - {location.pickup_address || 'No address'}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="pickupLocation"
+                      className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
+                      style={{ fontFamily: 'Albert Sans' }}
+                    >
+                      <SelectValue placeholder="Select Pickup Location" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      <SelectItem value="0" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">
+                        Select Pickup Location
+                      </SelectItem>
+                      {locations.map((location: Location) => (
+                        <SelectItem 
+                          key={location.location_id} 
+                          value={location.location_id.toString()}
+                          className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white"
+                        >
+                          {location.location_name} - {location.pickup_address || 'No address'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {selectedPickupLocation > 0 && (
                     <div className="mt-2 p-3 bg-gray-50 rounded-md">
                       <p className="text-sm text-gray-600">
@@ -1018,19 +1041,25 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 <Label htmlFor="standingOrder" className="text-sm font-medium text-gray-700">
                   Standing Order (Subscription)
                 </Label>
-                <select
-                  id="standingOrder"
-                  value={standingOrder}
-                  onChange={(e) => setStandingOrder(Number(e.target.value))}
-                  className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
-                  style={{ fontFamily: 'Albert Sans' }}
+                <Select
+                  value={standingOrder.toString()}
+                  onValueChange={(value) => setStandingOrder(Number(value))}
                 >
-                  <option value="0">One-time Order</option>
-                  <option value="7">Once a week</option>
-                  <option value="14">Every 2 Weeks</option>
-                  <option value="21">Every 3 Weeks</option>
-                  <option value="28">Every 4 Weeks</option>
-                </select>
+                  <SelectTrigger
+                    id="standingOrder"
+                    className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent"
+                    style={{ fontFamily: 'Albert Sans' }}
+                  >
+                    <SelectValue placeholder="One-time Order" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    <SelectItem value="0" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">One-time Order</SelectItem>
+                    <SelectItem value="7" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">Once a week</SelectItem>
+                    <SelectItem value="14" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">Every 2 Weeks</SelectItem>
+                    <SelectItem value="21" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">Every 3 Weeks</SelectItem>
+                    <SelectItem value="28" className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white">Every 4 Weeks</SelectItem>
+                  </SelectContent>
+                </Select>
                 {standingOrder > 0 && (
                   <p className="text-xs text-[#C62828] mt-1" style={{ fontFamily: 'Albert Sans' }}>
                     This order will become a subscription and appear in the Subscriptions page
