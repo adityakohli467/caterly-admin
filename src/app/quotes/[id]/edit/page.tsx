@@ -142,7 +142,16 @@ export default function EditQuotePage() {
             })) || []
           })) || []
 
-          const deliveryDateTime = quote.delivery_date_time ? new Date(quote.delivery_date_time) : null
+          // Extract date and time directly from the raw string to avoid timezone shifts.
+          let rawDate: string | undefined = undefined
+          let rawTime: string | undefined = undefined
+          if (quote.delivery_date_time) {
+            const dtStr = quote.delivery_date_time.toString()
+            const normalized = dtStr.replace('T', ' ').replace('Z', '').split('+')[0]
+            const parts = normalized.split(' ')
+            rawDate = parts[0] // "2026-03-20"
+            rawTime = parts[1] ? parts[1].slice(0, 5) : undefined // "14:30"
+          }
           
           // Ensure all customer fields are properly set, handling null/undefined values
           const customerName = quote.firstname || quote.lastname 
@@ -160,8 +169,8 @@ export default function EditQuotePage() {
             location: quote.location_name || '',
             location_id: quote.location_id || undefined,
             products: mappedProducts,
-            delivery_date: deliveryDateTime ? deliveryDateTime.toISOString().split('T')[0] : undefined,
-            delivery_time: deliveryDateTime ? deliveryDateTime.toTimeString().slice(0, 5) : undefined,
+            delivery_date: rawDate,
+            delivery_time: rawTime,
             delivery_address: quote.delivery_address || '',
             delivery_fee: parseFloat(quote.delivery_fee || 0),
             coupon_code: quote.coupon_code || '',

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, DollarSign, ArrowUpDown, MoreVertical, Image as ImageIcon, Upload, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU, getAUNow, getAUDateToday } from "@/lib/utils"
 import { format } from "date-fns"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
@@ -78,22 +79,7 @@ const orderTabs = [
 
 // Get current time in Australia/Sydney timezone as a comparable string
 const getNowAustralia = () => {
-  // Get the current date/time in Australia/Sydney
-  const nowUtc = new Date()
-  // Australia/Sydney offset: AEDT = UTC+11, AEST = UTC+10
-  // Use Intl to get current offset
-  const formatter = new Intl.DateTimeFormat('en-AU', {
-    timeZone: 'Australia/Sydney',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: false
-  })
-  const parts = formatter.formatToParts(nowUtc)
-  const get = (type: string) => parts.find(p => p.type === type)?.value || '0'
-  return new Date(
-    parseInt(get('year')), parseInt(get('month')) - 1, parseInt(get('day')),
-    parseInt(get('hour')), parseInt(get('minute')), parseInt(get('second'))
-  )
+  return getAUNow()
 }
 
 export default function OrdersPage() {
@@ -233,13 +219,7 @@ export default function OrdersPage() {
   }
 
   // Today's date-only string in Australia/Sydney for past/future split
-  const todayAU = (() => {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Australia/Sydney',
-      year: 'numeric', month: '2-digit', day: '2-digit'
-    })
-    return formatter.format(new Date()) // returns YYYY-MM-DD
-  })()
+  const todayAU = getAUDateToday()
 
   const nowAU = getNowAustralia()
 
@@ -1261,7 +1241,7 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {order.delivery_date ? format(new Date(order.delivery_date), 'dd/MM/yyyy') : 'N/A'}
+                          {order.delivery_date ? formatDateOnly(order.delivery_date) : 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -1273,15 +1253,7 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {(() => {
-                            const timePart = order.delivery_time;
-                            if (!timePart) return '—';
-                            const [hours, minutes] = timePart.split(':').map(Number);
-                            if (isNaN(hours) || isNaN(minutes)) return timePart;
-                            const hour12 = hours % 12 || 12;
-                            const ampm = hours >= 12 ? 'PM' : 'AM';
-                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                          })()}
+                          {order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : (order.delivery_time || '—')}
                         </span>
                       </td>
                       <td className="px-4 py-4">

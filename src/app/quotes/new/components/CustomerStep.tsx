@@ -10,6 +10,7 @@ import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidatedTextarea } from "@/components/ui/validated-textarea"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { companiesAPI, customersAPI, locationsAPI } from "@/lib/api"
 import { QuoteData } from "../page"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -538,23 +539,27 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             Customer Name <span className="text-red-500">*</span>
           </Label>
           <div className="flex gap-2">
-            <select
-              id="customer"
-              value={selectedCustomer}
-              onChange={(e) => handleCustomerChange(Number(e.target.value))}
+            <Select
+              value={selectedCustomer.toString()}
+              onValueChange={(value) => handleCustomerChange(Number(value))}
               disabled={loadingCustomers}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              style={{ fontFamily: 'Albert Sans' }}
             >
-              <option value={0}>
-                {loadingCustomers ? "Loading..." : "Enter"}
-              </option>
-              {customers.map((customer: Customer) => (
-                <option key={customer.customer_id} value={customer.customer_id}>
-                  {customer.firstname} {customer.lastname}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger 
+                id="customer"
+                className="flex-1 h-11 border-gray-300 bg-white"
+                style={{ fontFamily: 'Albert Sans' }}
+              >
+                <SelectValue placeholder={loadingCustomers ? "Loading..." : "Enter"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Enter</SelectItem>
+                {customers.map((customer: Customer) => (
+                  <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
+                    {customer.firstname} {customer.lastname}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <button
               type="button"
               onClick={() => setShowAddCustomerModalInternal(true)}
@@ -573,23 +578,27 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             Company
           </Label>
           <div className="flex gap-2">
-            <select
-              id="company"
-              value={selectedCompany}
-              onChange={(e) => handleCompanyChange(Number(e.target.value))}
+            <Select
+              value={selectedCompany.toString()}
+              onValueChange={(value) => handleCompanyChange(Number(value))}
               disabled={loadingCompanies || (selectedCustomer > 0 && displayedCompanies.length === 0)}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              style={{ fontFamily: 'Albert Sans' }}
             >
-              <option value={0}>
-                {loadingCompanies ? "Loading..." : "Select"}
-              </option>
-              {displayedCompanies.map((company: Company) => (
-                <option key={company.company_id} value={company.company_id}>
-                  {company.company_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger 
+                id="company"
+                className="flex-1 h-11 border-gray-300 bg-white"
+                style={{ fontFamily: 'Albert Sans' }}
+              >
+                <SelectValue placeholder={loadingCompanies ? "Loading..." : "Select"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Select</SelectItem>
+                {displayedCompanies.map((company: Company) => (
+                  <SelectItem key={company.company_id} value={company.company_id.toString()}>
+                    {company.company_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <button
               type="button"
               onClick={() => setShowAddCompanyModal(true)}
@@ -608,23 +617,27 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             Department
           </Label>
           <div className="flex gap-2">
-            <select
-              id="department"
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(Number(e.target.value))}
+            <Select
+              value={selectedDepartment.toString()}
+              onValueChange={(value) => setSelectedDepartment(Number(value))}
               disabled={loadingDepartments}
-              className="flex-1 h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              style={{ fontFamily: 'Albert Sans' }}
             >
-              <option value={0}>
-                {loadingDepartments ? "Loading..." : "Select"}
-              </option>
-              {departments.map((dept: Department) => (
-                <option key={dept.department_id} value={dept.department_id}>
-                  {dept.department_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger 
+                id="department"
+                className="flex-1 h-11 border-gray-300 bg-white"
+                style={{ fontFamily: 'Albert Sans' }}
+              >
+                <SelectValue placeholder={loadingDepartments ? "Loading..." : "Select"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Select</SelectItem>
+                {departments.map((dept: Department) => (
+                  <SelectItem key={dept.department_id} value={dept.department_id.toString()}>
+                    {dept.department_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <button
               type="button"
               onClick={() => setShowAddDepartmentModal(true)}
@@ -672,23 +685,27 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
           <Label htmlFor="location" className="text-sm font-medium text-gray-700">
             Kitchen Location <span className="text-red-500">*</span>
           </Label>
-          <select
-            id="location"
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(Number(e.target.value))}
+          <Select
+            value={selectedLocation.toString()}
+            onValueChange={(value) => setSelectedLocation(Number(value))}
             disabled={loadingLocations || selectedCustomer === 0}
-            className="h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-            style={{ fontFamily: 'Albert Sans' }}
           >
-            <option value={0}>
-              {loadingLocations ? "Loading..." : "Enter"}
-            </option>
-            {locations.map((loc: Location) => (
-              <option key={loc.location_id} value={loc.location_id}>
-                {loc.location_name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger 
+              id="location"
+              className="h-11 border-gray-300 bg-white"
+              style={{ fontFamily: 'Albert Sans' }}
+            >
+              <SelectValue placeholder={loadingLocations ? "Loading..." : "Enter"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Enter</SelectItem>
+              {locations.map((loc: Location) => (
+                <SelectItem key={loc.location_id} value={loc.location_id.toString()}>
+                  {loc.location_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

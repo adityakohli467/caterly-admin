@@ -47,7 +47,7 @@ const allNavigation = [
       { name: "Roles & Permissions", href: "/admin/roles" },
       { name: "Locations", href: "/admin/locations" },
       // { name: "Manage Categories", href: "/admin/categories" },
-      { name: "Product Management ", href: "/admin/products" },
+      { name: "Product Management", href: "/admin/products" },
       // { name: "Manage Options", href: "/admin/options" },
       { name: "Blogs", href: "/admin/blogs" },
       { name: "Reviews", href: "/admin/reviews" },
@@ -210,7 +210,7 @@ export function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                           className={cn(
                             "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                            isActive ? "bg-[#FFEBEE] text-[#C62828]" : "text-[#212529] hover:bg-gray-50"
+                            isActive ? "bg-accent text-accent-foreground" : "text-[#212529] hover:bg-gray-50"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
@@ -228,8 +228,8 @@ export function Navbar() {
                                 className={cn(
                                   "px-3 py-2 text-sm rounded-md transition-colors",
                                   isSubItemActive
-                                    ? "bg-[#FFEBEE] text-[#C62828] font-medium"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-[#C62828]"
+                                    ? "bg-accent text-accent-foreground font-medium"
+                                    : "text-gray-600 hover:bg-gray-50 hover:text-accent-foreground"
                                 )}
                                 style={{ fontFamily: "'Albert Sans', sans-serif" }}
                               >
@@ -250,7 +250,7 @@ export function Navbar() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         "px-4 py-2.5 rounded-md text-base font-semibold transition-colors",
-                        isActive ? "bg-[#FFEBEE] text-[#C62828]" : "text-[#212529] hover:bg-gray-50"
+                        isActive ? "bg-accent text-accent-foreground" : "text-[#212529] hover:bg-gray-50"
                       )}
                       style={{ fontFamily: "'Albert Sans', sans-serif" }}
                     >
@@ -300,13 +300,13 @@ export function Navbar() {
                         <span
                           className={cn(
                             "font-medium text-base leading-[28px] whitespace-nowrap",
-                            isActive ? "text-[#C62828] font-bold" : "text-[#212529]"
+                            isActive ? "text-accent-foreground font-bold" : "text-[#212529]"
                           )}
                           style={{ fontFamily: "'Albert Sans', sans-serif" }}
                         >
                           {item.name}
                         </span>
-                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-[#C62828]" : "text-[#212529]")} />
+                        <ChevronDown className={cn("w-4 h-4", isActive ? "text-accent-foreground" : "text-[#212529]")} />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -323,7 +323,7 @@ export function Navbar() {
                               prefetch={true}
                               className={cn(
                                 "cursor-pointer",
-                                isSubItemActive && "bg-[#FFEBEE] text-[#C62828] font-medium"
+                                isSubItemActive && "bg-accent text-accent-foreground font-medium"
                               )}
                             >
                               {subItem.name}
@@ -346,7 +346,7 @@ export function Navbar() {
                   <span
                     className={cn(
                       "font-medium text-base leading-[28px] whitespace-nowrap",
-                      isActive ? "text-[#C62828] font-bold" : "text-[#212529]"
+                      isActive ? "text-accent-foreground font-bold" : "text-[#212529]"
                     )}
                     style={{ fontFamily: "'Albert Sans', sans-serif" }}
                   >

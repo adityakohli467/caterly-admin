@@ -25,7 +25,7 @@ import {
   FileText
 } from "lucide-react"
 import { toast } from "sonner"
-import { paymentsAPI } from "@/lib/api"
+import { paymentsAPI, ordersAPI } from "@/lib/api"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -122,7 +122,7 @@ export default function PaymentsPage() {
     },
   })
 
-  // Fetch statistics
+  // Fetch statistics - gateway specific
   const { data: statisticsData, isLoading: isStatsLoading, error: statsError } = useQuery({
     queryKey: ['payment-statistics', dateFrom, dateTo],
     queryFn: async () => {
@@ -134,12 +134,69 @@ export default function PaymentsPage() {
     },
   })
 
-  // Data processing
-  const payments: Payment[] = paymentsData?.payments || (Array.isArray(paymentsData) ? paymentsData : [])
-  const pagination = paymentsData?.pagination || { total: payments.length, limit: 50, offset: 0, has_more: false }
+  // Fetch overall order statistics for consistent revenue totals
+  const { data: orderStatsData, isLoading: isOrderStatsLoading } = useQuery({
+    queryKey: ['order-statistics'],
+    queryFn: async () => {
+      const response = await ordersAPI.stats()
+      return response.data
+    },
+  })
 
-  const statistics: PaymentStatistics | null = statisticsData?.statistics || 
+  // Fetch Paid Orders to supplement gateway history
+  const { data: paidOrdersData, isLoading: isPaidOrdersLoading } = useQuery({
+    queryKey: ['paid-orders', queryParams],
+    queryFn: async () => {
+      const params = { ...queryParams, order_status: 2 }
+      const response = await ordersAPI.list(params)
+      return response.data
+    },
+  })
+
+  // Data processing
+  const gatewayPayments: Payment[] = paymentsData?.payments || (Array.isArray(paymentsData) ? paymentsData : [])
+  const paidOrders: any[] = paidOrdersData?.orders || []
+  
+  // Combine and deduplicate
+  // If an order has a gateway record, we use that. If not, we use the manual record.
+  const gatewayOrderIds = new Set(gatewayPayments.map(p => p.order_id))
+  
+  const manualPayments: Payment[] = paidOrders
+    .filter(order => !gatewayOrderIds.has(order.order_id))
+    .map(order => ({
+      payment_history_id: -order.order_id, // Negative to avoid collision
+      order_id: order.order_id,
+      payment_transaction_id: `MANUAL-${order.order_id}`,
+      payment_type: 'manual',
+      payment_status: 'succeeded',
+      payment_gateway: 'manual',
+      amount: Number(order.order_total),
+      currency: 'AUD',
+      refund_amount: 0,
+      customer_name: order.customer_name || 
+                     (order.customer_firstname || order.customer_lastname ? `${order.customer_firstname || ''} ${order.customer_lastname || ''}`.trim() : null) ||
+                     (order.firstname || order.lastname ? `${order.firstname || ''} ${order.lastname || ''}`.trim() : null) ||
+                     (order.customer?.firstname || order.customer?.lastname ? `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() : null) || 
+                     order.customer_email || order.email || 'N/A',
+      created_at: order.date_added || order.delivery_date_time || new Date().toISOString(),
+      updated_at: order.date_added || order.delivery_date_time || new Date().toISOString(),
+      has_error: false
+    }))
+
+  const combinedPayments = [...gatewayPayments, ...manualPayments].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+
+  const pagination = paymentsData?.pagination || { total: combinedPayments.length, limit: 50, offset: 0, has_more: false }
+
+  const gatewayStats: PaymentStatistics | null = statisticsData?.statistics || 
     (statisticsData?.total_transactions !== undefined ? statisticsData as unknown as PaymentStatistics : null)
+
+  const orderStats = orderStatsData?.stats || null
+
+  // Use order stats for high-level revenue cards if they are available
+  const displayTotalRevenue = orderStats ? Number(orderStats.totalRevenue) : (Number(gatewayStats?.total_revenue) || 0)
+  const displayNetRevenue = orderStats ? (Number(orderStats.totalRevenue) - (Number(gatewayStats?.total_refunds) || 0)) : (Number(gatewayStats?.net_revenue) || 0)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -216,7 +273,8 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Total Revenue</p>
                   <DollarSign className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-green-600">{formatCurrency(statistics?.total_revenue || 0)}</h3>
+                <h3 className="text-2xl font-bold text-green-600">{formatCurrency(displayTotalRevenue)}</h3>
+                {orderStats && <p className="text-[10px] text-gray-400">System Total</p>}
               </CardContent>
             </Card>
 
@@ -226,7 +284,7 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Net Revenue</p>
                   <TrendingUp className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#C62828]">{formatCurrency(statistics?.net_revenue || 0)}</h3>
+                <h3 className="text-2xl font-bold text-[#C62828]">{formatCurrency(displayNetRevenue)}</h3>
               </CardContent>
             </Card>
 
@@ -236,8 +294,8 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Successful Payments</p>
                   <CheckCircle2 className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold">{statistics?.successful_payments || 0}</h3>
-                <p className="text-xs text-gray-500">{statistics?.total_transactions || 0} total</p>
+                <h3 className="text-2xl font-bold">{gatewayStats?.successful_payments || 0}</h3>
+                <p className="text-xs text-gray-500">{gatewayStats?.total_transactions || 0} in gateway log</p>
               </CardContent>
             </Card>
 
@@ -247,8 +305,8 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Failed Payments</p>
                   <XCircle className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#B71C1C]">{statistics?.failed_payments || 0}</h3>
-                <p className="text-xs text-gray-500">{statistics?.refunded_payments || 0} refunded</p>
+                <h3 className="text-2xl font-bold text-[#B71C1C]">{gatewayStats?.failed_payments || 0}</h3>
+                <p className="text-xs text-gray-500">{gatewayStats?.refunded_payments || 0} refunded</p>
               </CardContent>
             </Card>
           </>
@@ -331,12 +389,12 @@ export default function PaymentsPage() {
           <CardTitle>Payment Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoading || isPaidOrdersLoading ? (
             <div className="text-center py-8">
               <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-[#C62828]" />
               <p className="text-gray-600">Loading payments...</p>
             </div>
-          ) : (paymentsData instanceof Error || !paymentsData) && !isLoading && !payments.length ? (
+          ) : (paymentsData instanceof Error || !paymentsData) && (!combinedPayments.length && !isLoading) ? (
             <div className="text-center py-8 text-red-500 bg-red-50 rounded-lg border border-red-100 p-4">
               <XCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p className="font-semibold">Error loading payments</p>
@@ -350,7 +408,7 @@ export default function PaymentsPage() {
                 Retry
               </Button>
             </div>
-          ) : payments.length === 0 ? (
+          ) : combinedPayments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>No payments found</p>
@@ -361,27 +419,20 @@ export default function PaymentsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-3">Transaction ID</th>
                       <th className="text-left p-3">Order ID</th>
                       <th className="text-left p-3">Customer</th>
                       <th className="text-left p-3">Amount</th>
                       <th className="text-left p-3">Status</th>
-                      <th className="text-left p-3">Gateway</th>
                       <th className="text-left p-3">Date</th>
                       <th className="text-left p-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {payments.map((payment) => (
+                    {combinedPayments.map((payment) => (
                       <tr key={payment.payment_history_id} className="border-b hover:bg-gray-50">
-                        <td className="p-3">
-                          <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {payment.payment_transaction_id?.substring(0, 20)}...
-                          </code>
-                        </td>
                         <td className="p-3 font-medium">#{payment.order_id}</td>
                         <td className="p-3">
-                          {payment.customer_name || payment.customer_email || 'N/A'}
+                          {payment.customer_name || 'N/A'}
                           {payment.card_last4 && (
                             <span className="text-xs text-gray-500 ml-2">
                               •••• {payment.card_last4}
@@ -399,7 +450,6 @@ export default function PaymentsPage() {
                           </div>
                         </td>
                         <td className="p-3">{getStatusBadge(payment.payment_status)}</td>
-                        <td className="p-3">{getGatewayBadge(payment.payment_gateway)}</td>
                         <td className="p-3 text-sm text-gray-600">
                          {new Date(payment.created_at).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney', day: '2-digit', month: 'short', year: 'numeric' })}
                           <br />
@@ -458,7 +508,9 @@ export default function PaymentsPage() {
           <DialogHeader>
             <DialogTitle>Payment Details</DialogTitle>
             <DialogDescription>
-              Transaction ID: {selectedPayment?.payment_transaction_id}
+              {selectedPayment?.payment_gateway === 'manual' 
+                ? `Manual Payment for Order #${selectedPayment?.order_id}`
+                : `Transaction ID: ${selectedPayment?.payment_transaction_id}`}
             </DialogDescription>
           </DialogHeader>
           {selectedPayment && (
@@ -483,16 +535,8 @@ export default function PaymentsPage() {
                   </p>
                 </div>
                 <div>
-                  <Label className="text-gray-600">Gateway</Label>
-                  <div>{getGatewayBadge(selectedPayment.payment_gateway)}</div>
-                </div>
-                <div>
-                  <Label className="text-gray-600">Payment Method</Label>
-                  <p>{selectedPayment.payment_method || 'N/A'}</p>
-                </div>
-                <div>
                   <Label className="text-gray-600">Customer</Label>
-                  <p>{selectedPayment.customer_name || selectedPayment.customer_email || 'N/A'}</p>
+                  <p className="font-bold">{selectedPayment.customer_name || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-gray-600">Card</Label>
