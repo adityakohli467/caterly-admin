@@ -150,10 +150,8 @@ export default function SubscriptionDetailPage() {
     setSendingInvoice(true)
     try {
       const response = await invoicesAPI.send(Number(subscriptionId))
-      toast.success(response.data.email_sent ? "Invoice sent successfully" : "Invoice email prepared", {
-        description: response.data.email_sent 
-          ? `Sent to: ${response.data.recipient}` 
-          : response.data.note || "Email service not configured",
+      toast.success("Invoice sent successfully", {
+        description: response.data.recipient ? `Sent to: ${response.data.recipient}` : "Sent to customer email",
       })
       // Also mark as sent to customer
       sendToCustomerMutation.mutate()

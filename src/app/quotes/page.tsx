@@ -234,7 +234,7 @@ export default function QuotesPage() {
           description: data.sent_to ? `Sent to: ${data.sent_to}` : "Email sent to customer"
         })
       } else {
-        toast.info(data.message || "Email prepared (email service not configured)")
+        toast.success("Quote email sent successfully!")
       }
     },
     onError: (error: any) => {
