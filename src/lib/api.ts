@@ -9,6 +9,19 @@ const api = axios.create({
   },
 })
 
+// Track whether we are currently refreshing to avoid infinite loops
+let isRefreshing = false
+let refreshSubscribers: Array<(token: string) => void> = []
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb)
+}
+
+const onTokenRefreshed = (newToken: string) => {
+  refreshSubscribers.forEach((cb) => cb(newToken))
+  refreshSubscribers = []
+}
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
@@ -34,22 +47,83 @@ api.interceptors.request.use(
 // Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Handle token expiration and unauthorized errors
-    if (error.response?.status === 401) {
-      const errorMessage = error.response.data?.message || 'Session expired or invalid.'
-      // Removed automatic redirection and localStorage clearing to keep session persistent
-      // until the user explicitly logs out.
-      return Promise.reject(new Error(errorMessage))
+  async (error) => {
+    const originalRequest = error.config
+
+    // Handle token expiration — attempt a silent refresh before giving up
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      // Get the refresh token from the persisted auth store
+      let storedRefreshToken: string | null = null
+      try {
+        const raw = localStorage.getItem('caterly-auth')
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          storedRefreshToken = parsed?.state?.refreshToken || null
+        }
+      } catch { /* ignore */ }
+
+      if (!storedRefreshToken) {
+        // No refresh token available — reject without logging out
+        return Promise.reject(new Error(error.response.data?.message || 'Session expired.'))
+      }
+
+      if (isRefreshing) {
+        // Queue this request until the refresh completes
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            resolve(api(originalRequest))
+          })
+        })
+      }
+
+      isRefreshing = true
+
+      try {
+        const refreshRes = await axios.post(`${API_URL}/admin/auth/refresh`, {
+          refreshToken: storedRefreshToken,
+        })
+
+        const { token: newToken, refreshToken: newRefreshToken } = refreshRes.data
+
+        // Patch the persisted auth store with the new tokens
+        try {
+          const raw = localStorage.getItem('caterly-auth')
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            parsed.state.token = newToken
+            if (newRefreshToken) parsed.state.refreshToken = newRefreshToken
+            localStorage.setItem('caterly-auth', JSON.stringify(parsed))
+          }
+        } catch { /* ignore */ }
+
+        // Update auth cookie
+        if (typeof document !== 'undefined') {
+          document.cookie = `caterly-auth=${newToken}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+        }
+
+        // Notify all queued requests
+        onTokenRefreshed(newToken)
+        isRefreshing = false
+
+        // Retry original request with new token
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        isRefreshing = false
+        refreshSubscribers = []
+        // Refresh failed — propagate the original 401 but do NOT force-logout
+        return Promise.reject(new Error('Session expired. Please log in again.'))
+      }
     }
 
     // Enhanced error handling
     if (error.response) {
-      // Server responded with error status
       const status = error.response.status
       const message = error.response.data?.message || error.message
 
-      // Log error for debugging (only in development)
       if (process.env.NODE_ENV === 'development') {
         console.error(`❌ API Error [${status}]:`, {
           url: error.config?.url,
@@ -58,17 +132,12 @@ api.interceptors.response.use(
         })
       }
 
-      // Return user-friendly error message
       const userMessage = message || `Request failed with status ${status}`
       return Promise.reject(new Error(userMessage))
     } else if (error.request) {
-      // Request was made but no response received
-      const userMessage = 'Network error. Please check your connection and try again.'
-      return Promise.reject(new Error(userMessage))
+      return Promise.reject(new Error('Network error. Please check your connection and try again.'))
     } else {
-      // Something else happened
-      const userMessage = error.message || 'An unexpected error occurred. Please try again.'
-      return Promise.reject(new Error(userMessage))
+      return Promise.reject(new Error(error.message || 'An unexpected error occurred. Please try again.'))
     }
   }
 )

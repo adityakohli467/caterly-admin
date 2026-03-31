@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ type LoginForm = {
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const { login, logout } = useAuthStore()
+  const { login } = useAuthStore()
 
   const {
     register,
@@ -26,10 +26,6 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginForm>()
 
-  // Clear any existing tokens when landing on login page
-  useEffect(() => {
-    logout()
-  }, [logout])
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)

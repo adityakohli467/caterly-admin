@@ -14,10 +14,12 @@ interface User {
 interface AuthState {
   user: User | null
   token: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
+  refreshAccessToken: () => Promise<boolean>
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -25,6 +27,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
 
       login: async (username: string, password: string) => {
@@ -34,12 +37,13 @@ export const useAuthStore = create<AuthState>()(
             password,
           })
 
-          const { token, user } = response.data
+          const { token, refreshToken, user } = response.data
 
-          // Store in state and localStorage
+          // Store in state and localStorage (including refresh token)
           set({
             user,
             token,
+            refreshToken: refreshToken || null,
             isAuthenticated: true,
           })
 
@@ -53,10 +57,40 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      refreshAccessToken: async (): Promise<boolean> => {
+        const { refreshToken } = get()
+        if (!refreshToken) return false
+
+        try {
+          const response = await axios.post(`${API_URL}/admin/auth/refresh`, {
+            refreshToken,
+          })
+
+          const { token: newToken, refreshToken: newRefreshToken } = response.data
+
+          set({
+            token: newToken,
+            refreshToken: newRefreshToken || refreshToken, // keep old if not rotated
+            isAuthenticated: true,
+          })
+
+          // Update the auth cookie
+          if (typeof document !== 'undefined') {
+            document.cookie = `caterly-auth=${newToken}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+          }
+
+          return true
+        } catch {
+          // Refresh token is also expired/invalid — real logout needed
+          return false
+        }
+      },
+
       logout: () => {
         set({
           user: null,
           token: null,
+          refreshToken: null,
           isAuthenticated: false,
         })
 
@@ -67,7 +101,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        const { token } = get()
+        const { token, refreshAccessToken } = get()
 
         if (!token) {
           set({ isAuthenticated: false })
@@ -79,7 +113,7 @@ export const useAuthStore = create<AuthState>()(
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            timeout: 5000, // 5 second timeout
+            timeout: 5000,
           })
 
           set({
@@ -87,35 +121,39 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
           })
         } catch (error) {
-          // Handle network errors differently
           if (axios.isAxiosError(error)) {
+            // Backend is down — keep session alive silently
             if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-              // Backend is down - silently keep user authenticated (don't logout on network errors)
               set({ isAuthenticated: true })
               return
             }
-            
-            // Keep auth even on 401 to wait for manual logout
+
+            // Access token expired — try to refresh it
             if (error.response?.status === 401) {
-              // Silently allow the state to remain so the user isn't kicked out immediately
-              // This relies on the backend still validating tokens for protected actions
+              const refreshed = await refreshAccessToken()
+              if (refreshed) {
+                // Refreshed successfully — re-fetch user info
+                try {
+                  const newToken = get().token
+                  const meRes = await axios.get(`${API_URL}/admin/auth/me`, {
+                    headers: { Authorization: `Bearer ${newToken}` },
+                    timeout: 5000,
+                  })
+                  set({ user: meRes.data.user, isAuthenticated: true })
+                } catch {
+                  set({ isAuthenticated: true }) // keep alive even if /me fails after refresh
+                }
+                return
+              }
+              // Refresh also failed — session is truly expired, but we only logout on explicit button
+              // Keep the user in their session until they click logout
               set({ isAuthenticated: true })
               return
             }
           }
-          
-          // Other errors - clear auth to be safe
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-          })
-          
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('caterly-auth')
-            localStorage.removeItem('token')
-            document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-          }
+
+          // Unknown error — keep session alive rather than kicking user out
+          set({ isAuthenticated: true })
         }
       },
     }),
