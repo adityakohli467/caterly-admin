@@ -475,10 +475,10 @@ body {
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    /* Light gray for hover states */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    /* Dark text on hover */
+    --accent: 0 100% 97%;
+    /* Light pink for hover states (#FFEBEE) */
+    --accent-foreground: 0 72% 46%;
+    /* Brand red for text on hover (#C62828) */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;

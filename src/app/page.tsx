@@ -31,6 +31,7 @@ import { useAuthStore } from "@/store/auth"
 import { toast } from "sonner"
 import { OrderDetailModal } from "@/components/OrderDetailModal"
 import { ChefViewModal } from "@/components/ChefViewModal"
+import { getAUNow, getAUDateToday, getAUDateTomorrow, getAUCurrentHour, formatTimeInAU, formatDateOnly } from "@/lib/utils"
 
 interface DashboardStats {
   totalOrders: number
@@ -228,8 +229,8 @@ export default function DashboardPage() {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
 
-    const today = format(new Date(), 'dd MMM, yyyy')
-    const tomorrow = format(new Date(Date.now() + 86400000), 'dd MMM, yyyy')
+    const today = formatDateOnly(new Date())
+    const tomorrow = formatDateOnly(new Date(Date.now() + 86400000))
 
     const printContent = `
       <!DOCTYPE html>
@@ -264,7 +265,7 @@ export default function DashboardPage() {
                   <td>#${order.order_id}</td>
                   <td>${order.customer_order_name || `${order.customer?.firstname || ''} ${order.customer?.lastname || ''}`.trim() || 'N/A'}</td>
                   <td>${order.customer?.telephone || 'N/A'}</td>
-                  <td>${order.delivery_date_time ? format(new Date(order.delivery_date_time), 'HH:mm') : 'N/A'}</td>
+                  <td>${order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : 'N/A'}</td>
                   <td>${order.is_completed === 1 ? 'Completed' : getStatusText(order.order_status)}</td>
                 </tr>
               `).join('')}
@@ -525,7 +526,7 @@ export default function DashboardPage() {
 
   // Get greeting based on time of day
   const getGreeting = () => {
-    const hour = new Date().getHours()
+    const hour = getAUCurrentHour()
     if (hour < 12) return "Good Morning"
     if (hour < 18) return "Good Afternoon"
     return "Good Evening"
@@ -676,7 +677,7 @@ export default function DashboardPage() {
                 Todays Deliveries
               </CardTitle>
               <p style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-500">
-                {format(new Date(), 'dd MMM, yyyy')}
+                {formatDateOnly(new Date())}
               </p>
             </div>
             <Button
@@ -717,11 +718,8 @@ export default function DashboardPage() {
                     </tr>
                   ))
                 ) : todayOrders && todayOrders.length > 0 ? (
-                  [...todayOrders].sort((a, b) => {
-                    const timeA = a.delivery_date_time ? new Date(a.delivery_date_time).getTime() : 0
-                    const timeB = b.delivery_date_time ? new Date(b.delivery_date_time).getTime() : 0
-                    return timeB - timeA
-                  }).map((order, index) => (
+                  [...todayOrders].sort((a, b) => b.order_id - a.order_id)
+                  .map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span 
@@ -752,7 +750,7 @@ export default function DashboardPage() {
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
                           {order.delivery_date_time
-                            ? format(new Date(order.delivery_date_time), 'HH:mm')
+                            ? formatTimeInAU(order.delivery_date_time)
                             : '00:00'}
                         </span>
                       </td>
@@ -830,7 +828,7 @@ export default function DashboardPage() {
                 Tomorrow's Deliveries
               </CardTitle>
               <p style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-500">
-                {format(new Date(Date.now() + 86400000), 'dd MMM, yyyy')}
+                {getAUDateTomorrow().split('-').reverse().join('/')}
               </p>
             </div>
             <Button
@@ -871,11 +869,8 @@ export default function DashboardPage() {
                     </tr>
                   ))
                 ) : tomorrowOrders && tomorrowOrders.length > 0 ? (
-                  [...tomorrowOrders].sort((a, b) => {
-                    const timeA = a.delivery_date_time ? new Date(a.delivery_date_time).getTime() : 0
-                    const timeB = b.delivery_date_time ? new Date(b.delivery_date_time).getTime() : 0
-                    return timeB - timeA
-                  }).map((order, index) => (
+                  [...tomorrowOrders].sort((a, b) => b.order_id - a.order_id)
+                  .map((order, index) => (
                     <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span 
@@ -906,7 +901,7 @@ export default function DashboardPage() {
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
                           {order.delivery_date_time
-                            ? format(new Date(order.delivery_date_time), 'HH:mm')
+                            ? formatTimeInAU(order.delivery_date_time)
                             : '00:00'}
                         </span>
                       </td>

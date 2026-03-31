@@ -11,6 +11,8 @@ import "react-datepicker/dist/react-datepicker.css"
 import { Search, FileDown, FileText, Printer, Calendar as CalendarIcon, MapPin, Filter } from "lucide-react"
 import { format, isValid } from "date-fns"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { printTableData } from "@/lib/print-utils"
 
 interface Report {
@@ -40,9 +42,9 @@ export default function ReportsPage() {
   const [orderDateTo, setOrderDateTo] = useState<Date | null>(null)
   const [deliveryDateFrom, setDeliveryDateFrom] = useState<Date | null>(null)
   const [deliveryDateTo, setDeliveryDateTo] = useState<Date | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState("none_selected")
   const [selectedStatus, setSelectedStatus] = useState("2")
-  const [selectedCompany, setSelectedCompany] = useState("")
+  const [selectedCompany, setSelectedCompany] = useState("none_selected")
   const [includeSubscriptions, setIncludeSubscriptions] = useState(true)
 
   // Applied filters (for API call)
@@ -185,9 +187,9 @@ export default function ReportsPage() {
       order_date_to: orderDateTo ? format(orderDateTo as Date, "yyyy-MM-dd") : "",
       delivery_date_from: deliveryDateFrom ? format(deliveryDateFrom as Date, "yyyy-MM-dd") : "",
       delivery_date_to: deliveryDateTo ? format(deliveryDateTo as Date, "yyyy-MM-dd") : "",
-      location_id: selectedLocation,
-      status: selectedStatus,
-      company: selectedCompany,
+      location_id: selectedLocation === "none_selected" ? "" : selectedLocation,
+      status: selectedStatus === "none_selected" ? "" : selectedStatus,
+      company: selectedCompany === "none_selected" ? "" : selectedCompany,
       search: searchQuery,
       include_subscriptions: includeSubscriptions
     })
@@ -199,9 +201,9 @@ export default function ReportsPage() {
     setOrderDateTo(null)
     setDeliveryDateFrom(null)
     setDeliveryDateTo(null)
-    setSelectedLocation("")
+    setSelectedLocation("none_selected")
     setSelectedStatus("2")
-    setSelectedCompany("")
+    setSelectedCompany("none_selected")
     setSearchQuery("")
     setAppliedFilters({
       order_date_from: "",
@@ -388,60 +390,61 @@ export default function ReportsPage() {
           </div>
 
           {/* Select Locations */}
-          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
-            <MapPin className="h-5 w-5 text-gray-500" />
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="flex-1 text-sm bg-transparent border-none p-0 focus:outline-none"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              <option value="">Select Locations</option>
-              {locations.map((location: any) => (
-                <option key={location.location_id} value={location.location_id}>
-                  {location.location_name}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-1.5 bg-white">
+            <MapPin className="h-5 w-5 text-gray-400" />
+            <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+              <SelectTrigger className="flex-1 text-sm bg-transparent border-none p-0 focus:ring-0 h-9">
+                <SelectValue placeholder="Select Locations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none_selected">Select Locations</SelectItem>
+                {locations.map((location: any) => (
+                  <SelectItem key={location.location_id} value={location.location_id.toString()}>
+                    {location.location_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Select Company */}
-          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
-            <Filter className="h-5 w-5 text-gray-500" />
-            <select
-              value={selectedCompany}
-              onChange={(e) => setSelectedCompany(e.target.value)}
-              className="flex-1 text-sm bg-transparent border-none p-0 focus:outline-none"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              <option value="">Select Company</option>
-              {companies.map((company: any) => (
-                <option key={company.company_id} value={company.company_name}>
-                  {company.company_name}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-1.5 bg-white">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+              <SelectTrigger className="flex-1 text-sm bg-transparent border-none p-0 focus:ring-0 h-9">
+                <SelectValue placeholder="Select Company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none_selected">Select Company</SelectItem>
+                {companies.map((company: any) => (
+                  <SelectItem key={company.company_id} value={company.company_name}>
+                    {company.company_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Select Statuses */}
-          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-2.5 bg-white">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="flex-1 text-sm bg-transparent border-none p-0 focus:outline-none"
-              style={{ fontFamily: 'Albert Sans' }}
-            >
-              <option value="">Select Statuses</option>
-              <option value="1">New</option>
-              <option value="7">Approved</option>
-              <option value="3">Completed</option>
-              <option value="90">All minus paid</option>
-              <option value="91">All minus cancelled</option>
-              <option value="8">Rejected</option>
-              <option value="0">Cancelled</option>
-              <option value="2">Paid</option>
-              <option value="4">Waiting for Approval</option>
-            </select>
+          <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-4 py-1.5 bg-white">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="flex-1 text-sm bg-transparent border-none p-0 focus:ring-0 h-9">
+                <SelectValue placeholder="Select Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none_selected">Select Statuses</SelectItem>
+                <SelectItem value="1">New</SelectItem>
+                <SelectItem value="7">Approved</SelectItem>
+                <SelectItem value="3">Completed</SelectItem>
+                <SelectItem value="90">All minus paid</SelectItem>
+                <SelectItem value="91">All minus cancelled</SelectItem>
+                <SelectItem value="8">Rejected</SelectItem>
+                <SelectItem value="0">Cancelled</SelectItem>
+                <SelectItem value="2">Paid</SelectItem>
+                <SelectItem value="4">Waiting for Approval</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Include Subscriptions */}
@@ -492,7 +495,7 @@ export default function ReportsPage() {
                 handleApplyFilters()
               }
             }}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#c32626] focus:border-[#c32626] focus:outline-none"
+            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
             style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
           />
         </div>
@@ -525,14 +528,9 @@ export default function ReportsPage() {
             lineHeight: '20px',
             letterSpacing: '0%',
             textAlign: 'center',
-            color: '#c32626',
-            backgroundColor: 'transparent',
-            padding: 0,
-            gap: '8px',
-            opacity: 1
           }}
         >
-          <Printer className="h-5 w-5 text-[#c32626]" />
+          <Printer className="h-5 w-5 text-[#C62828]" />
           Print
         </Button>
       </div>
@@ -619,23 +617,23 @@ export default function ReportsPage() {
                   return (
                     <tr key={`${report.order_id}-${index}`} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <span className="text-xs text-[#c32626] font-medium" style={{ fontFamily: 'Albert Sans' }}>
+                        <span className="text-xs text-[#C62828] font-medium" style={{ fontFamily: 'Albert Sans' }}>
                           #{report.order_id}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {safeFormatDate(report.order_date, "dd-MM-yyyy")}
+                          {report.order_date ? formatDateOnly(report.order_date) : 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {safeFormatDate(report.delivery_date_time, "dd-MM-yyyy")}
+                          {report.delivery_date_time ? formatDateOnly(report.delivery_date_time) : 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {safeFormatDate(report.delivery_date_time, "HH:mm")}
+                          {report.delivery_date_time ? formatTimeInAU(report.delivery_date_time) : 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">

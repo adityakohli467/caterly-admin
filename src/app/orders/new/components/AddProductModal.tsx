@@ -10,6 +10,7 @@ import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidatedTextarea } from "@/components/ui/validated-textarea"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Upload, Image as ImageIcon, X } from "lucide-react"
 import { toast } from "sonner"
 import { validateRequired, validateNumber, validateURL } from "@/lib/validations"
@@ -409,19 +410,22 @@ export function AddProductModal({ open, onClose, onProductAdded }: AddProductMod
           {filteredSubcategories.length > 0 && (
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">Subcategory (Optional)</Label>
-              <select
-                value={selectedSubcategory || ""}
-                onChange={(e) => setSelectedSubcategory(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
-                style={{ fontFamily: "Albert Sans" }}
+              <Select
+                value={selectedSubcategory?.toString() || "none"}
+                onValueChange={(value) => setSelectedSubcategory(value === "none" ? null : parseInt(value))}
               >
-                <option value="">No subcategory</option>
-                {filteredSubcategories.map((subCat: any) => (
-                  <option key={subCat.category_id} value={subCat.category_id}>
-                    {subCat.category_name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-11 border-gray-300 bg-white">
+                  <SelectValue placeholder="No subcategory" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No subcategory</SelectItem>
+                  {filteredSubcategories.map((subCat: any) => (
+                    <SelectItem key={subCat.category_id} value={subCat.category_id.toString()}>
+                      {subCat.category_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

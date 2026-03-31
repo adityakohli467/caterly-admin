@@ -138,7 +138,7 @@ export default function SettingsPage() {
       const hsl = hexToHsl(settings.primaryColor)
       if (hsl) {
         root.style.setProperty("--primary", `${hsl.h} ${hsl.s}% ${hsl.l}%`)
-        root.style.setProperty("--accent", `${hsl.h} ${hsl.s}% ${hsl.l}%`)
+        root.style.setProperty("--accent", `${hsl.h} ${hsl.s}% 97%`)
         root.style.setProperty("--ring", `${hsl.h} ${hsl.s}% ${hsl.l}%`)
       }
     }

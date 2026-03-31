@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
-import { format } from "date-fns"
+import { formatDateTime } from "@/lib/utils"
 import { Loader2, Printer } from "lucide-react"
 
 interface OrderProduct {
@@ -89,7 +89,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
     if (!printWindow) return
 
     const deliveryDate = order.delivery_date_time
-      ? new Date(order.delivery_date_time).toLocaleString('en-AU', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      ? formatDateTime(order.delivery_date_time)
       : 'N/A'
 
     const productsHtml = (order.order_products || []).map((p, i) => `
@@ -492,7 +492,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Date & Time</p>
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
                           {order.delivery_date_time
-                            ? format(new Date(order.delivery_date_time), 'dd MMM, yyyy HH:mm')
+                            ? formatDateTime(order.delivery_date_time)
                             : 'N/A'}
                         </p>
                       </div>

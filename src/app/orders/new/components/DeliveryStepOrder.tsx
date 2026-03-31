@@ -19,7 +19,8 @@ import { OrderData } from "../page"
 import api from "@/lib/api"
 import { locationsAPI, companiesAPI } from "@/lib/api"
 import { toast } from "sonner"
-import { formatAustralianPhone, cleanPhoneNumber, getPhonePlaceholder, getPhoneValidationError } from "@/lib/phone-mask"
+export { formatAustralianPhone, cleanPhoneNumber, getPhonePlaceholder, getPhoneValidationError } from "@/lib/phone-mask"
+import { getAUDateToday, formatTimeInAU } from "@/lib/utils"
 
 interface DeliveryStepProps {
   data: OrderData
@@ -178,15 +179,22 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       if (dateTime.includes('T')) {
         const dateObj = new Date(dateTime)
         if (!isNaN(dateObj.getTime())) {
-          // Extract date in YYYY-MM-DD format (use local date, not UTC)
-          const year = dateObj.getFullYear()
-          const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
-          const day = dateObj.getDate().toString().padStart(2, '0')
-          const date = `${year}-${month}-${day}`
-          // Extract time in HH:MM format (use local time, not UTC)
-          const hours = dateObj.getHours().toString().padStart(2, '0')
-          const minutes = dateObj.getMinutes().toString().padStart(2, '0')
-          const time = `${hours}:${minutes}`
+          // Extract date in YYYY-MM-DD format using Australian timezone
+          const date = new Intl.DateTimeFormat("en-CA", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            timeZone: "Australia/Sydney"
+          }).format(dateObj)
+
+          // Extract time in HH:MM format using Australian timezone
+          const time = new Intl.DateTimeFormat("en-AU", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Australia/Sydney"
+          }).format(dateObj)
+
           console.log('Parsed ISO dateTime:', dateTime, 'to date:', date, 'time:', time)
           return { date, time }
         }
@@ -709,7 +717,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                   id="deliveryDate"
                   type="date"
                   value={deliveryDate || ""}
-                  min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
+                  min={getAUDateToday()} // Prevent selecting past dates as per Australia today
                   onChange={(e) => {
                     const newDate = e.target.value
                     console.log('Date changed to:', newDate)
