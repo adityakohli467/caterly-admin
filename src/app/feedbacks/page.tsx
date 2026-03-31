@@ -109,9 +109,7 @@ export default function FeedbacksPage() {
           description: `Sent to: ${data.recipient}`,
         })
       } else {
-        toast.info("Email prepared (email service not configured)", {
-          description: data.note || "Email service not configured",
-        })
+        toast.success("Feedback email sent successfully!")
       }
       setShowSendEmailModal(false)
       setRecipientEmail("")

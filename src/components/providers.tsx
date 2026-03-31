@@ -27,7 +27,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AppearanceProvider>
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster 
+          position="top-right" 
+          richColors 
+          toastOptions={{
+            style: {
+              fontFamily: 'var(--font-albert-sans), sans-serif',
+            },
+            classNames: {
+              error: '!bg-[#FFEBEE] !text-[#C62828] !border-[#FFEBEE]',
+              success: '!bg-[#E8F5E9] !text-[#2E7D32] !border-[#E8F5E9]',
+            },
+          }}
+        />
       </AppearanceProvider>
     </QueryClientProvider>
   )

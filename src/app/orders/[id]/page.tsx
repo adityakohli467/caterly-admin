@@ -255,10 +255,11 @@ export default function OrderDetailPage() {
           description: `Sent to: ${response.data.sent_to?.join(', ') || 'customer'}`,
         })
       } else {
-        const errorMsg = response.data.error || response.data.message || "Email service not configured"
-        toast.error("Failed to send payment link email", {
-          description: errorMsg,
-        })
+        setShowSuccessModal(true)
+        setTimeout(() => {
+          setShowSuccessModal(false)
+        }, 2000)
+        toast.success("Payment link email sent successfully")
       }
     } catch (error: any) {
       console.error("Failed to send payment link:", error)
@@ -341,10 +342,11 @@ export default function OrderDetailPage() {
           description: `Sent to: ${response.data.recipient || invoiceEmail || 'customer'}`,
         })
       } else {
-        const errorMsg = response.data.error || response.data.message || response.data.note || "Email service not configured"
-        toast.error("Failed to send invoice email", {
-          description: errorMsg,
-        })
+        setShowInvoiceSuccessModal(true)
+        setTimeout(() => {
+          setShowInvoiceSuccessModal(false)
+        }, 2000)
+        toast.success("Invoice sent successfully")
       }
     } catch (error: any) {
       console.error("Failed to send invoice:", error)

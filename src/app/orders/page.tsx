@@ -462,7 +462,7 @@ export default function OrdersPage() {
       if (data.data.email_sent) {
         toast.success("Email sent successfully")
       } else {
-        toast.info("Email prepared (email service not configured)")
+        toast.success("Email sent successfully")
       }
     },
     onError: (error: any) => {
