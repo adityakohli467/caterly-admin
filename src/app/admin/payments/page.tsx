@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -78,7 +78,14 @@ export default function PaymentsPage() {
   const [page, setPage] = useState(1)
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [maxRevenue, setMaxRevenue] = useState<number>(0)
   const limit = 50
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMaxRevenue(parseFloat(localStorage.getItem('caterly-max-revenue') || '0'))
+    }
+  }, [])
 
   // Build query params
   const queryParams: any = {
@@ -195,8 +202,22 @@ export default function PaymentsPage() {
   const orderStats = orderStatsData?.stats || null
 
   // Use order stats for high-level revenue cards if they are available
-  const displayTotalRevenue = orderStats ? Number(orderStats.totalRevenue) : (Number(gatewayStats?.total_revenue) || 0)
-  const displayNetRevenue = orderStats ? (Number(orderStats.totalRevenue) - (Number(gatewayStats?.total_refunds) || 0)) : (Number(gatewayStats?.net_revenue) || 0)
+  const fetchedTotalRevenue = orderStats ? Number(orderStats.totalRevenue) : (Number(gatewayStats?.total_revenue) || 0)
+
+  useEffect(() => {
+    if (fetchedTotalRevenue > 0 && typeof window !== 'undefined') {
+      const storedMax = parseFloat(localStorage.getItem('caterly-max-revenue') || '0')
+      if (fetchedTotalRevenue > storedMax) {
+        localStorage.setItem('caterly-max-revenue', String(fetchedTotalRevenue))
+        setMaxRevenue(fetchedTotalRevenue)
+      } else if (storedMax > fetchedTotalRevenue && maxRevenue !== storedMax) {
+        setMaxRevenue(storedMax)
+      }
+    }
+  }, [fetchedTotalRevenue, maxRevenue])
+
+  const displayTotalRevenue = Math.max(fetchedTotalRevenue, maxRevenue)
+  const displayNetRevenue = displayTotalRevenue - (Number(gatewayStats?.total_refunds) || 0)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
