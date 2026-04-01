@@ -153,20 +153,9 @@ export const useAuthStore = create<AuthState>()(
                 }
                 return
               }
-              // Refresh also failed — session is truly expired, force logout
-              set({
-                user: null,
-                token: null,
-                refreshToken: null,
-                isAuthenticated: false,
-              })
-              if (typeof window !== 'undefined') {
-                localStorage.removeItem('caterly-auth')
-                document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-                if (window.location.pathname !== '/login') {
-                  window.location.replace('/login')
-                }
-              }
+              // Refresh also failed — DO NOT force logout as per user requirement.
+              // Keep the user in their session until they explicitly click logout.
+              set({ isAuthenticated: true })
               return
             }
           }
