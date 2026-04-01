@@ -408,7 +408,7 @@ export default function DashboardPage() {
       )
     }
 
-    if (order.is_completed === 1) {
+    if (order.is_completed === 1 || order.order_status === 5) {
       return (
         <span
           style={{
@@ -787,30 +787,32 @@ export default function DashboardPage() {
                           <Button
                             size="sm"
                             onClick={() => handleMarkComplete(order.order_id)}
+                            disabled={order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6}
                             style={{
                               fontFamily: 'Albert Sans',
                               fontWeight: 600,
                               fontSize: '13px',
                               lineHeight: '20px',
                             }}
-                            className="h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white whitespace-nowrap shrink-0"
+                            className={`h-8 px-3 text-xs whitespace-nowrap shrink-0 ${(order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6) ? 'bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100' : 'bg-green-600 hover:bg-green-700 text-white'}`}
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                            Complete
+                            {(order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6) ? 'Completed' : 'Complete'}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => handleMarkDelivered(order.order_id)}
+                            disabled={order.is_delivered === 1 || order.order_status === 6}
                             style={{
                               fontFamily: 'Albert Sans',
                               fontWeight: 600,
                               fontSize: '13px',
                               lineHeight: '20px',
                             }}
-                            className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap shrink-0"
+                            className={`h-8 px-3 text-xs whitespace-nowrap shrink-0 ${(order.is_delivered === 1 || order.order_status === 6) ? 'bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                           >
                             <Truck className="h-3.5 w-3.5 mr-1" />
-                            Deliver
+                            {(order.is_delivered === 1 || order.order_status === 6) ? 'Delivered' : 'Deliver'}
                           </Button>
                         </div>
                       </td>
