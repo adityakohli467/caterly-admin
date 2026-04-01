@@ -90,7 +90,7 @@ export default function DashboardPage() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false)
   const [selectedChefViewOrderId, setSelectedChefViewOrderId] = useState<number | null>(null)
   const [isChefViewModalOpen, setIsChefViewModalOpen] = useState(false)
-  const { user } = useAuthStore()
+  const { user, token } = useAuthStore()
 
   // Set page title
   useEffect(() => {
@@ -98,25 +98,29 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
-    // Check if we're on login page - don't fetch
+    // Don't fetch on the login page
     if (typeof window !== "undefined" && window.location.pathname === "/login") {
       setLoading(false)
       return
     }
 
-    // Check for auth token before fetching
-    const storedAuth = localStorage.getItem('caterly-auth')
-    if (!storedAuth) {
-      setLoading(false)
+    // Wait until the auth token is available (Zustand hydrates from localStorage asynchronously)
+    if (!token) {
+      // Check localStorage directly as a fallback for the first render tick
+      const storedAuth = localStorage.getItem('caterly-auth')
+      if (!storedAuth) {
+        setLoading(false)
+        return
+      }
+      // Token not in Zustand yet but it's in localStorage — wait for hydration
       return
     }
 
     fetchDashboardData()
 
-    // Refresh data every 30 seconds (only if we have auth)
+    // Refresh data every 30 seconds
     const interval = setInterval(() => {
-      const hasAuth = localStorage.getItem('caterly-auth')
-      if (hasAuth) {
+      if (useAuthStore.getState().token) {
         fetchDashboardData()
       } else {
         clearInterval(interval)
@@ -125,7 +129,7 @@ export default function DashboardPage() {
 
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [token]) // Re-run when token changes (covers hydration from localStorage)
 
   const fetchDashboardData = async () => {
     // Check auth before fetching
@@ -177,13 +181,19 @@ export default function DashboardPage() {
         return
       }
 
-      // Handle 401 auth errors gracefully
-      if (error?.response?.status === 401) {
-        // Clear auth and redirect to login
-        localStorage.removeItem("caterly-auth")
-        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-          window.location.replace("/login")
-        }
+      // Handle 401 auth errors — don't force-logout, the API interceptor handles refresh
+      if (error?.response?.status === 401 || error?.message?.includes('Session expired')) {
+        // Data couldn't load due to auth — show empty state without kicking user out
+        setStats({
+          totalOrders: 0, newOrders: 0, pendingApproval: 0, approved: 0, completed: 0,
+          todayOrders: 0, totalRevenue: 0, deliveriesToday: 0, deliveriesNext7Days: 0,
+          unapprovedQuotes: 0, unapprovedCustomers: 0, futureOrders: 0,
+          productionOrders: 0, feedbackPending: 0,
+        })
+        setRecentOrders([])
+        setTodayOrders([])
+        setTomorrowOrders([])
+        setNext7DaysOrders([])
         return
       }
 
