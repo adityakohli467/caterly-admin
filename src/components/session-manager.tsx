@@ -4,35 +4,15 @@ import { useEffect, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { toast } from "sonner"
 
-// Session timeout: 2 days (172800 seconds) or 4 hours (14400 seconds) for JWT
-const IDLE_TIMEOUT = 30 * 60 * 1000 // 30 minutes of inactivity
+// Session timeout logic removed: session will only end on explicit logout
 const TOKEN_CHECK_INTERVAL = 5 * 60 * 1000 // Check every 5 minutes
 
 export function SessionManager() {
   const router = useRouter()
   const pathname = usePathname()
-  const lastActivityRef = useRef<number>(Date.now())
   const tokenCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const activityTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Track user activity
-  useEffect(() => {
-    const updateActivity = () => {
-      lastActivityRef.current = Date.now()
-    }
 
-    // Listen to user activity events
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
-    events.forEach(event => {
-      window.addEventListener(event, updateActivity, { passive: true })
-    })
-
-    return () => {
-      events.forEach(event => {
-        window.removeEventListener(event, updateActivity)
-      })
-    }
-  }, [])
 
   // Check token expiration periodically
   useEffect(() => {
@@ -53,20 +33,7 @@ export function SessionManager() {
         if (!state?.token) {
           return
         }
-
-        // Check last activity time
-        const timeSinceActivity = Date.now() - lastActivityRef.current
-        if (timeSinceActivity > IDLE_TIMEOUT) {
-          // User has been idle for too long - logout
-          localStorage.removeItem('caterly-auth')
-          localStorage.removeItem('token')
-          document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-          toast.info("You have been logged out due to inactivity")
-          if (!pathname?.includes('/login')) {
-            router.push('/login')
-          }
-          return
-        }
+        // No inactivity logout: session persists until explicit logout
       } catch (error) {
         // Invalid auth data - clear it
         localStorage.removeItem('caterly-auth')
@@ -78,30 +45,12 @@ export function SessionManager() {
     // Initial check
     checkToken()
 
-    // Set up periodic checks
+    // Set up periodic checks (if needed for other reasons)
     tokenCheckIntervalRef.current = setInterval(checkToken, TOKEN_CHECK_INTERVAL)
-
-    // Set up idle timeout check
-    activityTimeoutRef.current = setInterval(() => {
-      const timeSinceActivity = Date.now() - lastActivityRef.current
-      const auth = localStorage.getItem('caterly-auth')
-      if (timeSinceActivity > IDLE_TIMEOUT && auth) {
-        localStorage.removeItem('caterly-auth')
-        localStorage.removeItem('token')
-        document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-        toast.info("You have been logged out due to inactivity")
-        if (!pathname?.includes('/login')) {
-          router.push('/login')
-        }
-      }
-    }, 60000) // Check every minute
 
     return () => {
       if (tokenCheckIntervalRef.current) {
         clearInterval(tokenCheckIntervalRef.current)
-      }
-      if (activityTimeoutRef.current) {
-        clearInterval(activityTimeoutRef.current)
       }
     }
   }, [pathname, router])

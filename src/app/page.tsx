@@ -159,6 +159,15 @@ export default function DashboardPage() {
         setPreviousStats(stats)
       }
 
+      // Guard: totalRevenue should never decrease — delivered orders still count as revenue.
+      // Persist the highest-ever revenue in localStorage so it survives page refreshes.
+      const storedMaxRevenue = parseFloat(localStorage.getItem('caterly-max-revenue') || '0')
+      const bestRevenue = Math.max(newStats.totalRevenue, storedMaxRevenue, stats?.totalRevenue ?? 0)
+      if (bestRevenue > newStats.totalRevenue) {
+        newStats.totalRevenue = bestRevenue
+      }
+      localStorage.setItem('caterly-max-revenue', String(bestRevenue))
+
       setStats(newStats)
       setRecentOrders(response.data.recentOrders || [])
       setTodayOrders(response.data.todayOrders || [])
@@ -712,7 +721,7 @@ export default function DashboardPage() {
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
-                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
+                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -764,6 +773,7 @@ export default function DashboardPage() {
                             : '00:00'}
                         </span>
                       </td>
+
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
                         {getStatusBadge(order)}
                       </td>
@@ -787,17 +797,21 @@ export default function DashboardPage() {
                           <Button
                             size="sm"
                             onClick={() => handleMarkComplete(order.order_id)}
-                            disabled={order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6}
+                            disabled={order.is_completed === 1 || order.order_status === 5 || order.order_status === 6}
                             style={{
                               fontFamily: 'Albert Sans',
                               fontWeight: 600,
                               fontSize: '13px',
                               lineHeight: '20px',
                             }}
-                            className={`h-8 px-3 text-xs whitespace-nowrap shrink-0 ${(order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6) ? 'bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                            className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${
+                              order.is_completed === 1 || order.order_status === 5 || order.order_status === 6
+                                ? 'bg-green-600/50 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700'
+                            }`}
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                            {(order.is_completed === 1 || order.order_status === 5 || order.is_delivered === 1 || order.order_status === 6) ? 'Completed' : 'Complete'}
+                            {order.is_completed === 1 || order.order_status === 5 || order.order_status === 6 ? 'Completed' : 'Complete'}
                           </Button>
                           <Button
                             size="sm"
@@ -809,10 +823,14 @@ export default function DashboardPage() {
                               fontSize: '13px',
                               lineHeight: '20px',
                             }}
-                            className={`h-8 px-3 text-xs whitespace-nowrap shrink-0 ${(order.is_delivered === 1 || order.order_status === 6) ? 'bg-gray-100 text-gray-400 cursor-not-allowed hover:bg-gray-100' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                            className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${
+                              order.is_delivered === 1 || order.order_status === 6
+                                ? 'bg-blue-600/50 cursor-not-allowed'
+                                : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                           >
                             <Truck className="h-3.5 w-3.5 mr-1" />
-                            {(order.is_delivered === 1 || order.order_status === 6) ? 'Delivered' : 'Deliver'}
+                            {order.is_delivered === 1 || order.order_status === 6 ? 'Delivered' : 'Deliver'}
                           </Button>
                         </div>
                       </td>
@@ -865,7 +883,8 @@ export default function DashboardPage() {
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
-                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
+                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Total</th>
+                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
