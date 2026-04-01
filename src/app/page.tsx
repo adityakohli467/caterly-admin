@@ -181,19 +181,9 @@ export default function DashboardPage() {
         return
       }
 
-      // Handle 401 auth errors — don't force-logout, the API interceptor handles refresh
+      // Handle 401 auth errors — don't force-logout and don't wipe data to 0s as per user requirement.
+      // We purposefully leave the existing variables intact to preserve the UI.
       if (error?.response?.status === 401 || error?.message?.includes('Session expired')) {
-        // Data couldn't load due to auth — show empty state without kicking user out
-        setStats({
-          totalOrders: 0, newOrders: 0, pendingApproval: 0, approved: 0, completed: 0,
-          todayOrders: 0, totalRevenue: 0, deliveriesToday: 0, deliveriesNext7Days: 0,
-          unapprovedQuotes: 0, unapprovedCustomers: 0, futureOrders: 0,
-          productionOrders: 0, feedbackPending: 0,
-        })
-        setRecentOrders([])
-        setTodayOrders([])
-        setTomorrowOrders([])
-        setNext7DaysOrders([])
         return
       }
 

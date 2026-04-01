@@ -37,19 +37,23 @@ export const useAuthStore = create<AuthState>()(
             password,
           })
 
-          const { token, refreshToken, user } = response.data
+          const resData = response.data
+          const newToken = resData.token || resData.accessToken || resData.data?.token || resData.data?.accessToken
+          const newRefreshToken = resData.refreshToken || resData.refresh_token || resData.data?.refreshToken || resData.data?.refresh_token
+
+          if (!newToken) throw new Error("Invalid login response format")
 
           // Store in state and localStorage (including refresh token)
           set({
-            user,
-            token,
-            refreshToken: refreshToken || null,
+            user: resData.user || resData.data?.user || resData,
+            token: newToken,
+            refreshToken: newRefreshToken || null,
             isAuthenticated: true,
           })
 
           // Also set a cookie for middleware (30 days expiration for persistence)
           if (typeof document !== 'undefined') {
-            document.cookie = `caterly-auth=${token}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+            document.cookie = `caterly-auth=${newToken}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
           }
         } catch (error: any) {
           const message = error.response?.data?.message || "Login failed"
@@ -66,7 +70,11 @@ export const useAuthStore = create<AuthState>()(
             refreshToken,
           })
 
-          const { token: newToken, refreshToken: newRefreshToken } = response.data
+          const resData = response.data
+          const newToken = resData.token || resData.accessToken || resData.data?.token || resData.data?.accessToken
+          const newRefreshToken = resData.refreshToken || resData.refresh_token || resData.data?.refreshToken || resData.data?.refresh_token
+
+          if (!newToken) throw new Error("No token received")
 
           set({
             token: newToken,
@@ -145,9 +153,20 @@ export const useAuthStore = create<AuthState>()(
                 }
                 return
               }
-              // Refresh also failed — session is truly expired, but we only logout on explicit button
-              // Keep the user in their session until they click logout
-              set({ isAuthenticated: true })
+              // Refresh also failed — session is truly expired, force logout
+              set({
+                user: null,
+                token: null,
+                refreshToken: null,
+                isAuthenticated: false,
+              })
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('caterly-auth')
+                document.cookie = 'caterly-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+                if (window.location.pathname !== '/login') {
+                  window.location.replace('/login')
+                }
+              }
               return
             }
           }

@@ -1,4 +1,5 @@
 import axios from "axios"
+import { useAuthStore } from "@/store/auth"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9000"
 
@@ -54,27 +55,25 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
-      // Get the refresh token from the persisted auth store
-      let storedRefreshToken: string | null = null
-      try {
-        const raw = localStorage.getItem('caterly-auth')
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          storedRefreshToken = parsed?.state?.refreshToken || null
-        }
-      } catch { /* ignore */ }
+      const storedRefreshToken = useAuthStore.getState().refreshToken
 
       if (!storedRefreshToken) {
-        // No refresh token available — reject without logging out
+        // No refresh token available — reject without logging out (keeps page open as requested)
         return Promise.reject(new Error(error.response.data?.message || 'Session expired.'))
       }
 
       if (isRefreshing) {
         // Queue this request until the refresh completes
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           subscribeTokenRefresh((newToken) => {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
-            resolve(api(originalRequest))
+            if (!newToken) {
+              reject(new Error('Session expired. Please log in again.'))
+            } else {
+              if (originalRequest.headers) {
+                originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+              }
+              resolve(api(originalRequest))
+            }
           })
         })
       }
@@ -82,39 +81,27 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const refreshRes = await axios.post(`${API_URL}/admin/auth/refresh`, {
-          refreshToken: storedRefreshToken,
-        })
+        const success = await useAuthStore.getState().refreshAccessToken()
 
-        const { token: newToken, refreshToken: newRefreshToken } = refreshRes.data
+        if (success) {
+          const newToken = useAuthStore.getState().token as string
+          onTokenRefreshed(newToken)
+          isRefreshing = false
 
-        // Patch the persisted auth store with the new tokens
-        try {
-          const raw = localStorage.getItem('caterly-auth')
-          if (raw) {
-            const parsed = JSON.parse(raw)
-            parsed.state.token = newToken
-            if (newRefreshToken) parsed.state.refreshToken = newRefreshToken
-            localStorage.setItem('caterly-auth', JSON.stringify(parsed))
+          if (originalRequest.headers) {
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`
           }
-        } catch { /* ignore */ }
-
-        // Update auth cookie
-        if (typeof document !== 'undefined') {
-          document.cookie = `caterly-auth=${newToken}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`
+          return api(originalRequest)
+        } else {
+          // Reject queued requests
+          onTokenRefreshed('')
+          isRefreshing = false
+          return Promise.reject(new Error('Session expired. Please log in again.'))
         }
-
-        // Notify all queued requests
-        onTokenRefreshed(newToken)
-        isRefreshing = false
-
-        // Retry original request with new token
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return api(originalRequest)
       } catch (refreshError) {
+        onTokenRefreshed('')
         isRefreshing = false
-        refreshSubscribers = []
-        // Refresh failed — propagate the original 401 but do NOT force-logout
+        // Refresh failed permanently — but DO NOT force logout as per user requirement
         return Promise.reject(new Error('Session expired. Please log in again.'))
       }
     }
