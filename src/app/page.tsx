@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import api from "@/lib/api"
+import api, { quotationsAPI } from "@/lib/api"
 import {
   ShoppingBag,
   Users,
@@ -143,6 +143,16 @@ export default function DashboardPage() {
       const response = await api.get("/admin/orders/stats")
 
       const newStats = response.data.stats
+
+      // Fetch live unreplied quotes to accurately portray on dashboard
+      try {
+        const quotesRes = await quotationsAPI.list({ limit: 500 })
+        const quotesList = quotesRes.data?.inquiries || quotesRes.data?.quotations || quotesRes.data?.data || []
+        const unrepliedQuotesCount = quotesList.filter((q: any) => q.status !== 'replied').length
+        newStats.unapprovedQuotes = unrepliedQuotesCount
+      } catch (err) {
+        // silently fallback so dashboard doesn't crash if quotes API drops
+      }
 
       // Store previous stats for comparison (only on first load)
       if (!previousStats && stats) {
@@ -629,19 +639,19 @@ export default function DashboardPage() {
         </Card>
 
         {/* Requested Quotes */}
-        <Card className={`bg-white border shadow-sm hover:shadow-md transition-shadow ${stats && stats.unapprovedQuotes > 0 ? 'border-[#C62828] bg-[#FFEBEE]/30' : 'border-gray-200'}`}>
+        <Card className={`bg-white border shadow-sm hover:shadow-md transition-shadow ${stats && stats.unapprovedQuotes > 0 ? 'border-[#E03A3E]/30 bg-[#E03A3E]/5' : 'border-gray-200'}`}>
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
             <div className="flex items-start justify-between mb-3 md:mb-4">
-              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs sm:text-sm ${stats && stats.unapprovedQuotes > 0 ? 'text-[#C62828]' : 'text-gray-600'}`}>
+              <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-xs sm:text-sm ${stats && stats.unapprovedQuotes > 0 ? 'text-[#E03A3E]' : 'text-gray-600'}`}>
                 Requested Quotes
               </p>
               {stats && stats.unapprovedQuotes > 0 && (
-                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-[#C62828] text-white rounded-full shadow-sm">
+                <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-[#E03A3E] text-white rounded-full shadow-sm">
                   {stats.unapprovedQuotes} New
                 </span>
               )}
             </div>
-            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-3xl sm:text-4xl ${stats && stats.unapprovedQuotes > 0 ? 'text-[#C62828]' : 'text-gray-900'}`}>
+            <h2 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className={`text-3xl sm:text-4xl ${stats && stats.unapprovedQuotes > 0 ? 'text-[#E03A3E]' : 'text-gray-900'}`}>
               {stats?.unapprovedQuotes || 0}
             </h2>
           </CardContent>
