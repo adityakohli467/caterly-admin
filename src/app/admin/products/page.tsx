@@ -76,6 +76,7 @@ export default function ProductsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all")
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -127,15 +128,13 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
 
-  // Fetch products - only active products by default
+  // Fetch products - fetch a larger batch for frontend filtering
   const { data: productsData, isLoading, error: productsError } = useQuery({
-    queryKey: ["products-new", searchQuery, currentPage],
+    queryKey: ["products-new"], // Remove search and page from key to fetch once
     queryFn: async () => {
       const params = new URLSearchParams()
-      if (searchQuery) params.append("search", searchQuery)
       params.append("status", "1") // Only active products
-      params.append("limit", itemsPerPage.toString())
-      params.append("offset", ((currentPage - 1) * itemsPerPage).toString())
+      params.append("limit", "1000") // Fetch all for frontend filtering
       const response = await api.get(`/admin/products-new?${params.toString()}`)
       return response.data
     },
@@ -162,9 +161,26 @@ export default function ProductsPage() {
     retry: 1,
   })
 
-  const products = productsData?.products || []
-  const totalCount = productsData?.count || 0
+  const allProductsFetched = productsData?.products || []
+  
+  // Frontend filtering logic
+  const filteredProductsLocal = allProductsFetched.filter((product: Product) => {
+    const searchLower = searchQuery.toLowerCase().trim()
+    const matchesSearch = !searchLower || 
+      product.product_name.toLowerCase().includes(searchLower) ||
+      product.categories?.some(cat => cat.category_name.toLowerCase().includes(searchLower)) ||
+      (product.subcategory?.category_name || "").toLowerCase().includes(searchLower)
+
+    const matchesCategory = selectedCategoryFilter === "all" || 
+      product.categories?.some(cat => cat.category_id.toString() === selectedCategoryFilter)
+
+    return matchesSearch && matchesCategory
+  })
+
+  const totalCount = filteredProductsLocal.length
   const totalPages = Math.ceil(totalCount / itemsPerPage)
+  const products = filteredProductsLocal.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  
   const categories = categoriesData?.categories || []
   const options = optionsData?.options || []
 
@@ -502,11 +518,11 @@ export default function ProductsPage() {
         formData.append('categories', JSON.stringify(selectedCategories))
         formData.append('subcategory_id', selectedSubcategory?.toString() || '')
         formData.append('min_quantity', minQuantity)
-        formData.append('you_may_also_like', youMayAlsoLike.toString())
-        formData.append('show_in_checkout', showInCheckout.toString())
-        formData.append('featured_1', featured1.toString())
-        formData.append('featured_2', featured2.toString())
-        formData.append('show_in_storefront', showInStorefront.toString())
+        formData.append('you_may_also_like', youMayAlsoLike ? '1' : '0')
+        formData.append('show_in_checkout', showInCheckout ? '1' : '0')
+        formData.append('featured_1', featured1 ? '1' : '0')
+        formData.append('featured_2', featured2 ? '1' : '0')
+        formData.append('show_in_storefront', showInStorefront ? '1' : '0')
         formData.append('options', productData.options)
 
         // Add existing image URLs
@@ -926,15 +942,36 @@ export default function ProductsPage() {
 
       {/* Search and Print */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <Input
-            placeholder="Search Order ID, Customer ID, Status etc."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full sm:w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
-            style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-[400px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Search product name, category..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1) // Reset to first page on search
+              }}
+              className="w-full h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
+              style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
+            />
+          </div>
+          <select
+            value={selectedCategoryFilter}
+            onChange={(e) => {
+              setSelectedCategoryFilter(e.target.value)
+              setCurrentPage(1) // Reset to first page on filter change
+            }}
+            className="w-full sm:w-[200px] h-[54px] border border-gray-200 bg-white rounded-full px-4 focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none text-sm font-medium text-gray-700"
+            style={{ fontFamily: 'Albert Sans' }}
+          >
+            <option value="all">All Categories</option>
+            {mainCategories.map((cat: any) => (
+              <option key={cat.category_id} value={cat.category_id.toString()}>
+                {cat.category_name}
+              </option>
+            ))}
+          </select>
         </div>
         <Button
           onClick={() => printTableData("Products")}

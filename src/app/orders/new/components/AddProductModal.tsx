@@ -235,7 +235,7 @@ export function AddProductModal({ open, onClose, onProductAdded }: AddProductMod
         if (Array.isArray(val) || typeof val === "object") {
           formData.append(key, JSON.stringify(val))
         } else if (typeof val === "boolean") {
-          formData.append(key, val.toString())
+          formData.append(key, val ? "1" : "0")
         } else if (val !== null && val !== undefined) {
           formData.append(key, val)
         }
