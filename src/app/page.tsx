@@ -67,6 +67,8 @@ interface Order {
   phone?: string
   firstname?: string
   lastname?: string
+  customer_telephone?: string
+  shipping_telephone?: string
   delivery_contact?: string
   customer?: {
     firstname?: string
@@ -761,6 +763,8 @@ export default function DashboardPage() {
                           {order.customer_order_telephone ||
                             order.customer?.telephone ||
                             order.telephone ||
+                            order.customer_telephone ||
+                            order.shipping_telephone ||
                             order.phone ||
                             (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
                             'N/A'}
@@ -924,6 +928,8 @@ export default function DashboardPage() {
                           {order.customer_order_telephone ||
                             order.customer?.telephone ||
                             order.telephone ||
+                            order.customer_telephone ||
+                            order.shipping_telephone ||
                             order.phone ||
                             (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
                             'N/A'}

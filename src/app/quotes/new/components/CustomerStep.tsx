@@ -130,10 +130,18 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
     }
   })
 
-  const companies = companiesData?.companies || []
-  const departments = departmentsData?.departments || []
-  const customers = customersData?.customers || []
-  const locations = locationsData?.locations || []
+  const companies = [...(companiesData?.companies || [])].sort((a, b) => 
+    a.company_name.localeCompare(b.company_name)
+  )
+  const departments = [...(departmentsData?.departments || [])].sort((a, b) => 
+    a.department_name.localeCompare(b.department_name)
+  )
+  const customers = [...(customersData?.customers || [])].sort((a, b) => 
+    a.firstname.localeCompare(b.firstname) || a.lastname.localeCompare(b.lastname)
+  )
+  const locations = [...(locationsData?.locations || [])].sort((a, b) => 
+    a.location_name.localeCompare(b.location_name)
+  )
 
   // Get selected customer data to filter companies
   const selectedCustomerData = customers.find((c: Customer) => c.customer_id === selectedCustomer)

@@ -85,17 +85,35 @@ export const formatAustralianPhone = (value: string, previousValue: string = "")
     return `${digits.slice(0, 2)} ${digits.slice(2, 6)} ${digits.slice(6, 10)}`
   }
   
-  // If starts with + but not +61, allow it (for other countries) but limit length
-  if (cleaned.startsWith('+')) {
-    // Allow international numbers but limit to reasonable length
-    if (cleaned.length > 20) {
-      return previousValue.replaceAll(/[^\d+]/g, '').replaceAll(/\s/g, '')
-    }
-    return cleaned
+  // Handle toll-free numbers (1800 XXX XXX)
+  if (cleaned.startsWith('1800')) {
+    const digits = cleaned.replaceAll(/\D/g, '')
+    if (digits.length > 10) return previousValue.replaceAll(/[^\d+]/g, '').replaceAll(/\s/g, '')
+    if (digits.length <= 4) return digits
+    if (digits.length <= 7) return `${digits.slice(0, 4)} ${digits.slice(4)}`
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
   }
-  
-  // If starts with digit other than 0, reject (Australian numbers must start with 0 or +61)
-  if (cleaned.length > 0 && /^\d/.test(cleaned) && !cleaned.startsWith('0')) {
+
+  // Handle 1300 numbers (1300 XXX XXX)
+  if (cleaned.startsWith('1300')) {
+    const digits = cleaned.replaceAll(/\D/g, '')
+    if (digits.length > 10) return previousValue.replaceAll(/[^\d+]/g, '').replaceAll(/\s/g, '')
+    if (digits.length <= 4) return digits
+    if (digits.length <= 7) return `${digits.slice(0, 4)} ${digits.slice(4)}`
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
+  }
+
+  // Handle 13 numbers (13 XX XX)
+  if (cleaned.startsWith('13')) {
+    const digits = cleaned.replaceAll(/\D/g, '')
+    if (digits.length > 6) return previousValue.replaceAll(/[^\d+]/g, '').replaceAll(/\s/g, '')
+    if (digits.length <= 2) return digits
+    if (digits.length <= 4) return `${digits.slice(0, 2)} ${digits.slice(2)}`
+    return `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)}`
+  }
+
+  // If starts with digit other than 0 or 1, reject (Australian numbers must start with 0, 1, or +61)
+  if (cleaned.length > 0 && /^\d/.test(cleaned) && !cleaned.startsWith('0') && !cleaned.startsWith('1')) {
     return previousValue.replaceAll(/[^\d+]/g, '').replaceAll(/\s/g, '')
   }
   
@@ -116,23 +134,32 @@ export const isValidAustralianPhoneFormat = (value: string): boolean => {
   
   // International format (+61)
   if (cleaned.startsWith('+61')) {
-    // Must be +61 followed by area code (2,3,4,7,8) and 8 more digits = 9 total
     return /^\+61[23478]\d{8}$/.test(cleaned)
   }
   
   // Mobile format (04XX XXX XXX)
   if (cleaned.startsWith('04')) {
-    return /^04\d{8}$/.test(cleaned) // Exactly 10 digits starting with 04
+    return /^04\d{8}$/.test(cleaned)
   }
   
-  // Landline format (0X XXXX XXXX where X is 2, 3, 7, or 8)
+  // Landline format (0X XXXX XXXX)
   if (cleaned.startsWith('0')) {
-    return /^0[2378]\d{8}$/.test(cleaned) // Exactly 10 digits starting with 02, 03, 07, or 08
+    return /^0[2378]\d{8}$/.test(cleaned)
+  }
+
+  // Toll-free 1800/1300 (10 digits)
+  if (cleaned.startsWith('1800') || cleaned.startsWith('1300')) {
+    return /^(1800|1300)\d{6}$/.test(cleaned)
+  }
+
+  // Toll-free 13 (6 digits)
+  if (cleaned.startsWith('13')) {
+    return /^13\d{4}$/.test(cleaned)
   }
   
   // Other international formats (starts with +)
   if (cleaned.startsWith('+')) {
-    return cleaned.length >= 8 && cleaned.length <= 20 // Reasonable length for international
+    return cleaned.length >= 8 && cleaned.length <= 20
   }
   
   return false
@@ -172,7 +199,7 @@ export const handlePhoneInput = (
  * Phone number mask pattern for input placeholder
  */
 export const getPhonePlaceholder = (): string => {
-  return '04XX XXX XXX or 0X XXXX XXXX'
+  return '04XX XXX XXX or 1800 XXX XXX'
 }
 
 /**
@@ -197,8 +224,16 @@ export const getPhoneValidationError = (value: string): string | undefined => {
     if (cleaned.startsWith('0')) {
       return 'Invalid landline format. Use 0X XXXX XXXX (02, 03, 07, or 08)'
     }
+
+    if (cleaned.startsWith('1800') || cleaned.startsWith('1300')) {
+      return 'Invalid toll-free format. Use 1800 XXX XXX or 1300 XXX XXX (10 digits)'
+    }
+
+    if (cleaned.startsWith('13')) {
+      return 'Invalid business format. Use 13 XX XX (6 digits)'
+    }
     
-    return 'Phone number must start with 0 (for Australian) or +61 (international)'
+    return 'Phone number must start with 0, 1800, 1300, 13 or +61'
   }
   
   return undefined

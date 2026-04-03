@@ -379,74 +379,87 @@ export default function OrderDetailPage() {
   return (
     <div className="bg-gray-50 " style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8 pb-6 border-b border-gray-200">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:bg-gray-100"
+            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors shadow-sm"
           >
             <ArrowLeft className="h-5 w-5 text-gray-600" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900" style={{ fontWeight: 700 }}>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight" style={{ fontWeight: 800 }}>
               Viewing Order Details
             </h1>
-            <p className="text-gray-600 mt-1">
-              Order <span className="text-[#C62828] font-semibold">#{order.order_id}</span>
+            <p className="text-gray-500 mt-1 flex items-center gap-2">
+              Order <span className="px-2 py-0.5 bg-red-50 text-[#C62828] rounded border border-red-100 font-semibold">#{order.order_id}</span>
             </p>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900"
-            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            onClick={handleDownloadInvoice}
-            disabled={downloadingInvoice || !order || !order.order_id}
-          >
-            <Download className="h-4 w-4" />
-            {downloadingInvoice ? "Downloading..." : "Download Tax Invoice"}
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900"
-            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            onClick={handlePrintInvoice}
-            disabled={printingInvoice || !order || !order.order_id}
-          >
-            <Printer className="h-4 w-4" />
-            {printingInvoice ? "Printing..." : "Print Tax Invoice"}
-          </Button>
-          <Button
-            className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2"
-            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            onClick={handleOpenPaymentLinkModal}
-            disabled={sendingPaymentLink}
-          >
-            <Send className="h-4 w-4" />
-            {sendingPaymentLink ? "Sending..." : "Send Payment Link"}
-          </Button>
-          {orderId && (
+
+        <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+          {/* Document Section */}
+          <div className="flex items-center gap-2 pr-4 border-r border-gray-200">
             <Button
               variant="outline"
-              className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900"
+              size="sm"
+              className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
               style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              onClick={() => setShowPaymentModal(true)}
+              onClick={handleDownloadInvoice}
+              disabled={downloadingInvoice || !order || !order.order_id}
             >
-              <DollarSign className="h-4 w-4" />
-              Process Payment
+              <Download className="h-3.5 w-3.5" />
+              {downloadingInvoice ? "..." : "Download Invoice"}
             </Button>
-          )}
-          <Button
-            variant="outline"
-            className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900"
-            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-            onClick={handleOpenInvoiceModal}
-            disabled={sendingInvoice || !order || !order.order_id}
-          >
-            <Send className="h-4 w-4" />
-            {sendingInvoice ? "Sending..." : "Send Invoice"}
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={handlePrintInvoice}
+              disabled={printingInvoice || !order || !order.order_id}
+            >
+              <Printer className="h-3.5 w-3.5" />
+              {printingInvoice ? "..." : "Print Invoice"}
+            </Button>
+          </div>
+
+          {/* Payment Section */}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 shadow-sm h-9"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={handleOpenPaymentLinkModal}
+              disabled={sendingPaymentLink}
+            >
+              <Send className="h-3.5 w-3.5" />
+              {sendingPaymentLink ? "Sending..." : "Send Payment Link"}
+            </Button>
+            {orderId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
+                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                onClick={() => setShowPaymentModal(true)}
+              >
+                <DollarSign className="h-3.5 w-3.5" />
+                Process Payment
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+              onClick={handleOpenInvoiceModal}
+              disabled={sendingInvoice || !order || !order.order_id}
+            >
+              <Mail className="h-3.5 w-3.5" />
+              {sendingInvoice ? "..." : "Send Invoice"}
+            </Button>
+          </div>
         </div>
       </div>
 

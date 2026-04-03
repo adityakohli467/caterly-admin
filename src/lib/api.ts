@@ -58,7 +58,8 @@ api.interceptors.response.use(
       const storedRefreshToken = useAuthStore.getState().refreshToken
 
       if (!storedRefreshToken) {
-        // No refresh token available — reject without logging out (keeps page open as requested)
+        // Auto-logout user if no refresh token
+        useAuthStore.getState().logout()
         return Promise.reject(new Error(error.response.data?.message || 'Session expired.'))
       }
 
@@ -96,12 +97,15 @@ api.interceptors.response.use(
           // Reject queued requests
           onTokenRefreshed('')
           isRefreshing = false
+          // Auto-logout user on failure
+          useAuthStore.getState().logout()
           return Promise.reject(new Error('Session expired. Please log in again.'))
         }
       } catch (refreshError) {
         onTokenRefreshed('')
         isRefreshing = false
-        // Refresh failed permanently — but DO NOT force logout as per user requirement
+        // Auto-logout user on total failure
+        useAuthStore.getState().logout()
         return Promise.reject(new Error('Session expired. Please log in again.'))
       }
     }

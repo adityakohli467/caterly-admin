@@ -162,16 +162,16 @@ export default function ProductsPage() {
   })
 
   const allProductsFetched = productsData?.products || []
-  
+
   // Frontend filtering logic
   const filteredProductsLocal = allProductsFetched.filter((product: Product) => {
     const searchLower = searchQuery.toLowerCase().trim()
-    const matchesSearch = !searchLower || 
+    const matchesSearch = !searchLower ||
       product.product_name.toLowerCase().includes(searchLower) ||
       product.categories?.some(cat => cat.category_name.toLowerCase().includes(searchLower)) ||
       (product.subcategory?.category_name || "").toLowerCase().includes(searchLower)
 
-    const matchesCategory = selectedCategoryFilter === "all" || 
+    const matchesCategory = selectedCategoryFilter === "all" ||
       product.categories?.some(cat => cat.category_id.toString() === selectedCategoryFilter)
 
     return matchesSearch && matchesCategory
@@ -180,7 +180,7 @@ export default function ProductsPage() {
   const totalCount = filteredProductsLocal.length
   const totalPages = Math.ceil(totalCount / itemsPerPage)
   const products = filteredProductsLocal.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-  
+
   const categories = categoriesData?.categories || []
   const options = optionsData?.options || []
 
