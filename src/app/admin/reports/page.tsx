@@ -19,9 +19,13 @@ interface Report {
   order_id: number
   order_date: string
   delivery_date_time: string
-  customer_name: string
-  company_name: string
-  department_name: string
+  customer_name?: string
+  customer_order_name?: string
+  firstname?: string
+  lastname?: string
+  company_name?: string
+  company?: string
+  department_name?: string
   location_name: string
   order_status: number
   subtotal: number
@@ -638,7 +642,10 @@ export default function ReportsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {report.customer_name}
+                          {report.customer_name || 
+                            report.customer_order_name || 
+                            `${report.firstname || ''} ${report.lastname || ''}`.trim() || 
+                            'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -654,12 +661,12 @@ export default function ReportsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {report.company_name}
+                          {report.company_name || report.company || 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {report.department_name}
+                          {report.department_name || 'N/A'}
                         </span>
                       </td>
                       <td className="px-4 py-3">

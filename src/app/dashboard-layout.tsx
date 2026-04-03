@@ -40,37 +40,34 @@ export function DashboardLayout({
       // Verify with backend in background
       try {
         await checkAuth()
-        // After checkAuth, verify isAuthenticated state
-        const currentAuth = useAuthStore.getState()
-        if (!currentAuth.isAuthenticated) {
+        // If checkAuth failed and set isAuthenticated to false, let the effect re-run or handle here
+        if (!useAuthStore.getState().isAuthenticated) {
           router.push('/login')
           return
         }
 
+        const currentAuth = useAuthStore.getState()
         // Check if user has permission to access this route
         if (currentAuth.user) {
           const hasAccess = canAccessRoute(currentAuth.user.auth_level, pathname)
           if (!hasAccess) {
-            // Redirect to dashboard if no permission
             router.push('/')
           }
         }
       } catch (error: any) {
-        // Only redirect if it's a 401 (not network error)
+        // If it's a real auth error (not network), we've already logout() in the store/api
         if (error?.code !== 'ERR_NETWORK' && error?.message !== 'Network Error') {
-          const currentAuth = useAuthStore.getState()
-          if (!currentAuth.isAuthenticated) {
+          if (!useAuthStore.getState().isAuthenticated) {
             router.push('/login')
           }
         }
-        // If network error, backend is down - don't redirect
       }
     }
     
     // Run auth check but don't wait for it
     verifyAuth()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, router, isDashboardRoute]) // Removed isAuthenticated and checkAuth from deps to prevent loops
+  }, [pathname, router, isDashboardRoute, isAuthenticated]) 
 
   // For login/home pages, just render children without navbar/footer
   if (!isDashboardRoute) {

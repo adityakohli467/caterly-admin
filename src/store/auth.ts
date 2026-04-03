@@ -130,10 +130,10 @@ export const useAuthStore = create<AuthState>()(
           })
         } catch (error) {
           if (axios.isAxiosError(error)) {
-            // Backend is down — keep session alive silently
+            // Backend is down — keep session alive silently if it was previously active
             if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-              set({ isAuthenticated: true })
-              return
+              // Only keep session alive if it was probably already authenticated
+              return 
             }
 
             // Access token expired — try to refresh it
@@ -149,19 +149,20 @@ export const useAuthStore = create<AuthState>()(
                   })
                   set({ user: meRes.data.user, isAuthenticated: true })
                 } catch {
-                  set({ isAuthenticated: true }) // keep alive even if /me fails after refresh
+                  // Silent failure on /me after refresh, but keep the session
+                  set({ isAuthenticated: true }) 
                 }
                 return
               }
-              // Refresh also failed — DO NOT force logout as per user requirement.
-              // Keep the user in their session until they explicitly click logout.
-              set({ isAuthenticated: true })
+              
+              // Refresh also failed — session is definitely invalid
+              get().logout()
               return
             }
           }
 
-          // Unknown error — keep session alive rather than kicking user out
-          set({ isAuthenticated: true })
+          // Unhandled error — logout if not network related
+          get().logout()
         }
       },
     }),

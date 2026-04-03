@@ -33,8 +33,8 @@ export function formatDate(date: Date | string): string {
 export function formatDateOnly(date: Date | string): string {
   if (!date || date === "0000-00-00" || date === "0000-00-00 00:00:00") return "N/A"
   
-  if (typeof date === "string") {
-    // For strings from backend, extract the date parts literally to avoid shifts
+  if (typeof date === "string" && !date.includes("Z") && !date.includes("+")) {
+    // For naive strings from backend, extract the date parts literally to avoid shifts
     // Match YYYY-MM-DD anywhere in the string
     const match = date.match(/(\d{4})-(\d{2})-(\d{2})/)
     if (match) {
@@ -106,11 +106,13 @@ export function formatTimeInAU(date: Date | string, includeSeconds = false): str
     // If it's a simple HH:mm string already, return it
     if (/^\d{2}:\d{2}(:\d{2})?$/.test(date)) return date.slice(0, 5)
 
-    // For any strings from backend, extract the time part literally to avoid shifts
-    // Match HH:mm in "YYYY-MM-DD HH:mm:ss" or "YYYY-MM-DDTHH:mm:ss.sssZ"
-    const match = date.match(/(\d{2}):(\d{2})(?::(\d{2}))?/)
-    if (match) {
-      return `${match[1]}:${match[2]}${includeSeconds && match[3] ? `:${match[3]}` : ''}`
+    // ONLY use literal extraction for naive strings (no timezone info)
+    // If it has 'Z' or '+', we MUST use the Date object for proper conversion
+    if (!date.includes('Z') && !date.includes('+')) {
+      const match = date.match(/(\d{2}):(\d{2})(?::(\d{2}))?/)
+      if (match) {
+        return `${match[1]}:${match[2]}${includeSeconds && match[3] ? `:${match[3]}` : ''}`
+      }
     }
   }
 
@@ -121,7 +123,7 @@ export function formatTimeInAU(date: Date | string, includeSeconds = false): str
     hour: "2-digit",
     minute: "2-digit",
     second: includeSeconds ? "2-digit" : undefined,
-    hour12: false,
+    hour12: true,
     timeZone: AU_TIMEZONE,
   }).format(d)
 }
