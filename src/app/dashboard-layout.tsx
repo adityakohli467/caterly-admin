@@ -79,8 +79,8 @@ export function DashboardLayout({
     <div className="flex flex-col min-h-screen bg-neutral-50 overflow-x-hidden w-full max-w-full">
       <NavigationProgress />
       <Navbar />
-      <main className="flex-1 px-4 sm:px-6 lg:px-12 xl:px-[108px] py-4 sm:py-6 lg:py-8 w-full max-w-full overflow-x-hidden">
-        <div className="w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 px-4 sm:px-6 lg:px-12 xl:px-[108px] py-4 sm:py-6 lg:py-8 w-full max-w-full overflow-x-hidden min-w-0">
+        <div className="w-full max-w-full overflow-x-hidden min-w-0">
           {children}
         </div>
       </main>

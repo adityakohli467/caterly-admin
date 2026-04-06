@@ -13,6 +13,7 @@ import { format } from "date-fns"
 import api, { invoicesAPI, paymentsAPI } from "@/lib/api"
 import { PaymentProcessingModal } from "@/components/PaymentProcessingModal"
 import { useQueryClient } from "@tanstack/react-query"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { toast } from "sonner"
 import { useState } from "react"
 
@@ -686,20 +687,24 @@ export default function OrderDetailPage() {
                     </tr>
                   )}
 
-                  {gst > 0 && (
-                    <tr className="border-b border-gray-100">
-                      <td colSpan={5} className="px-4 py-3 text-right">
-                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                          GST (10%) incl.
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                          ${gst.toFixed(2)}
-                        </span>
-                      </td>
-                    </tr>
-                  )}
+                  {(() => {
+                    const netProductPrice = subtotal - wholesaleDiscount - couponDiscount
+                    const displayGstValue = Math.max(0, netProductPrice) * 0.11
+                    return (
+                      <tr className="border-b border-gray-100">
+                        <td colSpan={5} className="px-4 py-3 text-right">
+                          <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                            GST (11%) incl.
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                            ${displayGstValue.toFixed(2)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })()}
 
                   <tr className="border-b border-gray-200">
                     <td colSpan={5} className="px-4 py-3 text-right">
@@ -829,7 +834,7 @@ export default function OrderDetailPage() {
                       Delivery Date
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {format(new Date(order.delivery_date_time), 'dd/MM/yyyy')}
+                      {formatDateOnly(order.delivery_date_time)}
                     </p>
                   </div>
                   <div>
@@ -837,7 +842,7 @@ export default function OrderDetailPage() {
                       Delivery Time
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {order.delivery_time || format(new Date(order.delivery_date_time), 'HH:mm')}
+                      {formatTimeInAU(order.delivery_date_time)}
                     </p>
                   </div>
                 </>

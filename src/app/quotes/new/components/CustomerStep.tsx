@@ -533,14 +533,14 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   }
 
   return (
-    <Card className="p-8 bg-white border-gray-200">
+    <Card className="p-4 sm:p-8 bg-white border-gray-200">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
           Enter Customer Details
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Customer Name */}
         <div className="space-y-2">
           <Label htmlFor="customer" className="text-sm font-medium text-gray-700">
@@ -572,10 +572,11 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               type="button"
               onClick={() => setShowAddCustomerModalInternal(true)}
               style={{ fontFamily: 'Albert Sans', fontWeight: 600, cursor: 'pointer' }}
-              className="flex items-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#C62828] hover:bg-gray-50 bg-white text-sm whitespace-nowrap"
+              className="flex items-center justify-center gap-1 px-3 h-11 rounded-md border border-gray-300 text-[#C62828] hover:bg-gray-50 bg-white text-sm whitespace-nowrap min-w-[44px]"
+              title="Add New"
             >
               <span className="text-lg leading-none">+</span>
-              Add New
+              <span className="hidden sm:inline">Add New</span>
             </button>
           </div>
         </div>
@@ -718,7 +719,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
       </div>
 
       {/* Proceed Button */}
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-center sm:justify-end mt-8">
         <Button
           onClick={handleProceed}
           className="bg-[#C62828] hover:bg-[#B71C1C] text-white px-8 py-2 rounded-full"

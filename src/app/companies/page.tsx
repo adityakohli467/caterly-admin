@@ -273,43 +273,38 @@ export default function CompaniesPage() {
   return (
     <div className="bg-[#f8f9fa] w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <h1 className="text-[#1a1a1a]" style={{ 
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
-          fontSize: '40px',
-          lineHeight: '20px',
+          fontSize: 'clamp(24px, 5vw, 40px)',
+          lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
           Companies
         </h1>
         <Button 
           onClick={handleAddCompany}
-          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
+          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-[196px]"
           style={{ 
             fontWeight: 600,
-            width: '196px',
             height: '54px',
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '4px',
             borderRadius: '67px',
             opacity: 1
           }}
         >
           <Plus className="h-5 w-5" />
-          Add New Company
+          <span className="inline sm:hidden">Add Company</span>
+          <span className="hidden sm:inline">Add New Company</span>
         </Button>
       </div>
 
       {/* Tabs */}
-      <div className="no-print flex gap-2 mb-6">
-        <Link href="/companies">
+      <div className="no-print flex gap-2 mb-6 overflow-x-auto pb-1 -mx-2 px-2 sm:mx-0 sm:px-0">
+        <Link href="/companies" className="flex-1 sm:flex-none">
           <button
-            className={`px-10 py-3 rounded-full text-[15px] font-medium transition-all ${
+            className={`w-full sm:px-10 py-3 rounded-full text-[15px] font-medium transition-all ${
               activeTab === "Companies"
                 ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828]"
                 : "bg-white text-[#6c757d] border-2 border-[#e9ecef] hover:border-[#dee2e6]"
@@ -319,9 +314,9 @@ export default function CompaniesPage() {
             Companies
           </button>
         </Link>
-        <Link href="/departments">
+        <Link href="/departments" className="flex-1 sm:flex-none">
           <button
-            className="px-10 py-3 rounded-full text-[15px] font-medium transition-all bg-white text-[#6c757d] border-2 border-[#e9ecef] hover:border-[#dee2e6]"
+            className="w-full sm:px-10 py-3 rounded-full text-[15px] font-medium transition-all bg-white text-[#6c757d] border-2 border-[#e9ecef] hover:border-[#dee2e6]"
             style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
           >
             Departments

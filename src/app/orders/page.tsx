@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, DollarSign, ArrowUpDown, MoreVertical, Image as ImageIcon, Upload, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
-import { formatDateOnly, formatTimeInAU, getAUNow, getAUDateToday } from "@/lib/utils"
+import { cn, formatDateOnly, formatTimeInAU, getAUNow, getAUDateToday } from "@/lib/utils"
 import { format } from "date-fns"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
@@ -703,7 +703,7 @@ export default function OrdersPage() {
               placeholder="Search Order ID, Customer ID, Status etc."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-[300px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
+              className="w-full sm:w-[300px] h-[48px] sm:h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none"
               style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
             />
           </div>
@@ -719,12 +719,13 @@ export default function OrdersPage() {
                 fontFamily: 'Albert Sans',
                 fontWeight: 600,
                 color: dateFrom || dateTo ? '#C62828' : '#6b7280',
-                minWidth: '185px',
-                height: '54px',
+                minWidth: '160px',
+                height: 'auto',
+                minHeight: '48px',
                 paddingTop: '8px',
-                paddingRight: '24px',
+                paddingRight: '16px',
                 paddingBottom: '8px',
-                paddingLeft: '24px',
+                paddingLeft: '16px',
                 gap: '8px',
                 borderRadius: '100px',
                 borderWidth: '1px',
@@ -810,11 +811,12 @@ export default function OrdersPage() {
             style={{
               fontFamily: 'Albert Sans',
               fontWeight: 600,
-              height: '54px',
+              height: 'auto',
+              minHeight: '48px',
               paddingTop: '8px',
-              paddingRight: '24px',
+              paddingRight: '20px',
               paddingBottom: '8px',
-              paddingLeft: '24px',
+              paddingLeft: '20px',
               borderRadius: '100px',
               borderWidth: '1px',
               opacity: 1
@@ -830,7 +832,7 @@ export default function OrdersPage() {
             style={{
               fontFamily: 'Albert Sans',
               fontWeight: 600,
-              fontSize: '16px'
+              fontSize: '14px'
             }}
           >
             Clear Filters
@@ -985,7 +987,7 @@ export default function OrdersPage() {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 hidden lg:table-cell"
                   onClick={() => {
                     if (sortField === 'company_name') {
                       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -1009,7 +1011,7 @@ export default function OrdersPage() {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 hidden lg:table-cell"
                   onClick={() => {
                     if (sortField === 'department_name') {
                       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -1057,7 +1059,7 @@ export default function OrdersPage() {
                   </div>
                 </th>
                 <th
-                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 hidden md:table-cell"
                   onClick={() => {
                     if (sortField === 'delivery_time') {
                       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -1148,7 +1150,14 @@ export default function OrdersPage() {
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={idx} className="border-b border-gray-100">
                     {Array.from({ length: 10 }).map((_, colIdx) => (
-                      <td key={colIdx} className="px-4 py-4">
+                      <td 
+                        key={colIdx} 
+                        className={cn(
+                          "px-4 py-4",
+                          (colIdx === 3 || colIdx === 4) && "hidden lg:table-cell",
+                          (colIdx === 6) && "hidden md:table-cell"
+                        )}
+                      >
                         <div className="h-4 bg-gray-200 rounded animate-pulse" />
                       </td>
                     ))}
@@ -1208,7 +1217,7 @@ export default function OrdersPage() {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 hidden lg:table-cell">
                         <span className="text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
@@ -1220,7 +1229,7 @@ export default function OrdersPage() {
                           {order.company_name || order.company || 'N/A'}
                         </span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 hidden lg:table-cell">
                         <span className="text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,
@@ -1244,7 +1253,7 @@ export default function OrdersPage() {
                           {order.delivery_date ? formatDateOnly(order.delivery_date) : 'N/A'}
                         </span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 hidden md:table-cell">
                         <span className="text-gray-700" style={{
                           fontFamily: 'Albert Sans',
                           fontWeight: 400,

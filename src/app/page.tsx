@@ -715,15 +715,15 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-[108px] px-4 sm:px-6 lg:px-12 xl:px-[108px]">
-            <table className="w-full min-w-[700px]">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[800px] sm:min-w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order ID</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
-                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
+                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="hidden md:table-cell text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
-                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
+                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="hidden sm:table-cell text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -758,7 +758,7 @@ export default function DashboardPage() {
                             'N/A'}
                         </span>
                       </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
                         <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
                           {order.customer_order_telephone ||
                             order.customer?.telephone ||
@@ -778,7 +778,7 @@ export default function DashboardPage() {
                         </span>
                       </td>
 
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
+                      <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
                         {getStatusBadge(order)}
                       </td>
                       <td className="px-3 sm:px-6 py-3 sm:py-4">
@@ -879,8 +879,8 @@ export default function DashboardPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-12 xl:-mx-[108px] px-4 sm:px-6 lg:px-12 xl:px-[108px]">
-            <table className="w-full min-w-[700px]">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full min-w-[800px] sm:min-w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order ID</th>

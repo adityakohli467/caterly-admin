@@ -281,10 +281,11 @@ export default function DepartmentsPage() {
     <div className="bg-[#f8f9fa] min-h-screen overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-        <h1 className="text-[#1a1a1a] text-2xl sm:text-3xl lg:text-4xl" style={{ 
+        <h1 className="text-[#1a1a1a]" style={{ 
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
+          fontSize: 'clamp(24px, 5vw, 40px)',
           lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
@@ -292,22 +293,17 @@ export default function DepartmentsPage() {
         </h1>
         <Button 
           onClick={handleAddDepartment}
-          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto"
+          className="no-print bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-[196px]"
           style={{ 
             fontWeight: 600,
-            minWidth: '196px',
             height: '54px',
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '4px',
             borderRadius: '67px',
             opacity: 1
           }}
         >
           <Plus className="h-5 w-5" />
-          Add New Department
+          <span className="inline sm:hidden">Add Department</span>
+          <span className="hidden sm:inline">Add New Department</span>
         </Button>
       </div>
 
