@@ -512,35 +512,30 @@ export default function CustomersPage() {
   return (
     <div className="bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-gray-900" style={{
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
-          fontSize: '40px',
-          lineHeight: '20px',
+          fontSize: 'clamp(24px, 5vw, 40px)',
+          lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
           Customers
         </h1>
         <Button
           onClick={handleAddCustomer}
-          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-[196px]"
           style={{
             fontWeight: 600,
-            width: '196px',
             height: '54px',
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '4px',
             borderRadius: '67px',
             opacity: 1
           }}
         >
           <Plus className="h-5 w-5" />
-          Add New Customer
+          <span className="inline sm:hidden">Add Customer</span>
+          <span className="hidden sm:inline">Add New Customer</span>
         </Button>
       </div>
 

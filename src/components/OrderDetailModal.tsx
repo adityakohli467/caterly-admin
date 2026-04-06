@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/api"
-import { formatDateTime } from "@/lib/utils"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { Loader2, Printer } from "lucide-react"
 
 interface OrderProduct {
@@ -89,7 +89,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
     if (!printWindow) return
 
     const deliveryDate = order.delivery_date_time
-      ? formatDateTime(order.delivery_date_time)
+      ? `${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
       : 'N/A'
 
     const productsHtml = (order.order_products || []).map((p, i) => `
@@ -143,10 +143,28 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
             <tbody>${productsHtml}</tbody>
           </table>
           <table class="totals">
-            <tr><td>Sub Total</td><td style="text-align:right">$${Number(order.subtotal || 0).toFixed(2)}</td></tr>
-            ${Number(order.delivery_fee || 0) > 0 ? `<tr><td>Delivery Fee</td><td style="text-align:right">$${Number(order.delivery_fee).toFixed(2)}</td></tr>` : ''}
-            ${Number(order.gst || 0) > 0 ? `<tr><td>GST (10%)</td><td style="text-align:right">$${Number(order.gst).toFixed(2)}</td></tr>` : ''}
-            <tr class="total-row"><td>Total</td><td style="text-align:right">$${Number(order.calculated_total || order.order_total || 0).toFixed(2)}</td></tr>
+            ${(() => {
+              const productSum = order.order_products?.reduce((sum: number, p: any) => sum + Number(p.total), 0) || Number(order.subtotal) || 0;
+              const deliveryFeeVal = Number(order.delivery_fee || 0);
+              const lateFeeVal = Number(order.late_fee || 0);
+              const wholesaleDiscountVal = Number(order.wholesale_discount || 0);
+              const couponDiscountVal = Number(order.coupon_discount || 0);
+              
+              const netProductPrice = productSum - wholesaleDiscountVal - couponDiscountVal;
+              const baseTotal = productSum + deliveryFeeVal + lateFeeVal - wholesaleDiscountVal - couponDiscountVal;
+              const gstDisplay = Math.max(0, netProductPrice) * 0.11;
+              
+              let rows = `<tr><td>Sub Total</td><td style="text-align:right">$${productSum.toFixed(2)}</td></tr>`;
+              if (deliveryFeeVal > 0) rows += `<tr><td>Delivery Fee</td><td style="text-align:right">$${deliveryFeeVal.toFixed(2)}</td></tr>`;
+              if (lateFeeVal > 0) rows += `<tr><td>Late Fee</td><td style="text-align:right">$${lateFeeVal.toFixed(2)}</td></tr>`;
+              if (wholesaleDiscountVal > 0) rows += `<tr><td>Wholesale Discount</td><td style="text-align:right">-$${wholesaleDiscountVal.toFixed(2)}</td></tr>`;
+              if (couponDiscountVal > 0) rows += `<tr><td>Coupon Discount</td><td style="text-align:right">-$${couponDiscountVal.toFixed(2)}</td></tr>`;
+              
+              rows += `<tr><td>GST (11%) incl.</td><td style="text-align:right">$${gstDisplay.toFixed(2)}</td></tr>`;
+              rows += `<tr class="total-row"><td>Total</td><td style="text-align:right">$${baseTotal.toFixed(2)}</td></tr>`;
+              
+              return rows;
+            })()}
           </table>
         </body>
       </html>
@@ -410,24 +428,32 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                             </span>
                           </div>
                         )}
-                        {Number(order.gst || 0) > 0 && (
-                          <div className="flex justify-between">
-                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST (10%) incl.</span>
-                            <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">
-                              ${Number(order.gst || 0).toFixed(2)}
-                            </span>
-                          </div>
-                        )}
+                        {(() => {
+                          const productSum = order.order_products?.reduce((sum: number, p: any) => sum + Number(p.total), 0) || Number(order.subtotal) || 0;
+                          const wholesaleDiscountVal = Number(order.wholesale_discount || 0);
+                          const couponDiscountVal = Number(order.coupon_discount || 0);
+                          const netProductPrice = productSum - wholesaleDiscountVal - couponDiscountVal;
+                          const gstDisplay = Math.max(0, netProductPrice) * 0.11;
+                          return (
+                            <div className="flex justify-between">
+                              <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST (11%) incl.</span>
+                              <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">
+                                ${gstDisplay.toFixed(2)}
+                              </span>
+                            </div>
+                          );
+                        })()}
                         <div className="flex justify-between pt-2 border-t border-gray-300">
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">Total <span className="text-xs font-normal text-gray-500">(Inc. GST)</span></span>
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">
-                            ${(
-                              (order.order_products?.reduce((sum, p) => sum + Number(p.total), 0) || Number(order.subtotal) || 0) +
-                              Number(order.delivery_fee || 0) +
-                              Number(order.late_fee || 0) -
-                              Number(order.wholesale_discount || 0) -
-                              Number(order.coupon_discount || 0)
-                            ).toFixed(2)}
+                            ${(() => {
+                              const productSum = order.order_products?.reduce((sum: number, p: any) => sum + Number(p.total), 0) || Number(order.subtotal) || 0
+                              const deliveryVal = Number(order.delivery_fee || 0)
+                              const lateVal = Number(order.late_fee || 0)
+                              const wholesaleVal = Number(order.wholesale_discount || 0)
+                              const couponVal = Number(order.coupon_discount || 0)
+                              return (productSum + deliveryVal + lateVal - wholesaleVal - couponVal).toFixed(2)
+                            })()}
                           </span>
                         </div>
                       </div>
@@ -492,7 +518,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500">Delivery Date & Time</p>
                         <p style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">
                           {order.delivery_date_time
-                            ? formatDateTime(order.delivery_date_time)
+                            ? `${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
                             : 'N/A'}
                         </p>
                       </div>

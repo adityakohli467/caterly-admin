@@ -361,14 +361,14 @@ export function Navbar() {
         {/* Right Side - Notifications and User */}
         <div className="flex flex-row justify-end items-center gap-2 sm:gap-3 flex-shrink-0">
           {/* Notifications */}
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className="relative w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 group"
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5 text-[#212529] transition-colors duration-200 group-hover:text-[#C62828]" />
-                {/* Notification Badge */}
+                
                 {unreadCount > 0 && (
                   <>
                     <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
@@ -444,7 +444,7 @@ export function Navbar() {
                 </Link>
               </div>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
 
           {/* User Info - Hidden on mobile */}
           {user && (

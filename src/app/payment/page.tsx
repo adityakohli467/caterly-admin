@@ -168,8 +168,8 @@ function PaymentPageContent() {
                   </div>
                   {(order.gst && order.gst > 0) && (
                     <div className="flex justify-between">
-                      <span>GST (10%)</span>
-                      <span>${Number.parseFloat(order.gst || 0).toFixed(2)}</span>
+                      <span>GST (11%) incl.</span>
+                      <span>${(Number.parseFloat(order.calculated_total || order.order_total || "0") * 0.11).toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t pt-4">

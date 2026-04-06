@@ -43,10 +43,11 @@ interface Location {
 }
 
 // Sortable Product Item Component for Order Summary
-function SortableProductItem({ product, index, onReorder }: {
+function SortableProductItem({ product, index, onReorder, onUpdateQuantity }: {
   product: QuoteData['products'][0]
   index: number
   onReorder: (oldIndex: number, newIndex: number) => void
+  onUpdateQuantity: (index: number, newQuantity: number) => void
 }) {
   const {
     attributes,
@@ -91,9 +92,19 @@ function SortableProductItem({ product, index, onReorder }: {
       </td>
       <td className="py-2 text-center" style={{ fontFamily: 'Albert Sans' }}>
         <div className="flex items-center justify-center gap-2 bg-gray-100 rounded-md w-fit mx-auto">
-          <button className="px-2 py-1 text-gray-600">-</button>
-          <span>{product.quantity}</span>
-          <button className="px-2 py-1 text-gray-600">+</button>
+          <button 
+            onClick={() => onUpdateQuantity(index, Math.max(1, product.quantity - 1))}
+            className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded-l-md transition-colors"
+          >
+            -
+          </button>
+          <span className="min-w-[20px] text-center font-medium">{product.quantity}</span>
+          <button 
+            onClick={() => onUpdateQuantity(index, product.quantity + 1)}
+            className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded-r-md transition-colors"
+          >
+            +
+          </button>
         </div>
       </td>
       <td className="py-2 text-right" style={{ fontFamily: 'Albert Sans' }}>
@@ -508,14 +519,14 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     } else if (appliedCoupon.type === 'F') { // F for fixed
       couponDiscount = appliedCoupon.coupon_discount
     }
-    // Ensure discount doesn't exceed afterWholesaleDiscount
-    couponDiscount = Math.min(couponDiscount, afterWholesaleDiscount)
+    // Ensure discount doesn't exceed total (subtotal + delivery fee)
+    couponDiscount = Math.min(couponDiscount, afterWholesaleDiscount + deliveryFee)
   }
 
   const afterDiscount = afterWholesaleDiscount - couponDiscount
-  // GST is inclusive: calculate as 11% but display as 10%
+  // GST is inclusive: calculate as 11% and display as 11% (on products only)
   const total = afterDiscount + deliveryFee // Total is inclusive of GST
-  const gst = total * (11 / 111) // Calculate GST as 11% but display as 10%
+  const gst = afterDiscount * 0.11 // Calculate GST based on items only, excluding delivery fee
 
   const handleApplyCoupon = () => {
     if (couponCode.trim()) {
@@ -754,7 +765,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Delivery Details */}
         <div className="lg:col-span-2">
-          <Card className="p-8 bg-white border-gray-200">
+          <Card className="p-4 sm:p-8 bg-white border-gray-200">
             {/* Back Button */}
             <button
               onClick={onBack}
@@ -769,7 +780,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                 Ordering for <span className="text-[#C62828]">{data.customer_name || "John Doe"}</span>
               </h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-600">📞 Phone Number</span>
                   <span className="text-gray-900">{data.phone || "N/A"}</span>
@@ -1056,6 +1067,12 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                             setProducts(reordered)
                             onUpdate({ products: reordered })
                           }}
+                          onUpdateQuantity={(idx, newQty) => {
+                            const updatedProducts = [...products]
+                            updatedProducts[idx] = { ...updatedProducts[idx], quantity: newQty }
+                            setProducts(updatedProducts)
+                            onUpdate({ products: updatedProducts })
+                          }}
                         />
                       ))}
                     </tbody>
@@ -1145,7 +1162,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
               </div>
               {gst > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST (10%) incl.</span>
+                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST (11%) incl.</span>
                   <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>${gst.toFixed(2)}</span>
                 </div>
               )}

@@ -3,6 +3,8 @@ import { twMerge } from "tailwind-merge"
 
 /** Australia/Sydney covers both AEST (UTC+10) and AEDT (UTC+11) automatically */
 export const AU_TIMEZONE = "Australia/Sydney"
+export const GST_RATE = 0.11
+export const GST_PERCENT = 11
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

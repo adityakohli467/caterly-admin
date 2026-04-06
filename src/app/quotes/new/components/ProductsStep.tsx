@@ -498,7 +498,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left: Products List */}
       <div className="lg:col-span-2 space-y-4">
-        <Card className="p-6 bg-white border-gray-200">
+        <Card className="p-4 sm:p-6 bg-white border-gray-200">
           {/* Back Button */}
           <button
             onClick={onBack}
@@ -570,7 +570,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                     Product Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 hidden md:table-cell" style={{ fontFamily: 'Albert Sans' }}>
                     Category
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
@@ -611,7 +611,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="px-4 py-4 hidden md:table-cell">
                           <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                             {product.categories && Array.isArray(product.categories) && product.categories.length > 0
                               ? product.categories.map((cat: any) => cat.category_name).join(', ')
@@ -671,7 +671,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                               <p className="text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Albert Sans' }}>
                                 Select Options
                               </p>
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {product.options.map((option: any) => {
                                   const key = `${product.product_id}-${option.product_option_id}`
                                   const price = parseFloat(option.option_price.toString())
@@ -737,7 +737,7 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
 
       {/* Right: Order Summary */}
       <div className="lg:col-span-1">
-        <Card className="p-6 bg-white border-gray-200 sticky top-4">
+        <Card className="p-4 sm:p-6 bg-white border-gray-200 lg:sticky lg:top-4">
           <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
             Order Summary
           </h3>

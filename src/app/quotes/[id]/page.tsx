@@ -249,7 +249,7 @@ export default function QuoteDetailPage() {
       const subtotal = Number(safeQuote.subtotal || 0)
       const deliveryFee = Number(safeQuote.delivery_fee || 0)
       const couponDisc = Number(safeQuote.coupon_discount || 0)
-      const gst = Number(safeQuote.gst) || parseFloat((subtotal * 0.10).toFixed(2))
+      const gst = Number(safeQuote.gst) || parseFloat((subtotal * 0.11).toFixed(2))
       const grandTotal = Number(safeQuote.calculated_total || safeQuote.order_total || 0)
       const quoteDate = format(new Date(), 'dd MMM yyyy')
 
@@ -291,16 +291,7 @@ export default function QuoteDetailPage() {
         </style>
       </head><body><div style="padding:30px;max-width:820px;margin:0 auto;">
 
-        <!-- HEADER -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;">
-          <div style="font-size:44px;font-weight:900;color:#C62828;letter-spacing:-1px;">${companyName}</div>
-          <div style="text-align:right;font-size:12px;color:#555;line-height:1.9;">
-            ${companyAddr ? `<div>${companyAddr}</div>` : ''}
-            ${companyPhone ? `<div>Phone: ${companyPhone}</div>` : ''}
-            ${companyEmail ? `<div>Email: ${companyEmail}</div>` : ''}
-            ${companyAbn ? `<div>ABN: ${companyAbn}</div>` : ''}
-          </div>
-        </div>
+
 
         <!-- QUOTE BANNER -->
         <div style="background:#C62828;color:#fff;text-align:center;padding:13px;font-size:22px;font-weight:700;letter-spacing:4px;margin-bottom:24px;">QUOTE</div>
@@ -357,7 +348,7 @@ export default function QuoteDetailPage() {
             <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
             ${deliveryFee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Delivery Fee:</span><span>$${deliveryFee.toFixed(2)}</span></div>` : ''}
             ${couponDisc > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#16a34a;">Discount${safeQuote.coupon_code ? ` (${safeQuote.coupon_code})` : ''}:</span><span style="color:#16a34a;">-$${couponDisc.toFixed(2)}</span></div>` : ''}
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">GST (10%):</span><span>$${gst.toFixed(2)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">GST (11%):</span><span>$${gst.toFixed(2)}</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:2px solid #333;font-weight:700;font-size:15px;"><span>Total Amount:</span><span>$${grandTotal.toFixed(2)}</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:15px;color:#C62828;"><span>Balance Due:</span><span>$${grandTotal.toFixed(2)}</span></div>
           </div>
@@ -681,33 +672,46 @@ export default function QuoteDetailPage() {
                     </tr>
                   )}
 
-                  {Number(safeQuote.gst || 0) > 0 && (
-                    <tr className="border-b border-gray-100">
-                      <td colSpan={5} className="px-4 py-3 text-right">
-                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                          GST (10%) incl.
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                          ${Number(safeQuote.gst || 0).toFixed(2)}
-                        </span>
-                      </td>
-                    </tr>
-                  )}
+                  {(() => {
+                    const productSum = safeQuote.order_products?.reduce((sum: number, p: any) => sum + Number(p.total), 0) || Number(safeQuote.subtotal) || 0
+                    const deliveryFee = Number(safeQuote.delivery_fee || 0)
+                    const lateFee = Number(safeQuote.late_fee || 0)
+                    const wholesaleDiscount = Number(safeQuote.wholesale_discount || 0)
+                    const couponDiscount = Number(safeQuote.coupon_discount || 0)
 
-                  <tr className="border-b border-gray-200">
-                    <td colSpan={5} className="px-4 py-3 text-right">
-                      <span className="text-base font-semibold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
-                        Total Amount <span className="text-xs font-normal text-gray-500">(Excl. GST)</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-base font-bold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
-                        ${(Number(safeQuote.calculated_total || safeQuote.order_total || 0) - Number(safeQuote.gst || 0)).toFixed(2)}
-                      </span>
-                    </td>
-                  </tr>
+                    const totalAmount = productSum + deliveryFee + lateFee - wholesaleDiscount - couponDiscount
+                    const netProductPrice = productSum - wholesaleDiscount - couponDiscount
+                    const displayGstValue = Math.max(0, netProductPrice) * 0.11
+                    return (
+                      <>
+                        <tr className="border-b border-gray-100">
+                          <td colSpan={5} className="px-4 py-3 text-right">
+                            <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                              GST (11%) incl.
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
+                              ${displayGstValue.toFixed(2)}
+                            </span>
+                          </td>
+                        </tr>
+
+                        <tr className="border-b border-gray-200">
+                          <td colSpan={5} className="px-4 py-3 text-right">
+                            <span className="text-base font-semibold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
+                              Total Amount <span className="text-xs font-normal text-gray-500">(Inc. GST)</span>
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="text-base font-bold text-[#C62828]" style={{ fontFamily: 'Albert Sans' }}>
+                              ${totalAmount.toFixed(2)}
+                            </span>
+                          </td>
+                        </tr>
+                      </>
+                    )
+                  })()}
                 </tbody>
               </table>
             </div>

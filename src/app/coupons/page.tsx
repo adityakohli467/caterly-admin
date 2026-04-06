@@ -299,10 +299,11 @@ export default function CouponsPage() {
     <div className="bg-gray-50 min-h-screen w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans', maxWidth: '100%' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-gray-900 text-2xl sm:text-3xl lg:text-4xl flex-shrink-0" style={{ 
+        <h1 className="text-gray-900 flex-shrink-0" style={{ 
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
+          fontSize: 'clamp(24px, 5vw, 40px)',
           lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
@@ -310,22 +311,17 @@ export default function CouponsPage() {
         </h1>
         <Button 
           onClick={handleAddCoupon}
-          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-auto flex-shrink-0"
+          className="bg-[#C62828] hover:bg-[#B71C1C] text-white whitespace-nowrap w-full sm:w-[196px]"
           style={{ 
             fontWeight: 600,
-            minWidth: 'auto',
             height: '54px',
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '4px',
             borderRadius: '67px',
             opacity: 1
           }}
         >
           <Plus className="h-5 w-5" />
-          Add Coupon
+          <span className="inline sm:hidden">Add Coupon</span>
+          <span className="hidden sm:inline">Add New Coupon</span>
         </Button>
       </div>
 

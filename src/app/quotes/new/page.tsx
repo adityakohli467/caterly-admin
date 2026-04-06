@@ -10,6 +10,7 @@ import { DeliveryStep } from "./components/DeliveryStep"
 import { Check } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
+import { cn } from "@/lib/utils"
 
 export interface QuoteData {
   // Customer Details
@@ -193,27 +194,29 @@ export default function NewQuotePage() {
       </div>
 
       {/* Progress Steps */}
-      <div className="flex items-center justify-end gap-4 mb-8">
+      <div className="flex items-start justify-between gap-2 sm:gap-4 mb-10 overflow-x-auto pb-4 scrollbar-hide">
         {steps.map((step, index) => (
-          <div key={step.number} className="flex items-center">
-            <div className="flex flex-col items-center">
+          <div key={step.number} className="flex-1 flex items-center">
+            <div className="flex flex-col items-center min-w-[80px]">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep === step.number
-                  ? "bg-[#C62828] text-white"
-                  : currentStep > step.number
-                    ? "bg-[#C62828] text-white"
-                    : "bg-gray-300 text-gray-600"
-                  }`}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center transition-colors relative z-10",
+                  currentStep >= step.number
+                    ? "bg-[#C62828] text-white shadow-sm"
+                    : "bg-gray-200 text-gray-500"
+                )}
               >
                 {currentStep > step.number ? (
                   <Check className="h-5 w-5" />
                 ) : (
-                  <span style={{ fontWeight: 600 }}>{step.number}</span>
+                  <span className="text-sm font-bold">{step.number}</span>
                 )}
               </div>
               <span
-                className={`text-xs mt-2 whitespace-nowrap ${currentStep === step.number ? "text-[#C62828] font-semibold" : "text-gray-600"
-                  }`}
+                className={cn(
+                  "text-[10px] sm:text-xs mt-3 text-center font-medium transition-colors",
+                  currentStep === step.number ? "text-[#C62828] font-bold" : "text-gray-500"
+                )}
                 style={{ fontFamily: 'Albert Sans' }}
               >
                 {step.label}
@@ -221,8 +224,10 @@ export default function NewQuotePage() {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`w-24 h-0.5 mx-2 mt-[-20px] ${currentStep > step.number ? "bg-[#C62828]" : "bg-gray-300"
-                  }`}
+                className={cn(
+                  "flex-1 h-0.5 mx-[-20px] mb-[30px] transition-colors",
+                  currentStep > step.number ? "bg-[#C62828]" : "bg-gray-200"
+                )}
               />
             )}
           </div>
