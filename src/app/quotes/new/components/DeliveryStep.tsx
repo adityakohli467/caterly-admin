@@ -870,57 +870,6 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 </Select>
               </div>
 
-              {/* Delivery Contact Name */}
-              <ValidatedInput
-                label="Delivery Contact Name"
-                placeholder="Enter contact name"
-                value={deliveryContactName}
-                validationRule={ValidationRules.order.delivery_contact}
-                fieldName="Delivery Contact Name"
-                onChange={(value) => {
-                  setDeliveryContactName(value)
-                  // Update delivery_contact in parent immediately
-                  const deliveryContact = value
-                    ? `${value}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
-                    : ''
-                  onUpdate({ delivery_contact: deliveryContact, delivery_method: deliveryMethod })
-                }}
-                className="h-11 border-gray-300"
-              />
-
-              {/* Delivery Contact Number */}
-              <ValidatedInput
-                label="Delivery Contact Number"
-                type="tel"
-                placeholder="Enter contact number"
-                value={deliveryContactNumber}
-                validationRule={ValidationRules.customer.telephone}
-                fieldName="Delivery Contact Number"
-                onChange={(value) => {
-                  setDeliveryContactNumber(value)
-                  // Update delivery_contact in parent immediately
-                  const deliveryContact = deliveryContactName
-                    ? `${deliveryContactName}${value ? `|${value}` : ''}`
-                    : ''
-                  onUpdate({ delivery_contact: deliveryContact, delivery_method: deliveryMethod })
-                }}
-                className="h-11 border-gray-300"
-              />
-
-              {/* Email */}
-              <ValidatedInput
-                label="Delivery contact email"
-                type="email"
-                placeholder="Enter"
-                value={accountEmail}
-                validationRule={ValidationRules.order.account_email}
-                fieldName="Delivery contact email"
-                onChange={(value) => {
-                  setAccountEmail(value)
-                  onUpdate({ account_email: value, delivery_method: deliveryMethod })
-                }}
-                className="h-11 border-gray-300"
-              />
 
               {/* Cost Center */}
               <ValidatedInput
