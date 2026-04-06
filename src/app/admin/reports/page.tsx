@@ -47,7 +47,7 @@ export default function ReportsPage() {
   const [deliveryDateFrom, setDeliveryDateFrom] = useState<Date | null>(null)
   const [deliveryDateTo, setDeliveryDateTo] = useState<Date | null>(null)
   const [selectedLocation, setSelectedLocation] = useState("none_selected")
-  const [selectedStatus, setSelectedStatus] = useState("2")
+  const [selectedStatus, setSelectedStatus] = useState("none_selected")
   const [selectedCompany, setSelectedCompany] = useState("none_selected")
   const [includeSubscriptions, setIncludeSubscriptions] = useState(true)
 
@@ -58,7 +58,7 @@ export default function ReportsPage() {
     delivery_date_from: "",
     delivery_date_to: "",
     location_id: "",
-    status: "2",
+    status: "",
     company: "",
     search: "",
     include_subscriptions: true
@@ -206,7 +206,7 @@ export default function ReportsPage() {
     setDeliveryDateFrom(null)
     setDeliveryDateTo(null)
     setSelectedLocation("none_selected")
-    setSelectedStatus("2")
+    setSelectedStatus("none_selected")
     setSelectedCompany("none_selected")
     setSearchQuery("")
     setAppliedFilters({
@@ -215,7 +215,7 @@ export default function ReportsPage() {
       delivery_date_from: "",
       delivery_date_to: "",
       location_id: "",
-      status: "2",
+      status: "",
       company: "",
       search: "",
       include_subscriptions: true
@@ -224,74 +224,143 @@ export default function ReportsPage() {
     setCurrentPage(1)
   }
 
-  const handleDownloadCSV = async () => {
+  const handleDownloadCSV = async (isExcel: boolean = false) => {
+    const toastId = toast.loading("Preparing full report data...")
     try {
-      if (!appliedFilters.include_subscriptions) {
-        const params = new URLSearchParams()
-        if (appliedFilters.order_date_from) params.append("order_date_from", appliedFilters.order_date_from)
-        if (appliedFilters.order_date_to) params.append("order_date_to", appliedFilters.order_date_to)
-        if (appliedFilters.delivery_date_from) params.append("delivery_date_from", appliedFilters.delivery_date_from)
-        if (appliedFilters.delivery_date_to) params.append("delivery_date_to", appliedFilters.delivery_date_to)
-        if (appliedFilters.location_id) params.append("location_id", appliedFilters.location_id)
-        if (appliedFilters.status) params.append("status", appliedFilters.status)
-        if (appliedFilters.company) params.append("company", appliedFilters.company)
-        if (appliedFilters.search) params.append("search", appliedFilters.search)
-        
-        const response = await api.get(`/admin/reports/download/csv?${params.toString()}`, {
-          responseType: 'blob',
-        })
-
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'orders_report.csv')
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        window.URL.revokeObjectURL(url)
-        toast.success("CSV report downloaded successfully!")
-      } else {
-        // Client-side CSV generation for merged reports
-        // Note: This only exports the currently fetched page of data.
-        // For a full report, we would need to fetch all results without pagination.
-        const headers = ["Order ID", "Order Date", "Delivery Date", "Customer", "Type", "Company", "Status", "Total"]
-        const csvRows = reports.map(r => [
-          `#${r.order_id}`,
-          safeFormatDate(r.order_date, "dd-MM-yyyy"),
-          safeFormatDate(r.delivery_date_time, "dd-MM-yyyy"),
-          `"${(r.customer_name || "").replace(/"/g, '""')}"`,
-          r.standing_order && r.standing_order > 0 ? "Subscription" : "One-off",
-          `"${(r.company_name || "").replace(/"/g, '""')}"`,
-          getStatusBadge(r.order_status).label,
-          (r.order_total || r.total || 0).toFixed(2)
-        ])
-
-        const csvContent = [
-          headers.join(","),
-          ...csvRows.map(row => row.join(","))
-        ].join("\n")
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'reports_including_subscriptions.csv')
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        window.URL.revokeObjectURL(url)
-        toast.success("CSV report (merged) downloaded successfully!")
+      // 1. Prepare parameters for a FULL fetch (no pagination)
+      const params = new URLSearchParams()
+      if (appliedFilters.order_date_from) params.append("order_date_from", appliedFilters.order_date_from)
+      if (appliedFilters.order_date_to) params.append("order_date_to", appliedFilters.order_date_to)
+      if (appliedFilters.delivery_date_from) params.append("delivery_date_from", appliedFilters.delivery_date_from)
+      if (appliedFilters.delivery_date_to) params.append("delivery_date_to", appliedFilters.delivery_date_to)
+      if (appliedFilters.location_id) params.append("location_id", appliedFilters.location_id)
+      if (appliedFilters.status) params.append("status", appliedFilters.status)
+      if (appliedFilters.company) params.append("company", appliedFilters.company)
+      if (appliedFilters.search) params.append("search", appliedFilters.search)
+      
+      // Set a high limit to get all records for the export
+      params.append("limit", "100000")
+      params.append("offset", "0")
+      
+      const reportsPromise = api.get(`/admin/reports?${params.toString()}`)
+      
+      // 2. Fetch subscriptions if included
+      let subscriptionsData = { subscriptions: [], count: 0 }
+      if (appliedFilters.include_subscriptions) {
+        const subParams: any = {
+          status: "active",
+          limit: "1000", // Fetch a reasonable amount for export
+        }
+        if (appliedFilters.search) subParams.search = appliedFilters.search
+        try {
+          const subResponse = await subscriptionsAPI.list(subParams)
+          subscriptionsData = subResponse.data
+        } catch (error) {
+          console.error("Error fetching subscriptions for export:", error)
+        }
       }
+
+      const response = await reportsPromise
+      const reportData = response.data
+      
+      // 3. Merge logic (same as useQuery for consistency)
+      const reportIds = new Set(reportData.reports.map((r: any) => r.order_id))
+      const mappedSubscriptions = (subscriptionsData.subscriptions || [])
+        .filter((sub: any) => !reportIds.has(sub.order_id))
+        .filter((sub: any) => {
+          if (!appliedFilters.delivery_date_from && !appliedFilters.delivery_date_to) return true
+          const subDate = new Date(sub.delivery_date_time)
+          if (!isValid(subDate)) return true
+          if (appliedFilters.delivery_date_from) {
+            const fromDate = new Date(appliedFilters.delivery_date_from)
+            fromDate.setHours(0, 0, 0, 0)
+            if (subDate < fromDate) return false
+          }
+          if (appliedFilters.delivery_date_to) {
+            const toDate = new Date(appliedFilters.delivery_date_to)
+            toDate.setHours(23, 59, 59, 999)
+            if (subDate > toDate) return false
+          }
+          return true
+        })
+        .map((sub: any) => ({
+          order_id: sub.order_id,
+          order_date: sub.date_added || sub.delivery_date_time || "",
+          delivery_date_time: sub.delivery_date_time || "",
+          customer_name: sub.customer_name || sub.customer_order_name || "",
+          company_name: sub.company_name || "",
+          department_name: sub.department_name || "",
+          location_name: sub.location_name || "",
+          order_status: sub.order_status,
+          delivery_fee: Number(sub.delivery_fee || 0),
+          discount: 0,
+          total: Number(sub.order_total || 0),
+          order_total: Number(sub.order_total || 0),
+          standing_order: sub.standing_order || 1
+        }))
+
+      const allReports = [...reportData.reports, ...mappedSubscriptions].sort((a: any, b: any) => b.order_id - a.order_id)
+
+      // 4. Generate CSV with ALL 14 columns matching the table
+      const headers = [
+        "Order ID", "Order Date", "Delivery Date", "Delivery Time", 
+        "Customer", "Type", "Company", "Department", "Status", 
+        "Subtotal", "Delivery Fee", "Discount", "GST", "Total"
+      ]
+
+      const csvRows = allReports.map(r => {
+        const displayTotal = Number(r.order_total || r.total || 0)
+        const deliveryFee = Number(r.delivery_fee || 0)
+        const discount = Number(r.discount || 0)
+        const lateFee = Number(r.late_fee || 0)
+        
+        // Calculation matching the table display (Subtotal = Total - Fees + Discounts)
+        const displaySubtotal = displayTotal - deliveryFee - lateFee + discount
+        const displayGst = displaySubtotal * 0.1
+
+        return [
+          `#${r.order_id}`,
+          r.order_date ? formatDateOnly(r.order_date) : 'N/A',
+          r.delivery_date_time ? formatDateOnly(r.delivery_date_time) : 'N/A',
+          r.delivery_date_time ? formatTimeInAU(r.delivery_date_time) : 'N/A',
+          `"${String(r.customer_name || r.customer_order_name || "").replace(/"/g, '""')}"`,
+          r.standing_order && r.standing_order > 0 ? "Subscription" : "One-off",
+          `"${String(r.company_name || r.company || "").replace(/"/g, '""')}"`,
+          `"${String(r.department_name || "").replace(/"/g, '""')}"`,
+          getStatusBadge(r.order_status).label,
+          displaySubtotal.toFixed(2),
+          deliveryFee.toFixed(2),
+          discount.toFixed(2),
+          displayGst.toFixed(2),
+          displayTotal.toFixed(2)
+        ]
+      })
+
+      const csvContent = [
+        headers.join(","),
+        ...csvRows.map(row => row.join(","))
+      ].join("\n")
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', isExcel ? 'reports_full.csv' : 'reports_full.csv')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success(`${isExcel ? "Excel" : "CSV"} report downloaded with all details!`, { id: toastId })
     } catch (error: any) {
       console.error("Download CSV error:", error)
-      toast.error(error.response?.data?.message || "Failed to download CSV")
+      toast.error(error.message || "Failed to download full report", { id: toastId })
     }
   }
 
   const handleDownloadExcel = () => {
     // For now, use CSV format for Excel
-    handleDownloadCSV()
-    toast.success("Excel report downloaded successfully!")
+    handleDownloadCSV(true)
   }
 
   const handlePrint = () => {
@@ -504,7 +573,7 @@ export default function ReportsPage() {
           />
         </div>
         <Button
-          onClick={handleDownloadCSV}
+          onClick={() => handleDownloadCSV(false)}
           variant="outline"
           className="gap-2 h-11 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-all"
           style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
