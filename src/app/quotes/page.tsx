@@ -740,7 +740,9 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        {quote.firstname} {quote.lastname}
+                        {quote.firstname || quote.lastname 
+                          ? `${quote.firstname || ''} ${quote.lastname || ''}`.trim() 
+                          : quote.customer_order_name || 'N/A'}
                       </span>
                     </td>
                     <td className="px-4 py-4">

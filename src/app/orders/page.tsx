@@ -1207,7 +1207,7 @@ export default function OrdersPage() {
                             lineHeight: '20px',
                             letterSpacing: '0%'
                           }}>
-                            {order.customer_name || 'N/A'}
+                            {order.customer_name || order.customer_order_name || 'N/A'}
                           </span>
                           {/* Wholesale badge - Hidden for kj3 */}
                           {false && order.customer_type && (order.customer_type.includes('Wholesale') || order.customer_type.includes('Wholesaler')) && (
@@ -1303,13 +1303,13 @@ export default function OrdersPage() {
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit Order
                               </DropdownMenuItem>
-                              <DropdownMenuItem
+                              {/* <DropdownMenuItem
                                 onClick={() => handlePayment(order.order_id)}
                                 className="cursor-pointer"
                               >
                                 <DollarSign className="h-4 w-4 mr-2" />
                                 Process Payment
-                              </DropdownMenuItem>
+                              </DropdownMenuItem> */}
 {/* <DropdownMenuItem
                                 onClick={() => handleMarkAsPaid(order.order_id)}
                                 disabled={updateStatusMutation.isPending || order.order_status === 2 || order.order_status === 3}

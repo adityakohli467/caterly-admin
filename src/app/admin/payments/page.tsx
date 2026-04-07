@@ -121,7 +121,7 @@ export default function PaymentsPage() {
   }
 
   // Fetch payment history
-  const { data: paymentsData, isLoading, refetch } = useQuery({
+  const { data: paymentsData, isLoading, refetch: refetchPayments } = useQuery({
     queryKey: ['payments', queryParams],
     queryFn: async () => {
       const response = await paymentsAPI.getHistory(queryParams)
@@ -130,7 +130,7 @@ export default function PaymentsPage() {
   })
 
   // Fetch statistics - gateway specific
-  const { data: statisticsData, isLoading: isStatsLoading, error: statsError } = useQuery({
+  const { data: statisticsData, isLoading: isStatsLoading, error: statsError, refetch: refetchStats } = useQuery({
     queryKey: ['payment-statistics', dateFrom, dateTo],
     queryFn: async () => {
       const params: any = {}
@@ -142,7 +142,7 @@ export default function PaymentsPage() {
   })
 
   // Fetch overall order statistics for consistent revenue totals
-  const { data: orderStatsData, isLoading: isOrderStatsLoading } = useQuery({
+  const { data: orderStatsData, isLoading: isOrderStatsLoading, refetch: refetchOrderStats } = useQuery({
     queryKey: ['order-statistics'],
     queryFn: async () => {
       const response = await ordersAPI.stats()
@@ -151,7 +151,7 @@ export default function PaymentsPage() {
   })
 
   // Fetch Paid Orders to supplement gateway history
-  const { data: paidOrdersData, isLoading: isPaidOrdersLoading } = useQuery({
+  const { data: paidOrdersData, isLoading: isPaidOrdersLoading, refetch: refetchPaidOrders } = useQuery({
     queryKey: ['paid-orders', queryParams],
     queryFn: async () => {
       const params = { ...queryParams, order_status: 2 }
@@ -170,6 +170,8 @@ export default function PaymentsPage() {
   
   const manualPayments: Payment[] = paidOrders
     .filter(order => !gatewayOrderIds.has(order.order_id))
+    // Manual payments (Paid orders without gateway logs) are always considered 'succeeded'
+    .filter(() => selectedStatus === "all" || selectedStatus === "succeeded")
     .map(order => ({
       payment_history_id: -order.order_id, // Negative to avoid collision
       order_id: order.order_id,
@@ -190,7 +192,42 @@ export default function PaymentsPage() {
       has_error: false
     }))
 
-  const combinedPayments = [...gatewayPayments, ...manualPayments].sort((a, b) => 
+  let combinedFiltered = [...gatewayPayments, ...manualPayments]
+
+  // Client-side filtering fallback to ensure UI state is strictly honored
+  // this fixes cases where backend might return extra data or inconsistent results
+  combinedFiltered = combinedFiltered.filter(payment => {
+    // Status filter
+    if (selectedStatus !== "all" && payment.payment_status !== selectedStatus) {
+      return false
+    }
+
+    // Date filters (normalized to start/end of day)
+    const pDate = new Date(payment.created_at)
+    if (dateFrom) {
+      const startDate = new Date(dateFrom)
+      startDate.setHours(0, 0, 0, 0)
+      if (pDate < startDate) return false
+    }
+    if (dateTo) {
+      const endDate = new Date(dateTo)
+      endDate.setHours(23, 59, 59, 999)
+      if (pDate > endDate) return false
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const search = searchQuery.toLowerCase()
+      const matchesOrder = payment.order_id.toString().includes(search)
+      const matchesTransaction = payment.payment_transaction_id.toLowerCase().includes(search)
+      const matchesCustomer = payment.customer_name?.toLowerCase().includes(search)
+      if (!matchesOrder && !matchesTransaction && !matchesCustomer) return false
+    }
+
+    return true
+  })
+
+  const combinedPayments = combinedFiltered.sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
 
@@ -217,7 +254,7 @@ export default function PaymentsPage() {
   }, [fetchedTotalRevenue, maxRevenue])
 
   const displayTotalRevenue = Math.max(fetchedTotalRevenue, maxRevenue)
-  const displayNetRevenue = displayTotalRevenue - (Number(gatewayStats?.total_refunds) || 0)
+  const displayNetRevenue = displayTotalRevenue // - (Number(gatewayStats?.total_refunds) || 0)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -227,8 +264,8 @@ export default function PaymentsPage() {
         return <Badge className="bg-[#FFEBEE] text-red-800"><XCircle className="w-3 h-3 mr-1" />Failed</Badge>
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="w-3 h-3 mr-1" />Pending</Badge>
-      case 'refunded':
-        return <Badge className="bg-[#FFEBEE] text-[#B71C1C]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
+      // case 'refunded':
+      //   return <Badge className="bg-[#FFEBEE] text-[#B71C1C]"><RotateCcw className="w-3 h-3 mr-1" />Refunded</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -256,6 +293,22 @@ export default function PaymentsPage() {
     }).format(amount)
   }
 
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        refetchPayments(),
+        refetchStats(),
+        refetchOrderStats(),
+        refetchPaidOrders()
+      ])
+      toast.success("Payment statistics and history updated")
+    } catch (error) {
+      toast.error("Failed to refresh data")
+    }
+  }
+
+  const isRefreshing = isLoading || isStatsLoading || isOrderStatsLoading || isPaidOrdersLoading
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -263,9 +316,14 @@ export default function PaymentsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Payment History</h1>
           <p className="text-gray-600 mt-1">View and manage all payment transactions</p>
         </div>
-        <Button onClick={() => refetch()} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+        <Button 
+          onClick={handleRefresh} 
+          variant="outline"
+          disabled={isRefreshing}
+          className="min-w-[100px]"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 
@@ -299,7 +357,7 @@ export default function PaymentsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium text-gray-500">Net Revenue</p>
@@ -307,7 +365,7 @@ export default function PaymentsPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-[#C62828]">{formatCurrency(displayNetRevenue)}</h3>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card>
               <CardContent className="p-6">
@@ -315,8 +373,10 @@ export default function PaymentsPage() {
                   <p className="text-sm font-medium text-gray-500">Successful Payments</p>
                   <CheckCircle2 className="w-4 h-4 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold">{gatewayStats?.successful_payments || 0}</h3>
-                <p className="text-xs text-gray-500">{gatewayStats?.total_transactions || 0} in gateway log</p>
+                <h3 className="text-2xl font-bold">{(Number(gatewayStats?.successful_payments) || 0) + manualPayments.length}</h3>
+                <p className="text-xs text-gray-500">
+                  {gatewayStats?.successful_payments || 0} gateway + {manualPayments.length} manual
+                </p>
               </CardContent>
             </Card>
 
@@ -327,7 +387,7 @@ export default function PaymentsPage() {
                   <XCircle className="w-4 h-4 text-gray-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-[#B71C1C]">{gatewayStats?.failed_payments || 0}</h3>
-                <p className="text-xs text-gray-500">{gatewayStats?.refunded_payments || 0} refunded</p>
+                {/* <p className="text-xs text-gray-500">{gatewayStats?.refunded_payments || 0} refunded</p> */}
               </CardContent>
             </Card>
           </>
@@ -358,7 +418,7 @@ export default function PaymentsPage() {
                   <SelectItem value="succeeded">Succeeded</SelectItem>
                   <SelectItem value="failed">Failed</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="refunded">Refunded</SelectItem>
+                  {/* <SelectItem value="refunded">Refunded</SelectItem> */}
                 </SelectContent>
               </Select>
             </div>
@@ -384,7 +444,7 @@ export default function PaymentsPage() {
               <DatePicker
                 selected={dateFrom}
                 onChange={(date) => setDateFrom(date)}
-                dateFormat="yyyy-MM-dd"
+                dateFormat="dd/MM/yyyy"
                 className="w-full px-3 py-2 border rounded-md"
                 placeholderText="Select date"
               />
@@ -395,7 +455,7 @@ export default function PaymentsPage() {
               <DatePicker
                 selected={dateTo}
                 onChange={(date) => setDateTo(date)}
-                dateFormat="yyyy-MM-dd"
+                dateFormat="dd/MM/yyyy"
                 className="w-full px-3 py-2 border rounded-md"
                 placeholderText="Select date"
               />
@@ -424,7 +484,7 @@ export default function PaymentsPage() {
                 variant="outline" 
                 size="sm" 
                 className="mt-4 border-red-200 text-red-600 hover:bg-red-100"
-                onClick={() => refetch()}
+                onClick={handleRefresh}
               >
                 Retry
               </Button>
@@ -463,11 +523,11 @@ export default function PaymentsPage() {
                         <td className="p-3">
                           <div>
                             <span className="font-bold">{formatCurrency(payment.amount)}</span>
-                            {payment.refund_amount > 0 && (
+                            {/* {payment.refund_amount > 0 && (
                               <span className="text-xs text-[#C62828] ml-2">
                                 (Refunded: {formatCurrency(payment.refund_amount)})
                               </span>
-                            )}
+                            )} */}
                           </div>
                         </td>
                         <td className="p-3">{getStatusBadge(payment.payment_status)}</td>
@@ -549,12 +609,12 @@ export default function PaymentsPage() {
                   <Label className="text-gray-600">Amount</Label>
                   <p className="font-bold text-lg">{formatCurrency(selectedPayment.amount)}</p>
                 </div>
-                <div>
+                {/* <div>
                   <Label className="text-gray-600">Refunded</Label>
                   <p className={selectedPayment.refund_amount > 0 ? "text-[#C62828] font-bold" : "text-gray-500"}>
                     {formatCurrency(selectedPayment.refund_amount)}
                   </p>
-                </div>
+                </div> */}
                 <div>
                   <Label className="text-gray-600">Customer</Label>
                   <p className="font-bold">{selectedPayment.customer_name || 'N/A'}</p>

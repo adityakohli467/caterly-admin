@@ -11,7 +11,7 @@ import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidatedTextarea } from "@/components/ui/validated-textarea"
 import { ValidationRules } from "@/lib/validation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft, Mail, CheckCircle, Tag, Plus, X, HelpCircle, GripVertical } from "lucide-react"
+import { ChevronLeft, Mail, CheckCircle, Tag, Plus, X, HelpCircle, GripVertical, RefreshCw } from "lucide-react"
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -26,6 +26,7 @@ interface DeliveryStepProps {
   onUpdate: (data: Partial<QuoteData>) => void
   onSave: (data?: Partial<QuoteData>) => void
   onBack: () => void
+  isSubmitting?: boolean
 }
 
 interface Coupon {
@@ -92,14 +93,14 @@ function SortableProductItem({ product, index, onReorder, onUpdateQuantity }: {
       </td>
       <td className="py-2 text-center" style={{ fontFamily: 'Albert Sans' }}>
         <div className="flex items-center justify-center gap-2 bg-gray-100 rounded-md w-fit mx-auto">
-          <button 
+          <button
             onClick={() => onUpdateQuantity(index, Math.max(1, product.quantity - 1))}
             className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded-l-md transition-colors"
           >
             -
           </button>
           <span className="min-w-[20px] text-center font-medium">{product.quantity}</span>
-          <button 
+          <button
             onClick={() => onUpdateQuantity(index, product.quantity + 1)}
             className="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded-r-md transition-colors"
           >
@@ -114,7 +115,7 @@ function SortableProductItem({ product, index, onReorder, onUpdateQuantity }: {
   )
 }
 
-export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepProps) {
+export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = false }: DeliveryStepProps) {
   const [products, setProducts] = useState(data.products || [])
 
   const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
@@ -560,7 +561,31 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     toast.info("Coupon removed")
   }
 
+  const validateForm = () => {
+    const errors = []
+    
+    // Validate delivery method (starred)
+    if (!deliveryMethod) {
+      errors.push("Delivery Method")
+    }
+
+    // Validate Address/Pickup depending on method (starred)
+    if (deliveryMethod === 'delivery' && (!deliveryAddress || !deliveryAddress.trim())) {
+      errors.push("Delivery Address")
+    } else if (deliveryMethod === 'pickup' && (!selectedPickupLocation || Number(selectedPickupLocation) === 0)) {
+      errors.push("Pickup Location")
+    }
+
+    if (errors.length > 0) {
+      toast.error(`Please fill in all the forms: ${errors.join(", ")}`)
+      return false
+    }
+    
+    return true
+  }
+
   const handleSaveQuote = () => {
+    if (!validateForm()) return
     // Validate delivery fee
     if (isNaN(deliveryFee) || deliveryFee < 0) {
       toast.error("Delivery fee must be a valid number greater than or equal to 0")
@@ -662,6 +687,8 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
   }
 
   const handleSendToCustomer = () => {
+    if (!validateForm()) return
+    // Build delivery_contact as "Name|Number"
     // Build delivery_contact as "Name|Number"
     const deliveryContact = deliveryContactName
       ? `${deliveryContactName}${deliveryContactNumber ? `|${deliveryContactNumber}` : ''}`
@@ -708,7 +735,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
     setShowSendModal(true)
   }
 
-  const handleConfirmSend = () => {
+  const handleConfirmSend = async () => {
+    if (isSubmitting) return
+    if (!validateForm()) return
+    
     // In real implementation, send email via API
     setShowSendModal(false)
     setShowSuccessModal(true)
@@ -1196,15 +1226,31 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 variant="outline"
                 className="w-full border-[#C62828] text-[#C62828] hover:bg-[#C62828] hover:text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600, height: '50px' }}
+                disabled={isSubmitting}
               >
-                💾 Save Quote
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  '💾 Save Quote'
+                )}
               </Button>
               <Button
                 onClick={handleSendToCustomer}
                 className="w-full bg-[#C62828] hover:bg-[#B71C1C] text-white rounded-full"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600, height: '50px' }}
+                disabled={isSubmitting}
               >
-                Send to Customer
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Send to Customer'
+                )}
               </Button>
             </div>
           </Card>
@@ -1329,8 +1375,16 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack }: DeliveryStepPro
                 onClick={handleConfirmSend}
                 className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
                 style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                disabled={isSubmitting}
               >
-                Yes, Send
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Yes, Send'
+                )}
               </Button>
             </div>
           </div>

@@ -350,10 +350,10 @@ export default function SettingsPage() {
             <Globe className="h-4 w-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+          {/* <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Notifications
-          </TabsTrigger>
+          </TabsTrigger> */}
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             Appearance
@@ -433,7 +433,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* Notification Settings */}
-        <TabsContent value="notifications" className="space-y-6">
+        {/* <TabsContent value="notifications" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -487,7 +487,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {/* Appearance Settings */}
         <TabsContent value="appearance" className="space-y-6">

@@ -343,7 +343,7 @@ export default function SubscriptionsPage() {
                         fontSize: '14px',
                         lineHeight: '20px',
                         letterSpacing: '0%'
-                      }}>{sub.customer_name || '-'}</span>
+                      }}>{sub.customer_name || sub.customer_order_name || '-'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-gray-900" style={{ 
@@ -541,7 +541,7 @@ export default function SubscriptionsPage() {
                   {modalType === "delete" && "Are you sure you want to permanently delete this subscription? This action cannot be undone."}
                 </p>
                 <p className="text-base font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
-                  Order #{selectedSubscription?.order_id} - {selectedSubscription?.customer_name || selectedSubscription?.customer_order_name}
+                  Order #{selectedSubscription?.order_id} - {selectedSubscription?.customer_name || selectedSubscription?.customer_order_name || 'Guest'}
                 </p>
               </div>
             </div>

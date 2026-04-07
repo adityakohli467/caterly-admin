@@ -20,10 +20,30 @@ export function formatCurrency(amount: number | string): string {
 
 /** Format a date+time in Australian timezone (e.g. "18 Mar 2026, 5:30 pm") */
 export function formatDate(date: Date | string): string {
-  if (!date) return "N/A"
+  if (!date || date === "0000-00-00" || date === "0000-00-00 00:00:00") return "N/A"
+
+  if (typeof date === "string" && !date.includes('Z') && !date.includes('+')) {
+    // For naive strings, we'll try to extract parts literally to avoid shifting
+    const match = date.match(/(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}))?/)
+    if (match) {
+      const [_, year, month, day, hour, min] = match
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+      const monthLabel = months[parseInt(month) - 1]
+      
+      if (hour && min) {
+        let h = parseInt(hour)
+        const ampm = h >= 12 ? 'pm' : 'am'
+        h = h % 12
+        h = h ? h : 12 // the hour '0' should be '12'
+        return `${day} ${monthLabel} ${year}, ${h}:${min} ${ampm}`
+      }
+      return `${day} ${monthLabel} ${year}`
+    }
+  }
+
   const d = typeof date === "string" ? new Date(date) : date
   if (isNaN(d.getTime())) return "N/A"
-  
+
   return new Intl.DateTimeFormat("en-AU", {
     dateStyle: "medium",
     timeStyle: "short",
@@ -34,7 +54,7 @@ export function formatDate(date: Date | string): string {
 /** Format date only in Australian timezone (e.g. "18 Mar 2026") */
 export function formatDateOnly(date: Date | string): string {
   if (!date || date === "0000-00-00" || date === "0000-00-00 00:00:00") return "N/A"
-  
+
   if (typeof date === "string" && !date.includes("Z") && !date.includes("+")) {
     // For naive strings from backend, extract the date parts literally to avoid shifts
     // Match YYYY-MM-DD anywhere in the string
@@ -82,7 +102,7 @@ export function getAUDateTomorrow(): string {
   const today = new Date()
   const tomorrow = new Date(today)
   tomorrow.setDate(today.getDate() + 1)
-  
+
   const formatter = new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
     month: "2-digit",
@@ -109,11 +129,14 @@ export function formatTimeInAU(date: Date | string, includeSeconds = false): str
     if (/^\d{2}:\d{2}(:\d{2})?$/.test(date)) return date.slice(0, 5)
 
     // ONLY use literal extraction for naive strings (no timezone info)
-    // If it has 'Z' or '+', we MUST use the Date object for proper conversion
     if (!date.includes('Z') && !date.includes('+')) {
       const match = date.match(/(\d{2}):(\d{2})(?::(\d{2}))?/)
       if (match) {
-        return `${match[1]}:${match[2]}${includeSeconds && match[3] ? `:${match[3]}` : ''}`
+        let h = parseInt(match[1])
+        const ampm = h >= 12 ? 'pm' : 'am'
+        h = h % 12
+        h = h ? h : 12
+        return `${h}:${match[2]}${includeSeconds && match[3] ? `:${match[3]}` : ''} ${ampm}`
       }
     }
   }
@@ -122,7 +145,7 @@ export function formatTimeInAU(date: Date | string, includeSeconds = false): str
   if (isNaN(d.getTime())) return "00:00"
 
   return new Intl.DateTimeFormat("en-AU", {
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
     second: includeSeconds ? "2-digit" : undefined,
     hour12: true,
@@ -139,22 +162,23 @@ export function formatDateTime(date: Date | string): string {
     // To get the weekday correctly, we need a Date object.
     const cleanDateStr = date.replace(' ', 'T')
     const match = cleanDateStr.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/)
-    
+
     if (match) {
-       const [_, year, month, day, hour, min] = match
-       if (year === "0000") return "N/A"
-       const d = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(min))
-       if (!isNaN(d.getTime())) {
-          return new Intl.DateTimeFormat("en-AU", {
-            weekday: "long",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: AU_TIMEZONE, // Local time for naive strings
-          }).format(d)
-       }
+      const [_, year, month, day, hour, min] = match
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+      const monthLabel = months[parseInt(month) - 1]
+      
+      // Get weekday by creating a date (local is fine for just the weekday if we don't cross midnight, 
+      // but to be safe we'll use the year/month/day)
+      const d = new Date(Number(year), Number(month) - 1, Number(day))
+      const weekday = new Intl.DateTimeFormat("en-AU", { weekday: "long" }).format(d)
+      
+      let h = parseInt(hour)
+      const ampm = h >= 12 ? 'pm' : 'am'
+      h = h % 12
+      h = h ? h : 12
+      
+      return `${weekday}, ${day} ${monthLabel} ${year}, ${h}:${min} ${ampm}`
     }
   }
 

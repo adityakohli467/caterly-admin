@@ -1,6 +1,7 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,7 +14,7 @@ import { format } from "date-fns"
 import api, { invoicesAPI, paymentsAPI } from "@/lib/api"
 import { PaymentProcessingModal } from "@/components/PaymentProcessingModal"
 import { useQueryClient } from "@tanstack/react-query"
-import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
+import { cn, formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { toast } from "sonner"
 import { useState } from "react"
 
@@ -71,9 +72,10 @@ interface OrderDetails {
   coupon_type?: string
   coupon_id?: number
   gst?: number
-  calculated_total?: number
   order_total?: number
+  calculated_total?: number
   customer_type?: string
+  order_status?: number
 }
 
 export default function OrderDetailPage() {
@@ -369,7 +371,11 @@ export default function OrderDetailPage() {
   const products = order.products || order.order_products || []
 
   // Use frontend calculated values to ensure accuracy
-  const subtotal = products.reduce((sum, p) => sum + Number(p.total), 0)
+  const subtotal = products.reduce((sum, p) => {
+    const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+    const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
+    return sum + productTotal + optionsTotal;
+  }, 0)
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
   const couponDiscount = typeof order.coupon_discount === 'number' ? order.coupon_discount : parseFloat(String(order.coupon_discount || '0'))
   const deliveryFee = parseFloat(String(order.delivery_fee || '0'))
@@ -394,6 +400,19 @@ export default function OrderDetailPage() {
             </h1>
             <p className="text-gray-500 mt-1 flex items-center gap-2">
               Order <span className="px-2 py-0.5 bg-red-50 text-[#C62828] rounded border border-red-100 font-semibold">#{order.order_id}</span>
+              {order.order_status !== undefined && (
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "ml-2",
+                    (order.order_status === 2 || order.order_status === 3) 
+                      ? "bg-green-50 text-green-700 border-green-200" 
+                      : "bg-red-50 text-[#C62828] border-red-100"
+                  )}
+                >
+                  {(order.order_status === 2 || order.order_status === 3) ? "Paid" : "Unpaid"}
+                </Badge>
+              )}
             </p>
           </div>
         </div>
@@ -427,27 +446,31 @@ export default function OrderDetailPage() {
 
           {/* Payment Section */}
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 shadow-sm h-9"
-              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-              onClick={handleOpenPaymentLinkModal}
-              disabled={sendingPaymentLink}
-            >
-              <Send className="h-3.5 w-3.5" />
-              {sendingPaymentLink ? "Sending..." : "Send Payment Link"}
-            </Button>
-            {orderId && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
-                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-                onClick={() => setShowPaymentModal(true)}
-              >
-                <DollarSign className="h-3.5 w-3.5" />
-                Process Payment
-              </Button>
+            {!(order.order_status === 2 || order.order_status === 3) && (
+              <>
+                <Button
+                  size="sm"
+                  className="bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 shadow-sm h-9"
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  onClick={handleOpenPaymentLinkModal}
+                  disabled={sendingPaymentLink}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  {sendingPaymentLink ? "Sending..." : "Send Payment Link"}
+                </Button>
+                {/* {orderId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
+                    style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                    onClick={() => setShowPaymentModal(true)}
+                  >
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Process Payment
+                  </Button>
+                )} */}
+              </>
             )}
             <Button
               variant="outline"
@@ -499,7 +522,7 @@ export default function OrderDetailPage() {
                 <tbody>
                   {products && products.length > 0 ? (
                     products.map((product: OrderProduct, index: number) => {
-                      const baseTotal = Number(product.price) * Number(product.quantity)
+                      const baseTotal = (Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)
                       const totalWithOptions = baseTotal // Renamed internally for clarity in the cell but we'll use baseTotal for top line
 
                       return (
@@ -755,6 +778,14 @@ export default function OrderDetailPage() {
               <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                 Customer Details
               </h3>
+              {order.customer_id && (
+                <Link
+                  href={`/customers/${order.customer_id}`}
+                  className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium"
+                >
+                  View Customer
+                </Link>
+              )}
             </div>
 
             <div className="space-y-4">
