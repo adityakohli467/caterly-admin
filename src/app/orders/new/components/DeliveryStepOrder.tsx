@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ import api from "@/lib/api"
 import { locationsAPI, companiesAPI } from "@/lib/api"
 import { toast } from "sonner"
 export { formatAustralianPhone, cleanPhoneNumber, getPhonePlaceholder, getPhoneValidationError } from "@/lib/phone-mask"
-import { getAUDateToday, formatTimeInAU } from "@/lib/utils"
+import { getAUDateToday, formatTimeInAU, getAUCurrentHour, getAUCurrentMinute } from "@/lib/utils"
 
 interface DeliveryStepProps {
   data: OrderData
@@ -118,19 +118,6 @@ function SortableProductItem({ product, index, onReorder, onUpdateQuantity }: {
 
 export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = false }: DeliveryStepProps) {
   const [products, setProducts] = useState(data.products || [])
-
-  const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
-    const totalMinutes = (6 * 60) + (i * 15)
-    const hour24 = Math.floor(totalMinutes / 60) % 24
-    const min = totalMinutes % 60
-    const displayHour = hour24 % 12 || 12
-    const ampm = hour24 < 12 ? 'AM' : 'PM'
-    const displayMin = min.toString().padStart(2, '0')
-    return {
-      display: `${displayHour}:${displayMin} ${ampm}`,
-      value: `${hour24.toString().padStart(2, '0')}:${displayMin}`
-    }
-  })
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -274,6 +261,35 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const [sendEmail, setSendEmail] = useState(data.email || "")
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null)
   const [showCouponList, setShowCouponList] = useState(false)
+
+  const timeOptions = useMemo(() => {
+    return Array.from({ length: 24 * 4 }, (_, i) => {
+      const totalMinutes = (6 * 60) + (i * 15) // Start from 6:00 AM as requested
+      const hour24 = Math.floor(totalMinutes / 60) % 24
+      const min = totalMinutes % 60
+      const displayHour = hour24 % 12 || 12
+      const ampm = hour24 < 12 ? 'AM' : 'PM'
+      const displayMin = min.toString().padStart(2, '0')
+      const value = `${hour24.toString().padStart(2, '0')}:${displayMin}`
+
+      // Check if time has passed if today is selected
+      const isToday = deliveryDate === getAUDateToday()
+      let isPassed = false
+      if (isToday) {
+        const currentHour = getAUCurrentHour()
+        const currentMin = getAUCurrentMinute()
+        if (hour24 < currentHour || (hour24 === currentHour && min <= currentMin)) {
+          isPassed = true
+        }
+      }
+
+      return {
+        display: `${displayHour}:${displayMin} ${ampm}`,
+        value,
+        disabled: isPassed
+      }
+    })
+  }, [deliveryDate])
 
   // Fetch active coupons (status=1 means active)
   const { data: couponsData } = useQuery({
@@ -805,6 +821,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                       <SelectItem
                         key={opt.value}
                         value={opt.value}
+                        disabled={opt.disabled}
                         className="focus:bg-[#C62828] focus:text-white data-[state=checked]:bg-[#C62828] data-[state=checked]:text-white"
                       >
                         {opt.display}

@@ -401,12 +401,12 @@ export default function OrderDetailPage() {
             <p className="text-gray-500 mt-1 flex items-center gap-2">
               Order <span className="px-2 py-0.5 bg-red-50 text-[#C62828] rounded border border-red-100 font-semibold">#{order.order_id}</span>
               {order.order_status !== undefined && (
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
                     "ml-2",
-                    (order.order_status === 2 || order.order_status === 3) 
-                      ? "bg-green-50 text-green-700 border-green-200" 
+                    (order.order_status === 2 || order.order_status === 3)
+                      ? "bg-green-50 text-green-700 border-green-200"
                       : "bg-red-50 text-[#C62828] border-red-100"
                   )}
                 >
@@ -873,7 +873,7 @@ export default function OrderDetailPage() {
                       Delivery Time
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {formatTimeInAU(order.delivery_date_time)}
+                      {order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : (order.delivery_time ? formatTimeInAU(order.delivery_time) : 'N/A')}
                     </p>
                   </div>
                 </>

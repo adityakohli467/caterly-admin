@@ -90,7 +90,7 @@ export default function CustomerDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 lg:justify-end">
+        {/* <div className="flex items-center gap-3 lg:justify-end">
           <Button
             variant="outline"
             className="gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -103,7 +103,7 @@ export default function CustomerDetailPage() {
           >
             Back to List
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -180,8 +180,8 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Right column - Business Info & Meta */}
-        <div className="space-y-6">
-          {/* Business Context */}
+        {/* <div className="space-y-6">
+         
           <Card className="border-gray-200 shadow-sm overflow-hidden">
             <div className="bg-white px-6 py-4 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -217,7 +217,7 @@ export default function CustomerDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Account Meta */}
+
           <Card className="border-gray-200 shadow-sm overflow-hidden">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -238,7 +238,7 @@ export default function CustomerDetailPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   )

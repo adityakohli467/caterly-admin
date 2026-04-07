@@ -9,6 +9,7 @@ import api, { settingsAPI } from "@/lib/api"
 import Link from "next/link"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import { cn, formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { useState } from "react"
 
 interface QuoteProduct {
@@ -855,27 +856,7 @@ export default function QuoteDetailPage() {
                       Delivery Time
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {(() => {
-                        // Format time in 12-hour format with AM/PM
-                        let timeToFormat = safeQuote.delivery_time
-                        if (!timeToFormat && safeQuote.delivery_date_time) {
-                          // Extract time from delivery_date_time if delivery_time is not available
-                          const date = new Date(safeQuote.delivery_date_time)
-                          const hours = date.getHours()
-                          const minutes = date.getMinutes()
-                          timeToFormat = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-                        }
-                        if (timeToFormat) {
-                          // Parse HH:mm format and convert to 12-hour format
-                          const [hours, minutes] = timeToFormat.split(':').map(Number)
-                          if (!isNaN(hours) && !isNaN(minutes)) {
-                            const hour12 = hours % 12 || 12
-                            const ampm = hours >= 12 ? 'PM' : 'AM'
-                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`
-                          }
-                        }
-                        return timeToFormat || 'N/A'
-                      })()}
+                      {safeQuote.delivery_date_time ? formatTimeInAU(safeQuote.delivery_date_time) : (safeQuote.delivery_time ? formatTimeInAU(safeQuote.delivery_time) : 'N/A')}
                     </p>
                   </div>
                 </>

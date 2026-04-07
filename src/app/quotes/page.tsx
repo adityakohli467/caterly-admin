@@ -21,6 +21,7 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { cn, formatTimeInAU } from "@/lib/utils"
 import { printTableData } from "@/lib/print-utils"
 
 interface Quote {
@@ -792,14 +793,7 @@ export default function QuotesPage() {
                         lineHeight: '20px',
                         letterSpacing: '0%'
                       }}>
-                        {quote.delivery_date_time ? (() => {
-                          const date = new Date(quote.delivery_date_time);
-                          const hours = date.getHours();
-                          const minutes = date.getMinutes();
-                          const hour12 = hours % 12 || 12;
-                          const ampm = hours >= 12 ? 'PM' : 'AM';
-                          return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                        })() : 'N/A'}
+                        {quote.delivery_date_time ? formatTimeInAU(quote.delivery_date_time) : 'N/A'}
                       </span>
                     </td>
                     <td className="px-4 py-4">

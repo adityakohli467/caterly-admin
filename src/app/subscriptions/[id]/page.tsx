@@ -13,6 +13,7 @@ import { ChevronLeft, Download, Send, Edit, Save, X } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/api"
 import { invoicesAPI } from "@/lib/api"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import Link from "next/link"
 
 export default function SubscriptionDetailPage() {
@@ -115,15 +116,15 @@ export default function SubscriptionDetailPage() {
 
   const handleDownloadInvoice = async () => {
     if (!subscriptionId) return
-    
+
     setDownloadingInvoice(true)
     try {
       const response = await invoicesAPI.download(Number(subscriptionId))
-      
+
       // Create blob from response
       const blob = new Blob([response.data], { type: 'application/pdf' })
       const blobUrl = window.URL.createObjectURL(blob)
-      
+
       // Create download link
       const link = document.createElement('a')
       link.href = blobUrl
@@ -131,10 +132,10 @@ export default function SubscriptionDetailPage() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl)
-      
+
       toast.success("Invoice downloaded successfully")
     } catch (error: any) {
       console.error("Failed to download invoice:", error)
@@ -175,14 +176,11 @@ export default function SubscriptionDetailPage() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return ""
-    return new Date(dateString).toLocaleString("en-AU", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Australia/Sydney",
-    })
+    try {
+      return `${formatDateOnly(dateString)} ${formatTimeInAU(dateString)}`
+    } catch (e) {
+      return dateString
+    }
   }
 
   if (isLoading) {
@@ -425,14 +423,14 @@ export default function SubscriptionDetailPage() {
                   </span>
                 </div>
               )}
-              <div className="flex items-start gap-2">
+              {/* <div className="flex items-start gap-2">
                 <svg className="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                   {formatDate(subscription.date_added)}
                 </span>
-              </div>
+              </div> */}
             </div>
             {subscription.sent_to_customer && (
               <div className="mt-4 pt-4 border-t border-gray-200">

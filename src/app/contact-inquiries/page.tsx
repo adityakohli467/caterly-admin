@@ -16,6 +16,7 @@ import {
 import { Search, Eye, Trash2, Mail, Phone, MessageSquare, Calendar, Check } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 
 interface ContactInquiry {
   id: number
@@ -232,7 +233,7 @@ export default function ContactInquiriesPage() {
                     )}
                     <div className="flex items-center gap-1 font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <span>Submitted on: {format(new Date(inquiry.created_at), "MMM dd, yyyy HH:mm")}</span>
+                      <span>Submitted on: {formatDateOnly(inquiry.created_at)} {formatTimeInAU(inquiry.created_at)}</span>
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 line-clamp-2">{inquiry.message}</p>
@@ -326,7 +327,7 @@ export default function ContactInquiriesPage() {
                 <div>
                   <label className="text-sm font-medium text-gray-700">Submitted</label>
                   <p className="text-gray-900">
-                    {format(new Date(selectedInquiry.created_at), "MMM dd, yyyy HH:mm")}
+                    {formatDateOnly(selectedInquiry.created_at)} {formatTimeInAU(selectedInquiry.created_at)}
                   </p>
                 </div>
               </div>

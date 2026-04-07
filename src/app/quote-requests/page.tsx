@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 
 interface QuoteRequest {
     id: number
@@ -131,7 +132,7 @@ export default function QuoteRequestsPage() {
 
     const formatDeliveryDate = (dateStr: string) => {
         try {
-            return format(new Date(dateStr), "MMM dd, yyyy 'at' hh:mm a")
+            return `${formatDateOnly(dateStr)} at ${formatTimeInAU(dateStr)}`
         } catch {
             return dateStr
         }
@@ -139,7 +140,7 @@ export default function QuoteRequestsPage() {
 
     const formatCreatedAt = (dateStr: string) => {
         try {
-            return format(new Date(dateStr), "MMM dd, yyyy HH:mm")
+            return `${formatDateOnly(dateStr)} ${formatTimeInAU(dateStr)}`
         } catch {
             return dateStr
         }
