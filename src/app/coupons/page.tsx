@@ -11,7 +11,14 @@ import { Label } from "@/components/ui/label"
 import { ValidatedInput } from "@/components/ui/validated-input"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Printer, Plus, Edit2, Trash2 } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Search, Printer, Plus, Edit2, Trash2, Tag } from "lucide-react"
 import { toast } from "sonner"
 import { validateRequired, validateNumber } from "@/lib/validations"
 import { printTableData } from "@/lib/print-utils"
@@ -600,20 +607,21 @@ export default function CouponsPage() {
 
             {/* Discount Type */}
             <div className="space-y-2">
-              <Label htmlFor="discountType" className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-gray-700">
                 Discount Type <span className="text-red-500">*</span>
               </Label>
-              <select
-                id="discountType"
+              <Select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value)}
-                className="w-full h-11 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
-                style={{ fontFamily: 'Albert Sans' }}
+                onValueChange={setDiscountType}
               >
-                <option value="">Select type</option>
-                <option value="P">Percentage Discount</option>
-                <option value="F">Fixed Discount</option>
-              </select>
+                <SelectTrigger className="h-11 border-gray-300 bg-white focus:ring-[#C62828] focus:border-[#C62828]">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="P">Percentage Discount</SelectItem>
+                  <SelectItem value="F">Fixed Discount</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Action Buttons */}

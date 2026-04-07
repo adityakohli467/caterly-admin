@@ -827,8 +827,9 @@ export default function OrdersPage() {
           </Button>
 
           <Button
+            variant="ghost"
             onClick={handleClearFilters}
-            className="text-[#C62828] hover:text-[#04414d] bg-transparent border-0 shadow-none p-0 h-auto whitespace-nowrap"
+            className="text-[#C62828] hover:bg-red-50 hover:text-[#B71C1C] px-3 h-10 whitespace-nowrap rounded-full transition-colors"
             style={{
               fontFamily: 'Albert Sans',
               fontWeight: 600,

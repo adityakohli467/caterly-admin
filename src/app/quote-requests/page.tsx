@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
     Search,
     Eye,
     Trash2,
@@ -63,7 +70,7 @@ const getStatusConfig = (status: string) => {
 export default function QuoteRequestsPage() {
     const queryClient = useQueryClient()
     const [searchQuery, setSearchQuery] = useState("")
-    const [selectedStatus, setSelectedStatus] = useState("")
+    const [selectedStatus, setSelectedStatus] = useState("all")
     const [selectedQuote, setSelectedQuote] = useState<QuoteRequest | null>(null)
     const [showDetailModal, setShowDetailModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -74,7 +81,7 @@ export default function QuoteRequestsPage() {
         queryFn: async () => {
             const params: any = { limit: 100 }
             if (searchQuery) params.search = searchQuery
-            if (selectedStatus) params.status = selectedStatus
+            if (selectedStatus && selectedStatus !== "all") params.status = selectedStatus
             const response = await quotationsAPI.list(params)
             return response.data
         },
@@ -174,34 +181,43 @@ export default function QuoteRequestsPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[#E03A3E]/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[#E03A3E] font-bold text-sm">{newCount}</span>
+            <div className="grid grid-cols-3 gap-6 mb-8">
+                <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#E03A3E]"></div>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#E03A3E]/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[#E03A3E] font-bold text-lg">{newCount}</span>
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>New</p>
+                            <p className="text-sm text-gray-700 font-bold" style={{ fontFamily: 'Albert Sans' }}>Unread Requests</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs text-gray-400 font-medium">New</p>
-                        <p className="text-sm text-gray-700 font-semibold">Unread</p>
+                </Card>
+                <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-amber-500"></div>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                            <span className="text-amber-600 font-bold text-lg">{reviewedCount}</span>
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>Reviewed</p>
+                            <p className="text-sm text-gray-700 font-bold" style={{ fontFamily: 'Albert Sans' }}>In Progress</p>
+                        </div>
                     </div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-amber-600 font-bold text-sm">{reviewedCount}</span>
+                </Card>
+                <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500"></div>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                            <span className="text-green-600 font-bold text-lg">{repliedCount}</span>
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>Replied</p>
+                            <p className="text-sm text-gray-700 font-bold" style={{ fontFamily: 'Albert Sans' }}>Completed</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs text-gray-400 font-medium">Reviewed</p>
-                        <p className="text-sm text-gray-700 font-semibold">In Progress</p>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-green-600 font-bold text-sm">{repliedCount}</span>
-                    </div>
-                    <div>
-                        <p className="text-xs text-gray-400 font-medium">Mark Replied</p>
-                        <p className="text-sm text-gray-700 font-semibold">Completed</p>
-                    </div>
-                </div>
+                </Card>
             </div>
 
             {/* Filters */}
@@ -216,17 +232,22 @@ export default function QuoteRequestsPage() {
                             className="pl-9 border-gray-200 focus:border-[#E03A3E] focus:ring-[#E03A3E]/20"
                         />
                     </div>
-                    <div className="relative w-full sm:w-44">
-                        <select
+                    <div className="w-full sm:w-44">
+                        <Select
                             value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                            className="w-full appearance-none px-4 py-2 pr-9 border border-gray-200 rounded-md text-sm text-gray-700 focus:outline-none focus:border-[#E03A3E] bg-white"
+                            onValueChange={setSelectedStatus}
                         >
-                            {statusOptions.map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                            <SelectTrigger className="h-11 border-gray-200 rounded-lg focus:ring-[#C62828] focus:border-[#C62828] bg-white text-gray-700">
+                                <SelectValue placeholder="All Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {statusOptions.map((opt) => (
+                                    <SelectItem key={opt.value || "all"} value={opt.value || "all"}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </Card>
@@ -270,7 +291,7 @@ export default function QuoteRequestsPage() {
                         return (
                             <Card
                                 key={quote.id}
-                                className="p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#F2CACA]"
+                                className="p-6 border-none shadow-md hover:shadow-lg transition-all duration-200 rounded-2xl bg-white"
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                                     {/* Left: Info */}

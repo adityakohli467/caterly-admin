@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Search, Eye, Trash2, Mail, Phone, MessageSquare, Calendar, Check } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
@@ -49,7 +50,7 @@ const getStatusColor = (status: string) => {
 export default function ContactInquiriesPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedInquiry, setSelectedInquiry] = useState<ContactInquiry | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -60,7 +61,7 @@ export default function ContactInquiriesPage() {
     queryFn: async () => {
       const params: any = { limit: 100 }
       if (searchQuery) params.search = searchQuery
-      if (selectedStatus) params.status = selectedStatus
+      if (selectedStatus && selectedStatus !== "all") params.status = selectedStatus
       const response = await contactInquiriesAPI.list(params)
       return response.data
     },
@@ -134,33 +135,35 @@ export default function ContactInquiriesPage() {
         <p className="text-gray-600 mt-2">View and manage contact form submissions</p>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="p-4 border-l-4 border-l-blue-500 bg-white shadow-sm flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
           <div>
-            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>New Enquiries</p>
-            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.new}</h2>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>New Enquiries</p>
+            <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.new}</h2>
           </div>
-          <div className="bg-blue-50 p-2 rounded-full">
-            <Mail className="w-5 h-5 text-blue-500" />
+          <div className="bg-blue-50 p-3 rounded-2xl">
+            <Mail className="w-6 h-6 text-blue-500" />
           </div>
         </Card>
-        <Card className="p-4 border-l-4 border-l-yellow-500 bg-white shadow-sm flex items-center justify-between">
+        <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-500"></div>
           <div>
-            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Read</p>
-            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.read}</h2>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>Read</p>
+            <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.read}</h2>
           </div>
-          <div className="bg-yellow-50 p-2 rounded-full">
-            <Eye className="w-5 h-5 text-yellow-500" />
+          <div className="bg-yellow-50 p-3 rounded-2xl">
+            <Eye className="w-6 h-6 text-yellow-500" />
           </div>
         </Card>
-        <Card className="p-4 border-l-4 border-l-green-500 bg-white shadow-sm flex items-center justify-between">
+        <Card className="p-5 border-none bg-white shadow-md hover:shadow-lg transition-all flex items-center justify-between rounded-2xl overflow-hidden relative">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-green-500"></div>
           <div>
-            <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Replied</p>
-            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.replied}</h2>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1" style={{ fontFamily: 'Albert Sans' }}>Replied</p>
+            <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>{stats.replied}</h2>
           </div>
-          <div className="bg-green-50 p-2 rounded-full">
-            <Check className="w-5 h-5 text-green-500" />
+          <div className="bg-green-50 p-3 rounded-2xl">
+            <Check className="w-6 h-6 text-green-500" />
           </div>
         </Card>
       </div>
@@ -181,18 +184,21 @@ export default function ContactInquiriesPage() {
             </div>
           </div>
           <div className="w-full md:w-48">
-            <select
+            <Select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-4 py-2 h-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] text-sm"
-              style={{ fontFamily: 'Albert Sans' }}
+              onValueChange={setSelectedStatus}
             >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-11 border-gray-200 rounded-lg focus:ring-[#C62828] focus:border-[#C62828] bg-white">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value || "all"} value={option.value || "all"}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </Card>

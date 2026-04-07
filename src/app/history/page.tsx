@@ -371,7 +371,7 @@ export default function HistoryPage() {
                 />
               </div>
               <div className="sm:col-span-2 lg:col-span-1 flex items-end">
-                <Button variant="outline" onClick={clearFilters} className="w-full">
+                <Button variant="ghost" onClick={clearFilters} className="w-full text-[#C62828] hover:bg-red-50 hover:text-[#B71C1C]">
                   Clear All
                 </Button>
               </div>
@@ -401,7 +401,7 @@ export default function HistoryPage() {
                 <tr>
                   <td colSpan={8} className="p-8 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-6 w-6 animate-spin text-[#0d6efd]" />
+                      <Loader2 className="h-6 w-6 animate-spin text-[#C62828]" />
                       <span>Loading history...</span>
                     </div>
                   </td>
@@ -444,9 +444,9 @@ export default function HistoryPage() {
                       {(search || eventType || eventCategory || resourceType || userType || requestMethod || isSuccessful || startDate || endDate) && (
                         <Button
                           onClick={clearFilters}
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          className="mt-2"
+                          className="mt-2 text-[#C62828] hover:bg-red-50 hover:text-[#B71C1C]"
                         >
                           Clear Filters
                         </Button>
