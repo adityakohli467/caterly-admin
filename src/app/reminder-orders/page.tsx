@@ -136,203 +136,196 @@ export default function ReminderOrdersPage() {
   }
 
   return (
-    <div className="bg-gray-50 " style={{ fontFamily: 'Albert Sans' }}>
+    <div className="bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden" style={{ fontFamily: 'Albert Sans' }}>
       {/* Success Message */}
       {showSuccessMessage && (
-        <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
           <CheckCircle className="h-5 w-5" />
           <span className="text-sm font-medium">Reminder Email successfully sent!</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h1 className="text-gray-900" style={{ 
           fontFamily: 'Albert Sans',
           fontWeight: 600,
           fontStyle: 'normal',
           fontSize: '40px',
-          lineHeight: '20px',
+          lineHeight: '1.2',
           letterSpacing: '0%'
         }}>
           Reminder Orders
         </h1>
+        <Button 
+          onClick={() => printTableData("Reminder Orders")}
+          className="gap-2 whitespace-nowrap border-0 shadow-none hover:bg-red-50 rounded-full h-10 px-4 transition-colors"
+          style={{ 
+            fontFamily: 'Albert Sans', 
+            fontWeight: 600,
+            fontSize: '15px',
+            color: '#C62828',
+            backgroundColor: 'transparent',
+          }}
+        >
+          <Printer className="h-5 w-5 text-[#C62828]" />
+          Print List
+        </Button>
       </div>
 
       {/* Main Tabs */}
-      <div className="flex gap-2 mb-6">
-        <Button
-          variant={activeMainTab === "past" ? "default" : "outline"}
+      <div className="flex gap-3 mb-8 overflow-x-auto pb-1 no-scrollbar">
+        <button
           onClick={() => setActiveMainTab("past")}
-          className={`rounded-full px-8 py-2 ${
+          className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
             activeMainTab === "past"
-              ? "bg-blue-100 text-blue-700 border-blue-300"
-              : "bg-white text-gray-700 border-gray-300"
+              ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828] shadow-sm"
+              : "bg-white text-gray-600 border-2 border-gray-100 hover:border-gray-200"
           }`}
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           Past Orders
-        </Button>
-        <Button
-          variant={activeMainTab === "future" ? "default" : "outline"}
+        </button>
+        <button
           onClick={() => setActiveMainTab("future")}
-          className={`rounded-full px-8 py-2 ${
+          className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
             activeMainTab === "future"
-              ? "bg-blue-100 text-blue-700 border-blue-300"
-              : "bg-white text-gray-700 border-gray-300"
+              ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828] shadow-sm"
+              : "bg-white text-gray-600 border-2 border-gray-100 hover:border-gray-200"
           }`}
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           Future Orders
-        </Button>
-        <Button
-          variant={activeMainTab === "reminder" ? "default" : "outline"}
+        </button>
+        <button
           onClick={() => setActiveMainTab("reminder")}
-          className={`rounded-full px-8 py-2 ${
+          className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap ${
             activeMainTab === "reminder"
-              ? "bg-blue-100 text-blue-700 border-blue-300"
-              : "bg-white text-gray-700 border-gray-300"
+              ? "bg-[#FFEBEE] text-[#C62828] border-2 border-[#C62828] shadow-sm"
+              : "bg-white text-gray-600 border-2 border-gray-100 hover:border-gray-200"
           }`}
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
         >
           Reminder Orders
-        </Button>
+        </button>
       </div>
 
       {/* Search, Date Filter, Clear, and Send Email */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-8 items-stretch">
+        <div className="lg:col-span-5 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             placeholder="Search Order ID, Customer ID, Status etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-[488px] h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#0d6efd] focus:border-[#0d6efd] focus:outline-none"
-            style={{ fontFamily: 'Albert Sans', paddingLeft: '44px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px' }}
+            className="w-full h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none transition-all shadow-sm"
+            style={{ fontFamily: 'Albert Sans', paddingLeft: '44px' }}
           />
         </div>
-        <div className="relative">
+        <div className="lg:col-span-2 relative">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             type="text"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="pl-10 h-11 border-gray-300 bg-white w-full sm:w-40"
+            className="w-full h-[54px] border border-gray-200 bg-white rounded-full focus:ring-2 focus:ring-[#C62828] focus:border-[#C62828] focus:outline-none transition-all shadow-sm pl-10"
             style={{ fontFamily: 'Albert Sans' }}
           />
         </div>
-        <Button 
-          variant="outline" 
-          className="h-11 border-gray-300 bg-white text-blue-600"
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-        >
-          Clear Filters
-        </Button>
-        <Button 
-          onClick={handleSendReminderEmail}
-          disabled={selectedOrders.length === 0}
-          className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white gap-2 h-11 disabled:bg-gray-300"
-          style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-        >
-          <Mail className="h-5 w-5" />
-          Send Reminder Email
-        </Button>
-        <div className="ml-auto">
+        <div className="lg:col-span-2">
           <Button 
-            onClick={() => printTableData("Reminder Orders")}
-            className="gap-2 whitespace-nowrap border-0 shadow-none"
-            style={{ 
-              fontFamily: 'Albert Sans', 
-              fontWeight: 600,
-              fontStyle: 'normal',
-              fontSize: '16px',
-              lineHeight: '20px',
-              letterSpacing: '0%',
-              textAlign: 'center',
-              color: '#0d6efd',
-              backgroundColor: 'transparent',
-              padding: 0,
-              gap: '8px',
-              opacity: 1
-            }}
+            variant="ghost" 
+            className="w-full h-[54px] rounded-full text-[#C62828] hover:bg-red-50 hover:text-[#B71C1C] transition-colors"
+            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
           >
-            <Printer className="h-5 w-5 text-[#0d6efd]" />
-            Print
+            Clear Filters
+          </Button>
+        </div>
+        <div className="lg:col-span-3">
+          <Button 
+            onClick={handleSendReminderEmail}
+            disabled={selectedOrders.length === 0}
+            className="w-full h-[54px] bg-[#C62828] hover:bg-[#B71C1C] text-white gap-2 rounded-full shadow-lg hover:shadow-red-900/20 disabled:bg-gray-300 disabled:shadow-none transition-all"
+            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+          >
+            <Mail className="h-5 w-5" />
+            Send Reminder Email
           </Button>
         </div>
       </div>
 
       {/* Location Tabs */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-6 flex-wrap border-b border-gray-100">
         {locationTabs.map((location: any) => (
-          <Button
+          <button
             key={location.id}
-            variant="ghost"
             onClick={() => setActiveLocationTab(location.id)}
-            className={`gap-2 ${
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-bold transition-all relative ${
               activeLocationTab === location.id
-                ? "text-blue-600 border-b-2 border-blue-600 rounded-none"
-                : "text-gray-600"
+                ? "text-[#C62828]"
+                : "text-gray-400 hover:text-gray-600"
             }`}
-            style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            style={{ fontFamily: 'Albert Sans' }}
           >
-            <MapPin className="h-4 w-4" />
+            <MapPin className={`h-4 w-4 ${activeLocationTab === location.id ? "text-[#C62828]" : "text-gray-400"}`} />
             {location.name}
-          </Button>
+            {activeLocationTab === location.id && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#C62828] rounded-t-full"></div>
+            )}
+          </button>
         ))}
       </div>
 
       {/* Table */}
-      <Card className="border border-gray-200 shadow-sm overflow-hidden bg-white">
+      <Card className="border-none shadow-md overflow-hidden rounded-2xl bg-white mb-8">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[1000px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-6 py-4 text-left">
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-6 py-4 text-left w-10">
                   <Checkbox
-                    checked={selectedOrders.length === orders.length}
+                    checked={orders.length > 0 && selectedOrders.length === orders.length}
                     onCheckedChange={handleSelectAll}
+                    className="border-gray-300 data-[state=checked]:bg-[#C62828] data-[state=checked]:border-[#C62828]"
                   />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Order ID
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Customer Name
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Company
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Email
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Delivery Date
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Mail Status
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'Albert Sans' }}>
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order, index) => (
-                <tr key={`${order.order_id}-${index}`} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <tr key={`${order.order_id}-${index}`} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <Checkbox
                       checked={selectedOrders.includes(order.order_id)}
                       onCheckedChange={(checked) => handleSelectOrder(order.order_id, checked as boolean)}
+                      className="border-gray-300 data-[state=checked]:bg-[#C62828] data-[state=checked]:border-[#C62828]"
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-blue-600 font-medium cursor-pointer" style={{ fontFamily: 'Albert Sans' }}>
+                    <span className="text-sm text-[#C62828] font-bold cursor-pointer hover:underline" style={{ fontFamily: 'Albert Sans' }}>
                       {order.order_id}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                       {order.customer_name}
                     </span>
                   </td>
@@ -342,36 +335,36 @@ export default function ReminderOrdersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                    <span className="text-sm text-gray-500 font-medium" style={{ fontFamily: 'Albert Sans' }}>
                       {order.email}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                    <span className="text-sm text-gray-700 font-medium" style={{ fontFamily: 'Albert Sans' }}>
                       {order.delivery_date}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     {order.mail_status === "Sent" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold ring-1 ring-inset ring-green-600/20">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
                         Sent
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-orange-600"></span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold ring-1 ring-inset ring-amber-600/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
                         Not Sent
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => handleSendIndividualEmail(order.order_id)}
-                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
-                      style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#C62828] hover:text-[#B71C1C] transition-colors"
+                      style={{ fontFamily: 'Albert Sans' }}
                     >
                       <Mail className="h-4 w-4" />
-                      Send Reminder Email
+                      Send Reminder
                     </button>
                   </td>
                 </tr>
@@ -382,21 +375,23 @@ export default function ReminderOrdersPage() {
       </Card>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-6">
-        <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
-          Showing 1-26 of 26 Entries
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+        <p className="text-sm font-medium text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
+          Showing 1 - {orders.length} of {orders.length} Entries
         </p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="border-gray-300 bg-white">
-            Prev
+          <Button variant="outline" size="sm" className="rounded-lg border-gray-200 text-gray-600 hover:bg-gray-50 px-4 h-9">
+            Previous
           </Button>
-          <Button 
-            size="sm" 
-            className="bg-[#0d6efd] hover:bg-[#0b5ed7] text-white"
-          >
-            23
-          </Button>
-          <Button variant="outline" size="sm" className="border-gray-300 bg-white">
+          <div className="flex items-center gap-1">
+            <Button 
+              size="sm" 
+              className="w-9 h-9 rounded-lg bg-[#C62828] hover:bg-[#B71C1C] text-white font-bold"
+            >
+              1
+            </Button>
+          </div>
+          <Button variant="outline" size="sm" className="rounded-lg border-gray-200 text-gray-600 hover:bg-gray-50 px-4 h-9">
             Next
           </Button>
         </div>

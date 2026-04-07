@@ -13,6 +13,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Search, Eye, Trash2, Mail, Phone, Building2, MapPin, Calendar, MoreVertical, Globe } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
@@ -60,7 +67,7 @@ const getStatusColor = (status: string) => {
 export default function WholesaleEnquiriesPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedStatus, setSelectedStatus] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedEnquiry, setSelectedEnquiry] = useState<WholesaleEnquiry | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -71,7 +78,7 @@ export default function WholesaleEnquiriesPage() {
     queryFn: async () => {
       const params: any = { limit: 100 }
       if (searchQuery) params.search = searchQuery
-      if (selectedStatus) params.status = selectedStatus
+      if (selectedStatus && selectedStatus !== "all") params.status = selectedStatus
       const response = await wholesaleEnquiriesAPI.list(params)
       return response.data
     },
@@ -147,17 +154,21 @@ export default function WholesaleEnquiriesPage() {
             </div>
           </div>
           <div className="w-full md:w-48">
-            <select
+            <Select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              onValueChange={setSelectedStatus}
             >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-11 border-gray-200 rounded-lg focus:ring-[#C62828] focus:border-[#C62828] bg-white">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((option) => (
+                  <SelectItem key={option.value || "all"} value={option.value || "all"}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </Card>
@@ -183,7 +194,7 @@ export default function WholesaleEnquiriesPage() {
       ) : (
         <div className="space-y-4">
           {enquiries.map((enquiry) => (
-            <Card key={enquiry.id} className="p-6 hover:shadow-lg transition-shadow">
+            <Card key={enquiry.id} className="p-6 hover:shadow-lg transition-all border-gray-100 rounded-2xl bg-white shadow-sm">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
