@@ -16,6 +16,7 @@ import {
 import { Search, Eye, Trash2, Mail, Phone, Building2, MapPin, Calendar, MoreVertical, Globe } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 
 interface WholesaleEnquiry {
   id: number
@@ -212,7 +213,7 @@ export default function WholesaleEnquiriesPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(enquiry.created_at), "MMM dd, yyyy HH:mm")}</span>
+                      <span>{formatDateOnly(enquiry.created_at)} {formatTimeInAU(enquiry.created_at)}</span>
                     </div>
                   </div>
                   <div className="text-sm text-gray-700">
@@ -386,7 +387,7 @@ export default function WholesaleEnquiriesPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-700">Submitted</label>
                     <p className="text-gray-900">
-                      {format(new Date(selectedEnquiry.created_at), "MMM dd, yyyy HH:mm")}
+                      {formatDateOnly(selectedEnquiry.created_at)} {formatTimeInAU(selectedEnquiry.created_at)}
                     </p>
                   </div>
                 </div>

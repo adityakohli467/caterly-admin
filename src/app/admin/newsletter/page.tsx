@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Trash2, Mail, Calendar, Check, X, ShieldAlert, Users } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 
 interface NewsletterSubscription {
   id: number
@@ -215,7 +216,7 @@ export default function NewsletterSubscriptionsPage() {
                   <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
                     <div className="flex items-center gap-1 font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      <span>Subscribed on: {subscription.subscribedAt ? format(new Date(subscription.subscribedAt), "MMM dd, yyyy HH:mm") : 'N/A'}</span>
+                      <span>Subscribed on: {subscription.subscribedAt ? `${formatDateOnly(subscription.subscribedAt)} ${formatTimeInAU(subscription.subscribedAt)}` : 'N/A'}</span>
                     </div>
                     {subscription.source && (
                       <div className="flex items-center gap-1 font-medium text-gray-700 bg-gray-50 px-2 py-0.5 rounded">

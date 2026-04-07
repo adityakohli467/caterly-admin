@@ -29,7 +29,7 @@ export function formatDate(date: Date | string): string {
       const [_, year, month, day, hour, min] = match
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
       const monthLabel = months[parseInt(month) - 1]
-      
+
       if (hour && min) {
         let h = parseInt(hour)
         const ampm = h >= 12 ? 'pm' : 'am'
@@ -122,12 +122,18 @@ export function getAUCurrentHour(): number {
   }).format(now))
 }
 
+/** Get current minute in Australia (0-59) */
+export function getAUCurrentMinute(): number {
+  const now = new Date()
+  return parseInt(new Intl.DateTimeFormat("en-AU", {
+    minute: "numeric",
+    timeZone: AU_TIMEZONE,
+  }).format(now))
+}
+
 /** Format a Date object or ISO string specifically to a time string in Australia (e.g., "17:30") */
 export function formatTimeInAU(date: Date | string, includeSeconds = false): string {
   if (typeof date === "string") {
-    // If it's a simple HH:mm string already, return it
-    if (/^\d{2}:\d{2}(:\d{2})?$/.test(date)) return date.slice(0, 5)
-
     // ONLY use literal extraction for naive strings (no timezone info)
     if (!date.includes('Z') && !date.includes('+')) {
       const match = date.match(/(\d{2}):(\d{2})(?::(\d{2}))?/)
@@ -150,7 +156,7 @@ export function formatTimeInAU(date: Date | string, includeSeconds = false): str
     second: includeSeconds ? "2-digit" : undefined,
     hour12: true,
     timeZone: AU_TIMEZONE,
-  }).format(d)
+  }).format(d).toLowerCase()
 }
 
 /** Format date+time with weekday in Australian timezone (e.g. "Wednesday, 18 Mar 2026, 5:30 pm") */
@@ -167,17 +173,17 @@ export function formatDateTime(date: Date | string): string {
       const [_, year, month, day, hour, min] = match
       const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
       const monthLabel = months[parseInt(month) - 1]
-      
+
       // Get weekday by creating a date (local is fine for just the weekday if we don't cross midnight, 
       // but to be safe we'll use the year/month/day)
       const d = new Date(Number(year), Number(month) - 1, Number(day))
       const weekday = new Intl.DateTimeFormat("en-AU", { weekday: "long" }).format(d)
-      
+
       let h = parseInt(hour)
       const ampm = h >= 12 ? 'pm' : 'am'
       h = h % 12
       h = h ? h : 12
-      
+
       return `${weekday}, ${day} ${monthLabel} ${year}, ${h}:${min} ${ampm}`
     }
   }
@@ -190,9 +196,10 @@ export function formatDateTime(date: Date | string): string {
     day: "numeric",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
+    hour12: true,
     timeZone: AU_TIMEZONE,
-  }).format(d)
+  }).format(d).toLowerCase()
 }
 

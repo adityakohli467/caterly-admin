@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
 import { printTableData } from "@/lib/print-utils"
+import { formatTimeInAU } from "@/lib/utils"
 import {
   Accordion,
   AccordionContent,
@@ -416,7 +417,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
               </p>
               <p className="text-sm text-gray-700">
                 {order?.delivery_date_time 
-                  ? format(new Date(order.delivery_date_time), 'EEEE, do MMMM yyyy, HH:mm')
+                  ? `${format(new Date(order.delivery_date_time), 'EEEE, do MMMM yyyy')}, ${formatTimeInAU(order.delivery_date_time)}`
                   : 'N/A'}
               </p>
             </div>

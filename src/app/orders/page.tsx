@@ -1262,7 +1262,7 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          {order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : (order.delivery_time || '—')}
+                          {order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : (order.delivery_time ? formatTimeInAU(order.delivery_time) : '—')}
                         </span>
                       </td>
                       <td className="px-4 py-4">

@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import { ordersAPI, locationsAPI, invoicesAPI } from "@/lib/api"
+import { cn, formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { printTableData } from "@/lib/print-utils"
 
 interface WholesaleOrder {
@@ -591,15 +592,7 @@ export default function WholesaleOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                          {(() => {
-                            const timePart = order.delivery_time;
-                            if (!timePart) return '—';
-                            const [hours, minutes] = timePart.split(':').map(Number);
-                            if (isNaN(hours) || isNaN(minutes)) return timePart;
-                            const hour12 = hours % 12 || 12;
-                            const ampm = hours >= 12 ? 'PM' : 'AM';
-                            return `${hour12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-                          })()}
+                          {order.delivery_date_time ? formatTimeInAU(order.delivery_date_time) : (order.delivery_time ? formatTimeInAU(order.delivery_time) : '—')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
