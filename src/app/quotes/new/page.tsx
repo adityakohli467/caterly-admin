@@ -64,6 +64,7 @@ export default function NewQuotePage() {
     products: [],
   })
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const steps = [
     { number: 1, label: "Select Customer" },
@@ -88,6 +89,8 @@ export default function NewQuotePage() {
   }
 
   const handleSaveQuote = async (latestData?: Partial<QuoteData>) => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
     try {
       // Use latestData if provided (from DeliveryStep), otherwise use quoteData state
       // This ensures we have the latest coupon data even if state hasn't updated yet
@@ -101,10 +104,14 @@ export default function NewQuotePage() {
       const transformedProducts = dataToUse.products?.map(product => ({
         ...product,
         price: Number((product as any).base_price) > 0 ? (product as any).base_price : product.price,
-        add_ons: product.add_ons?.map(addon => ({
-          ...addon,
-          // Use base_price only when it's set (> 0); otherwise use display price (e.g. $20)
-          price: Number((addon as any).base_price) > 0 ? Number((addon as any).base_price) : addon.price,
+        options: product.add_ons?.map((addon: any) => ({
+          option_name: addon.name || "",
+          option_value: addon.name || "",
+          option_quantity: addon.quantity,
+          option_price: Number(addon.base_price) > 0 ? Number(addon.base_price) : (addon.price || 0),
+          product_option_id: addon.product_option_id,
+          option_value_id: addon.option_value_id,
+          option_price_prefix: "+"
         })) || []
       })) || []
 
@@ -151,9 +158,8 @@ export default function NewQuotePage() {
         queryClient.invalidateQueries({ queryKey: ["quotes"] })
         router.push("/quotes?success=true")
       }
-    } catch (error: any) {
-      console.error("Error saving quote:", error)
-      toast.error(error.response?.data?.message || "Failed to save quote")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -259,6 +265,7 @@ export default function NewQuotePage() {
           onUpdate={updateQuoteData}
           onSave={handleSaveQuote}
           onBack={handleBack}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

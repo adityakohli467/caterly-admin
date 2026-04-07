@@ -309,6 +309,9 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       toast.success("Customer added successfully!")
+      
+      // Close the modal (both internal and from props)
+      setShowAddCustomerModalInternal(false)
       if (onCloseAddCustomerModal) {
         onCloseAddCustomerModal()
       }

@@ -48,6 +48,7 @@ interface QuoteDetails {
   delivery_details?: string
   location_name?: string
   location_id?: number
+  customer_order_name?: string
   products: QuoteProduct[]
   subtotal: number
   delivery_fee: number
@@ -583,13 +584,14 @@ export default function QuoteDetailPage() {
                         <td className="px-4 py-4 align-top text-right">
                           <div>
                             <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                              ${Number(product.total).toFixed(2)}
+                              ${((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}
                             </p>
                             {product.options && product.options.length > 0 && (
                               <div className="mt-2 space-y-1">
+                                <p style={{ fontFamily: 'Albert Sans' }} className="text-[10px] text-gray-400">Incl. options:</p>
                                 {product.options.map((option, optionIndex) => (
-                                  <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                    ${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
+                                  <p key={optionIndex} className="text-xs text-gray-500 ml-2" style={{ fontFamily: 'Albert Sans' }}>
+                                    +${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
                                   </p>
                                 ))}
                               </div>
@@ -609,7 +611,11 @@ export default function QuoteDetailPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                        ${Number(safeQuote.subtotal || 0).toFixed(2)}
+                        ${(safeQuote.products.reduce((sum: number, p: any) => {
+                          const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+                          const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
+                          return sum + productTotal + optionsTotal;
+                        }, 0) || Number(safeQuote.subtotal) || 0).toFixed(2)}
                       </span>
                     </td>
                   </tr>
@@ -673,7 +679,12 @@ export default function QuoteDetailPage() {
                   )}
 
                   {(() => {
-                    const productSum = safeQuote.order_products?.reduce((sum: number, p: any) => sum + Number(p.total), 0) || Number(safeQuote.subtotal) || 0
+                    const products = safeQuote.products || safeQuote.order_products || []
+                    const productSum = products.reduce((sum: number, p: any) => {
+                      const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+                      const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
+                      return sum + productTotal + optionsTotal;
+                    }, 0) || Number(safeQuote.subtotal) || 0;
                     const deliveryFee = Number(safeQuote.delivery_fee || 0)
                     const lateFee = Number(safeQuote.late_fee || 0)
                     const wholesaleDiscount = Number(safeQuote.wholesale_discount || 0)
@@ -749,6 +760,14 @@ export default function QuoteDetailPage() {
               <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                 Customer Details
               </h3>
+              {safeQuote.customer_id && (
+                <Link
+                  href={`/customers/${safeQuote.customer_id}`}
+                  className="text-[#C62828] hover:text-[#B71C1C] text-sm font-medium"
+                >
+                  View Customer
+                </Link>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -779,7 +798,7 @@ export default function QuoteDetailPage() {
                   Customer Name
                 </p>
                 <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                  {safeQuote.firstname && safeQuote.lastname ? `${safeQuote.firstname} ${safeQuote.lastname}` : 'N/A'}
+                  {safeQuote.firstname && safeQuote.lastname ? `${safeQuote.firstname} ${safeQuote.lastname}` : safeQuote.customer_order_name || 'N/A'}
                 </p>
               </div>
 

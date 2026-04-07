@@ -740,106 +740,104 @@ export default function DashboardPage() {
                   ))
                 ) : todayOrders && todayOrders.length > 0 ? (
                   [...todayOrders].sort((a, b) => b.order_id - a.order_id)
-                  .map((order, index) => (
-                    <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span 
-                          onClick={() => handleViewOrder(order.order_id)}
-                          style={{ fontFamily: 'Albert Sans' }} 
-                          className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
-                        >
-                          #{order.order_id}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.customer_order_name ||
-                            `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
-                            'N/A'}
-                        </span>
-                      </td>
-                      <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer_order_telephone ||
-                            order.customer?.telephone ||
-                            order.telephone ||
-                            order.customer_telephone ||
-                            order.shipping_telephone ||
-                            order.phone ||
-                            (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
-                            'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.delivery_date_time
-                            ? formatTimeInAU(order.delivery_date_time)
-                            : '00:00'}
-                        </span>
-                      </td>
+                    .map((order, index) => (
+                      <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span
+                            onClick={() => handleViewOrder(order.order_id)}
+                            style={{ fontFamily: 'Albert Sans' }}
+                            className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
+                          >
+                            #{order.order_id}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
+                            {order.customer_order_name ||
+                              `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
+                              'N/A'}
+                          </span>
+                        </td>
+                        <td className="hidden md:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
+                            {order.customer_order_telephone ||
+                              order.customer?.telephone ||
+                              order.telephone ||
+                              order.customer_telephone ||
+                              order.shipping_telephone ||
+                              order.phone ||
+                              (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
+                              'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
+                            {order.delivery_date_time
+                              ? formatTimeInAU(order.delivery_date_time)
+                              : '00:00'}
+                          </span>
+                        </td>
 
-                      <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
-                        {getStatusBadge(order)}
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center gap-2 flex-nowrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleChefView(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
-                          >
-                            <ChefHat className="h-3.5 w-3.5 mr-1" />
-                            Chef View
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkComplete(order.order_id)}
-                            disabled={order.is_completed === 1 || order.order_status === 5 || order.order_status === 6}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${
-                              order.is_completed === 1 || order.order_status === 5 || order.order_status === 6
-                                ? 'bg-green-600/50 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700'
-                            }`}
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                            {order.is_completed === 1 || order.order_status === 5 || order.order_status === 6 ? 'Completed' : 'Complete'}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleMarkDelivered(order.order_id)}
-                            disabled={order.is_delivered === 1 || order.order_status === 6}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${
-                              order.is_delivered === 1 || order.order_status === 6
-                                ? 'bg-blue-600/50 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
-                          >
-                            <Truck className="h-3.5 w-3.5 mr-1" />
-                            {order.is_delivered === 1 || order.order_status === 6 ? 'Delivered' : 'Deliver'}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        <td className="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4">
+                          {getStatusBadge(order)}
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <div className="flex items-center gap-2 flex-nowrap">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleChefView(order.order_id)}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
+                            >
+                              <ChefHat className="h-3.5 w-3.5 mr-1" />
+                              Chef View
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkComplete(order.order_id)}
+                              disabled={order.is_completed === 1 || order.order_status === 5 || order.order_status === 6}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${order.is_completed === 1 || order.order_status === 5 || order.order_status === 6
+                                  ? 'bg-green-600/50 cursor-not-allowed'
+                                  : 'bg-green-600 hover:bg-green-700'
+                                }`}
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                              {order.is_completed === 1 || order.order_status === 5 || order.order_status === 6 ? 'Completed' : 'Complete'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDelivered(order.order_id)}
+                              disabled={order.is_delivered === 1 || order.order_status === 6}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className={`h-8 px-3 text-xs text-white whitespace-nowrap shrink-0 ${order.is_delivered === 1 || order.order_status === 6
+                                  ? 'bg-blue-600/50 cursor-not-allowed'
+                                  : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                            >
+                              <Truck className="h-3.5 w-3.5 mr-1" />
+                              {order.is_delivered === 1 || order.order_status === 6 ? 'Delivered' : 'Deliver'}
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-3 sm:px-6 py-12 text-center text-gray-500">
@@ -887,8 +885,8 @@ export default function DashboardPage() {
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Name</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Customer Phone</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Delivery Time</th>
-                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Total</th>
-                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
+                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Total</th>
+                  <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Order Status</th>
                   <th style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-left px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
@@ -905,67 +903,67 @@ export default function DashboardPage() {
                   ))
                 ) : tomorrowOrders && tomorrowOrders.length > 0 ? (
                   [...tomorrowOrders].sort((a, b) => b.order_id - a.order_id)
-                  .map((order, index) => (
-                    <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span 
-                          onClick={() => handleViewOrder(order.order_id)}
-                          style={{ fontFamily: 'Albert Sans' }} 
-                          className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
-                        >
-                          #{order.order_id}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.customer_order_name ||
-                            `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
-                            'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
-                          {order.customer_order_telephone ||
-                            order.customer?.telephone ||
-                            order.telephone ||
-                            order.customer_telephone ||
-                            order.shipping_telephone ||
-                            order.phone ||
-                            (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
-                            'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
-                          {order.delivery_date_time
-                            ? formatTimeInAU(order.delivery_date_time)
-                            : '00:00'}
-                        </span>
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        {getStatusBadge(order)}
-                      </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-4">
-                        <div className="flex items-center gap-2 flex-nowrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleChefView(order.order_id)}
-                            style={{
-                              fontFamily: 'Albert Sans',
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              lineHeight: '20px',
-                            }}
-                            className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
+                    .map((order, index) => (
+                      <tr key={order.order_id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span
+                            onClick={() => handleViewOrder(order.order_id)}
+                            style={{ fontFamily: 'Albert Sans' }}
+                            className="text-xs sm:text-sm font-medium text-[#C62828] cursor-pointer hover:underline"
                           >
-                            <ChefHat className="h-3.5 w-3.5 mr-1" />
-                            Chef View
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            #{order.order_id}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
+                            {order.customer_order_name ||
+                              `${order.customer?.firstname || order.firstname || ''} ${order.customer?.lastname || order.lastname || ''}`.trim() ||
+                              'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-600">
+                            {order.customer_order_telephone ||
+                              order.customer?.telephone ||
+                              order.telephone ||
+                              order.customer_telephone ||
+                              order.shipping_telephone ||
+                              order.phone ||
+                              (order.delivery_contact ? order.delivery_contact.split('|')[1] || order.delivery_contact.split('|')[0] : null) ||
+                              'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <span style={{ fontFamily: 'Albert Sans' }} className="text-xs sm:text-sm text-gray-900">
+                            {order.delivery_date_time
+                              ? formatTimeInAU(order.delivery_date_time)
+                              : '00:00'}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          {getStatusBadge(order)}
+                        </td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4">
+                          <div className="flex items-center gap-2 flex-nowrap">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleChefView(order.order_id)}
+                              style={{
+                                fontFamily: 'Albert Sans',
+                                fontWeight: 600,
+                                fontSize: '13px',
+                                lineHeight: '20px',
+                              }}
+                              className="h-8 px-3 text-xs border border-orange-300 text-orange-700 hover:bg-orange-50 whitespace-nowrap"
+                            >
+                              <ChefHat className="h-3.5 w-3.5 mr-1" />
+                              Chef View
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
                     <td colSpan={6} className="px-3 sm:px-6 py-12 text-center text-gray-500">
