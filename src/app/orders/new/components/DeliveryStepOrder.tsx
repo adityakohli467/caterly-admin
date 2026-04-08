@@ -1266,7 +1266,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
               </div>
               {gst > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST (11%) incl.</span>
+                  <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST Included</span>
                   <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>${gst.toFixed(2)}</span>
                 </div>
               )}
