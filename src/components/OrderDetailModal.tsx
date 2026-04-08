@@ -164,7 +164,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
               if (wholesaleDiscountVal > 0) rows += `<tr><td>Wholesale Discount</td><td style="text-align:right">-$${wholesaleDiscountVal.toFixed(2)}</td></tr>`;
               if (couponDiscountVal > 0) rows += `<tr><td>Coupon Discount</td><td style="text-align:right">-$${couponDiscountVal.toFixed(2)}</td></tr>`;
               
-              rows += `<tr><td>GST (11%) incl.</td><td style="text-align:right">$${gstDisplay.toFixed(2)}</td></tr>`;
+              rows += `<tr><td>GST Included</td><td style="text-align:right">$${gstDisplay.toFixed(2)}</td></tr>`;
               rows += `<tr class="total-row"><td>Total</td><td style="text-align:right">$${baseTotal.toFixed(2)}</td></tr>`;
               
               return rows;
@@ -449,7 +449,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                           const gstDisplay = Math.max(0, netProductPrice) * 0.11;
                           return (
                             <div className="flex justify-between">
-                              <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST (11%) incl.</span>
+                              <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST Included</span>
                               <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">
                                 ${gstDisplay.toFixed(2)}
                               </span>

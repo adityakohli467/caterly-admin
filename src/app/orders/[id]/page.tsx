@@ -717,7 +717,7 @@ export default function OrderDetailPage() {
                       <tr className="border-b border-gray-100">
                         <td colSpan={5} className="px-4 py-3 text-right">
                           <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                            GST (11%) incl.
+                            GST Included
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">

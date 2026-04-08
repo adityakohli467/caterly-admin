@@ -350,7 +350,7 @@ export default function QuoteDetailPage() {
             <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
             ${deliveryFee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Delivery Fee:</span><span>$${deliveryFee.toFixed(2)}</span></div>` : ''}
             ${couponDisc > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#16a34a;">Discount${safeQuote.coupon_code ? ` (${safeQuote.coupon_code})` : ''}:</span><span style="color:#16a34a;">-$${couponDisc.toFixed(2)}</span></div>` : ''}
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">GST (11%):</span><span>$${gst.toFixed(2)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">GST Included:</span><span>$${gst.toFixed(2)}</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:2px solid #333;font-weight:700;font-size:15px;"><span>Total Amount:</span><span>$${grandTotal.toFixed(2)}</span></div>
             <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:15px;color:#C62828;"><span>Balance Due:</span><span>$${grandTotal.toFixed(2)}</span></div>
           </div>
@@ -699,7 +699,7 @@ export default function QuoteDetailPage() {
                         <tr className="border-b border-gray-100">
                           <td colSpan={5} className="px-4 py-3 text-right">
                             <span className="text-sm text-gray-500 italic" style={{ fontFamily: 'Albert Sans' }}>
-                              GST (11%) incl.
+                              GST Included
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right">
