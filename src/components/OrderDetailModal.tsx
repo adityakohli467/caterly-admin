@@ -332,10 +332,11 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                           Options:
                                         </p>
                                         {product.options.map((option, optIdx) => (
-                                          <div key={optIdx} style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-600 ml-2">
-                                            {option.option_name}: {option.option_value} (Qty: {option.option_quantity}, ${Number(option.option_price).toFixed(2)})
-                                          </div>
-                                        ))}
+                                           <div key={optIdx} style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-600 ml-2">
+                                             {option.option_name}: {option.option_value} {option.option_quantity > 1 ? `(x${option.option_quantity})` : ''} 
+                                             {Number(option.option_price) > 0 && <span className="text-gray-400 font-normal"> (+${Number(option.option_price).toFixed(2)})</span>}
+                                           </div>
+                                         ))}
                                       </div>
                                     )}
                                     {product.product_comment && (
@@ -368,15 +369,10 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                     {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                       <div className="mt-2 space-y-1">
                                         <p style={{ fontFamily: 'Albert Sans' }} className="text-[10px] text-gray-400">Incl. options:</p>
-                                        {product.options.filter(o => Number(o.option_price) > 0).map((option, optIdx) => (
-                                          <div key={optIdx} style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 ml-2">
-                                            +${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
-                                          </div>
-                                        ))}
                                       </div>
-                                    )}
-                                  </div>
-                                </td>
+                                     )}
+                                   </div>
+                                 </td>
                               </tr>
                             ))
                           ) : (
@@ -397,10 +393,10 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">Sub Total</span>
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
                             ${(order.order_products?.reduce((sum, p) => {
-                                const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
-                                const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                                return sum + productTotal + optionsTotal;
-                              }, 0) || Number(order.subtotal) || 0).toFixed(2)}
+                                 const baseProductTotal = Number(p.price) * Number(p.quantity);
+                                 const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
+                                 return sum + baseProductTotal + optionsTotal;
+                               }, 0) || Number(order.subtotal) || 0).toFixed(2)}
                           </span>
                         </div>
                         {Number(order.wholesale_discount) > 0 && (

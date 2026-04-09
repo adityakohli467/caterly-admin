@@ -45,7 +45,10 @@ interface Order {
   order_total: number
   gst?: number
   delivery_fee?: number
+  late_fee?: number
   subtotal?: number
+  coupon_discount?: number
+  wholesale_discount?: number
   order_status: number
   standing_order: number
   customer_type?: string
@@ -1275,7 +1278,20 @@ export default function OrdersPage() {
                           lineHeight: '20px',
                           letterSpacing: '0%'
                         }}>
-                          ${Number(order.order_total || 0).toFixed(2)}
+                          {(() => {
+                            const subtotal = Number(order.subtotal || 0);
+                            const deliveryFee = Number(order.delivery_fee || 0);
+                            const lateFee = Number(order.late_fee || 0);
+                            const couponDiscount = Number(order.coupon_discount || 0);
+                            const wholesaleDiscount = Number(order.wholesale_discount || 0);
+                            // If we have sub-components, compute the full total ourselves
+                            if (subtotal > 0 || deliveryFee > 0 || couponDiscount > 0 || wholesaleDiscount > 0) {
+                              const computed = subtotal + deliveryFee + lateFee - couponDiscount - wholesaleDiscount;
+                              return `$${Math.max(0, computed).toFixed(2)}`;
+                            }
+                            // Fall back to order_total from API
+                            return `$${Number(order.order_total || 0).toFixed(2)}`;
+                          })()}
                         </span>
                       </td>
                       <td className="px-4 py-4">
