@@ -1284,13 +1284,15 @@ export default function OrdersPage() {
                             const lateFee = Number(order.late_fee || 0);
                             const couponDiscount = Number(order.coupon_discount || 0);
                             const wholesaleDiscount = Number(order.wholesale_discount || 0);
-                            // If we have sub-components, compute the full total ourselves
-                            if (subtotal > 0 || deliveryFee > 0 || couponDiscount > 0 || wholesaleDiscount > 0) {
+                            
+                            // If we have subtotal, compute the full total ourselves to handle manual adjustments
+                            if (subtotal > 0) {
                               const computed = subtotal + deliveryFee + lateFee - couponDiscount - wholesaleDiscount;
                               return `$${Math.max(0, computed).toFixed(2)}`;
                             }
-                            // Fall back to order_total from API
-                            return `$${Number(order.order_total || 0).toFixed(2)}`;
+                            
+                            // Fall back to order_total from API (common in list views where sub-fields are missing)
+                            return `$${Number(order.order_total || (order as any).total || 0).toFixed(2)}`;
                           })()}
                         </span>
                       </td>

@@ -546,6 +546,18 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const total = (afterWholesaleDiscount + deliveryFee) - couponDiscount // Total is inclusive of GST
   const gst = Math.max(0, baseTotalForGST) * 0.11 // Calculate GST based on items only, excluding delivery fee
 
+  // Reactive validation: Remove coupon if it becomes invalid (e.g. quantity decreased)
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.type === 'F') {
+      const currentTotal = subtotal - wholesaleDiscount + deliveryFee
+      if (appliedCoupon.coupon_discount > currentTotal) {
+        setAppliedCoupon(null)
+        setCouponCode("")
+        toast.error("Coupon removed: The discount now exceeds the total order value.")
+      }
+    }
+  }, [subtotal, wholesaleDiscount, deliveryFee, appliedCoupon])
+
   const handleApplyCoupon = () => {
     if (couponCode.trim()) {
       // Find coupon from list
@@ -554,6 +566,15 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
       )
 
       if (coupon) {
+        // Calculate current total before coupon
+        const currentTotal = afterWholesaleDiscount + deliveryFee
+
+        // CHECK: If coupon fixed amount is greater than total, it's not applicable
+        if (coupon.type === 'F' && coupon.coupon_discount > currentTotal) {
+          toast.error("This coupon is not applicable as the discount exceeds the total.")
+          return
+        }
+
         setAppliedCoupon(coupon)
         toast.success(`Coupon "${coupon.coupon_code}" applied successfully!`)
       } else {
@@ -565,6 +586,15 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const handleSelectCoupon = (couponId: string) => {
     const coupon = activeCoupons.find((c: Coupon) => c.coupon_id === Number(couponId))
     if (coupon) {
+      // Calculate current total before coupon
+      const currentTotal = afterWholesaleDiscount + deliveryFee
+
+      // CHECK: If coupon fixed amount is greater than total, it's not applicable
+      if (coupon.type === 'F' && coupon.coupon_discount > currentTotal) {
+        toast.error("This coupon is not applicable as the discount exceeds the total.")
+        return
+      }
+
       setCouponCode(coupon.coupon_code)
       setAppliedCoupon(coupon)
       setShowCouponList(false)
@@ -580,7 +610,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
 
   const validateForm = () => {
     const errors = []
-    
+
     // Validate delivery method (starred)
     if (!deliveryMethod) {
       errors.push("Delivery Method")
@@ -597,7 +627,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
       toast.error(`Please fill in all the forms: ${errors.join(", ")}`)
       return false
     }
-    
+
     return true
   }
 
@@ -755,7 +785,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const handleConfirmSend = async () => {
     if (isSubmitting) return
     if (!validateForm()) return
-    
+
     // In real implementation, send email via API
     setShowSendModal(false)
     setShowSuccessModal(true)

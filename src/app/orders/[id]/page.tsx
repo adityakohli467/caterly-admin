@@ -372,11 +372,9 @@ export default function OrderDetailPage() {
 
   // Use frontend calculated values to ensure accuracy
   const subtotal = products.reduce((sum, p) => {
-    // Standardize: Price * Quantity is base product cost
-    const baseProductTotal = Number(p.price) * Number(p.quantity);
-    // Add all options cost
-    const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-    return sum + baseProductTotal + optionsTotal;
+    // Standardize: if p.total exists, it's the final line price including options.
+    const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+    return sum + productTotal;
   }, 0)
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
   const couponDiscount = typeof order.coupon_discount === 'number' ? order.coupon_discount : parseFloat(String(order.coupon_discount || '0'))
@@ -524,8 +522,7 @@ export default function OrderDetailPage() {
                 <tbody>
                   {products && products.length > 0 ? (
                     products.map((product: OrderProduct, index: number) => {
-                      const baseTotal = (Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)
-                      const totalWithOptions = baseTotal // Renamed internally for clarity in the cell but we'll use baseTotal for top line
+                      const baseTotal = Number(product.total) || ((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0))
 
                       return (
                         <tr key={product.order_product_id} className="border-b border-gray-100">
