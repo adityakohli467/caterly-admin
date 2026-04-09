@@ -488,22 +488,23 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
 
   const afterWholesaleDiscount = subtotal - wholesaleDiscount
 
-  // Calculate coupon discount (applied after wholesale discount)
+  // Calculate coupon discount (applied after wholesale discount + delivery fee as per user request to apply on total)
   let couponDiscount = 0
   if (appliedCoupon) {
+    const amountToDiscount = afterWholesaleDiscount + deliveryFee
     if (appliedCoupon.type === 'P') { // P for percentage
-      couponDiscount = afterWholesaleDiscount * (appliedCoupon.coupon_discount / 100)
+      couponDiscount = amountToDiscount * (appliedCoupon.coupon_discount / 100)
     } else if (appliedCoupon.type === 'F') { // F for fixed
       couponDiscount = appliedCoupon.coupon_discount
     }
-    // Ensure discount doesn't exceed total (subtotal + delivery fee)
-    couponDiscount = Math.min(couponDiscount, afterWholesaleDiscount + deliveryFee)
+    // Ensure discount doesn't exceed total
+    couponDiscount = Math.min(couponDiscount, amountToDiscount)
   }
 
-  const afterDiscount = afterWholesaleDiscount - couponDiscount
+  const baseTotalForGST = afterWholesaleDiscount - (appliedCoupon?.type === 'P' ? (afterWholesaleDiscount * (appliedCoupon.coupon_discount / 100)) : (appliedCoupon?.type === 'F' ? Math.min(appliedCoupon.coupon_discount, afterWholesaleDiscount) : 0))
   // GST is inclusive: calculate as 11% and display as 11% (on products only)
-  const total = afterDiscount + deliveryFee // Total is inclusive of GST
-  const gst = afterDiscount * 0.11 // Calculate GST based on items only, excluding delivery fee
+  const total = (afterWholesaleDiscount + deliveryFee) - couponDiscount // Total is inclusive of GST
+  const gst = Math.max(0, baseTotalForGST) * 0.11 // Calculate GST based on items only, excluding delivery fee
 
   const handleApplyCoupon = () => {
     if (couponCode.trim()) {
@@ -1248,6 +1249,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                   <span className="text-green-600" style={{ fontFamily: 'Albert Sans' }}>-${wholesaleDiscount.toFixed(2)}</span>
                 </div>
               )}
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Delivery Fee</span>
+                <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>${deliveryFee.toFixed(2)}</span>
+              </div>
               {couponDiscount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-green-600" style={{ fontFamily: 'Albert Sans' }}>
@@ -1260,10 +1265,6 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                   <span className="text-green-600" style={{ fontFamily: 'Albert Sans' }}>-${couponDiscount.toFixed(2)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600" style={{ fontFamily: 'Albert Sans' }}>Delivery Fee</span>
-                <span className="text-gray-900" style={{ fontFamily: 'Albert Sans' }}>${deliveryFee.toFixed(2)}</span>
-              </div>
               {gst > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400 italic" style={{ fontFamily: 'Albert Sans' }}>GST Included</span>

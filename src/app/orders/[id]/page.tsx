@@ -372,9 +372,11 @@ export default function OrderDetailPage() {
 
   // Use frontend calculated values to ensure accuracy
   const subtotal = products.reduce((sum, p) => {
-    const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+    // Standardize: Price * Quantity is base product cost
+    const baseProductTotal = Number(p.price) * Number(p.quantity);
+    // Add all options cost
     const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-    return sum + productTotal + optionsTotal;
+    return sum + baseProductTotal + optionsTotal;
   }, 0)
   const wholesaleDiscount = typeof order.wholesale_discount === 'number' ? order.wholesale_discount : 0
   const couponDiscount = typeof order.coupon_discount === 'number' ? order.coupon_discount : parseFloat(String(order.coupon_discount || '0'))
@@ -549,7 +551,8 @@ export default function OrderDetailPage() {
                                   </p>
                                   {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
                                     <div key={optionIndex} className="text-xs text-gray-600 ml-2" style={{ fontFamily: 'Albert Sans' }}>
-                                      {option.option_name}: {option.option_value} {option.option_quantity > 1 ? `(x${option.option_quantity})` : ''}
+                                      {option.option_name}: {option.option_value} {option.option_quantity > 1 ? `(x${option.option_quantity})` : ''} 
+                                      <span className="text-gray-400 font-normal"> (+${Number(option.option_price).toFixed(2)})</span>
                                     </div>
                                   ))}
                                 </div>
@@ -566,15 +569,7 @@ export default function OrderDetailPage() {
                               <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 {product.quantity}
                               </p>
-                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
-                                <div className="mt-2 space-y-1">
-                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
-                                    <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                      {option.option_quantity}
-                                    </p>
-                                  ))}
-                                </div>
-                              )}
+
                             </div>
                           </td>
                           <td className="px-4 py-4 align-top text-right">
@@ -587,15 +582,7 @@ export default function OrderDetailPage() {
                               <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 ${Number(product.price).toFixed(2)}
                               </p>
-                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
-                                <div className="mt-2 space-y-1">
-                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
-                                    <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                      ${Number(option.option_price).toFixed(2)}
-                                    </p>
-                                  ))}
-                                </div>
-                              )}
+
                             </div>
                           </td>
                           <td className="px-4 py-4 align-top text-right">
@@ -603,15 +590,7 @@ export default function OrderDetailPage() {
                               <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                                 ${baseTotal.toFixed(2)}
                               </p>
-                              {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
-                                <div className="mt-2 space-y-1">
-                                  {product.options.filter(o => Number(o.option_price) > 0).map((option, optionIndex) => (
-                                    <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                      ${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
-                                    </p>
-                                  ))}
-                                </div>
-                              )}
+
                             </div>
                           </td>
                         </tr>
