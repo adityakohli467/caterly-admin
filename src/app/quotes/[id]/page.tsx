@@ -273,7 +273,7 @@ export default function QuoteDetailPage() {
             </td>
             <td style="padding:10px;text-align:center;border-bottom:1px solid #f0f0f0;">${p.quantity}</td>
             <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;">$${Number(p.price).toFixed(2)}</td>
-            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;font-weight:600;">$${((Number(p.price) * Number(p.quantity)) + (p.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}</td>
+            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;font-weight:600;">$${(Number(p.total) || (Number(p.price) * Number(p.quantity))).toFixed(2)}</td>
           </tr>`
       }).join('')
 
@@ -568,9 +568,8 @@ export default function QuoteDetailPage() {
                         <td className="px-4 py-4 align-top text-right">
                           <div>
                             <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                              ${((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}
+                              ${(Number(product.total) || (Number(product.price) * Number(product.quantity))).toFixed(2)}
                             </p>
-                            {/* Options hidden here to avoid repeating */}
                           </div>
                         </td>
                       </tr>
@@ -586,11 +585,7 @@ export default function QuoteDetailPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                        ${(safeQuote.products.reduce((sum: number, p: any) => {
-                          const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
-                          const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                          return sum + productTotal + optionsTotal;
-                        }, 0) || Number(safeQuote.subtotal) || 0).toFixed(2)}
+                        ${Number(safeQuote.subtotal || 0).toFixed(2)}
                       </span>
                     </td>
                   </tr>
@@ -654,19 +649,14 @@ export default function QuoteDetailPage() {
                   )}
 
                   {(() => {
-                    const products = safeQuote.products || safeQuote.order_products || []
-                    const productSum = products.reduce((sum: number, p: any) => {
-                      const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
-                      const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                      return sum + productTotal + optionsTotal;
-                    }, 0) || Number(safeQuote.subtotal) || 0;
+                    const subtotal = Number(safeQuote.subtotal || 0);
                     const deliveryFee = Number(safeQuote.delivery_fee || 0)
                     const lateFee = Number(safeQuote.late_fee || 0)
                     const wholesaleDiscount = Number(safeQuote.wholesale_discount || 0)
                     const couponDiscount = Number(safeQuote.coupon_discount || 0)
-
-                    const totalAmount = productSum + deliveryFee + lateFee - wholesaleDiscount - couponDiscount
-                    const netProductPrice = productSum - wholesaleDiscount - couponDiscount
+                    
+                    const totalAmount = Number(safeQuote.calculated_total || safeQuote.order_total || (subtotal + deliveryFee + lateFee - wholesaleDiscount - couponDiscount))
+                    const netProductPrice = subtotal - wholesaleDiscount - couponDiscount
                     const displayGstValue = Math.max(0, netProductPrice) * 0.11
                     return (
                       <>
