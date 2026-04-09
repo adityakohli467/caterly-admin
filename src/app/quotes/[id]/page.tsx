@@ -257,26 +257,24 @@ export default function QuoteDetailPage() {
 
       // ── Products HTML ────────────────────────────────────────────────
       const rowsHTML = (safeQuote.products || []).map((p: QuoteProduct) => {
-        const optRows = (p.options || []).map(o => `
-          <tr style="background:#fafafa;">
-            <td style="padding:5px 10px 5px 24px;color:#555;font-size:12px;border-bottom:1px solid #f0f0f0;">
-              &rarr; <em>${o.option_name}: ${o.option_value}${o.option_quantity > 1 ? ` (x${o.option_quantity})` : ''}</em>
-            </td>
-            <td style="padding:5px 10px;text-align:center;color:#555;font-size:12px;border-bottom:1px solid #f0f0f0;">${o.option_quantity}</td>
-            <td style="padding:5px 10px;text-align:right;color:#555;font-size:12px;border-bottom:1px solid #f0f0f0;">$${Number(o.option_price).toFixed(2)}</td>
-            <td style="padding:5px 10px;text-align:right;color:#555;font-size:12px;border-bottom:1px solid #f0f0f0;">$${(Number(o.option_quantity) * Number(o.option_price)).toFixed(2)}</td>
-          </tr>`).join('')
+        const optText = (p.options || []).map(o => `
+            <div style="color:#666;font-size:11px;margin-top:2px;margin-left:10px;">
+              &bull; ${o.option_name}: ${o.option_value}${o.option_quantity > 1 ? ` (x${o.option_quantity})` : ''}
+              ${Number(o.option_price) > 0 ? ` (+${Number(o.option_price).toFixed(2)})` : ''}
+            </div>`).join('')
+        
         return `
           <tr>
             <td style="padding:10px;border-bottom:1px solid #f0f0f0;">
               <div style="font-weight:600;color:#1a1a1a;">${p.product_name}</div>
               ${p.product_description && p.product_description !== '0' ? `<div style="color:#666;font-size:12px;margin-top:3px;">${p.product_description}</div>` : ''}
               ${p.product_comment && p.product_comment !== '0' ? `<div style="color:#888;font-size:11px;font-style:italic;margin-top:2px;">Note: ${p.product_comment}</div>` : ''}
+              ${optText}
             </td>
             <td style="padding:10px;text-align:center;border-bottom:1px solid #f0f0f0;">${p.quantity}</td>
             <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;">$${Number(p.price).toFixed(2)}</td>
-            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;font-weight:600;">$${Number(p.total).toFixed(2)}</td>
-          </tr>${optRows}`
+            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;font-weight:600;">$${((Number(p.price) * Number(p.quantity)) + (p.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}</td>
+          </tr>`
       }).join('')
 
       // ── Full HTML template ───────────────────────────────────────────
@@ -539,6 +537,7 @@ export default function QuoteDetailPage() {
                                 {product.options.map((option, optionIndex) => (
                                   <div key={optionIndex} className="text-xs text-gray-600 ml-2" style={{ fontFamily: 'Albert Sans' }}>
                                     {option.option_name}: {option.option_value} {option.option_quantity > 1 ? `(x${option.option_quantity})` : ''}
+                                    {Number(option.option_price) > 0 && <span className="text-gray-400 font-normal"> (+${Number(option.option_price).toFixed(2)})</span>}
                                   </div>
                                 ))}
                               </div>
@@ -555,15 +554,7 @@ export default function QuoteDetailPage() {
                             <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                               {product.quantity}
                             </p>
-                            {product.options && product.options.length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                {product.options.map((option, optionIndex) => (
-                                  <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                    {option.option_quantity}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
+                            {/* Options hidden here to avoid repeating */}
                           </div>
                         </td>
                         <td className="px-4 py-4 align-top text-right">
@@ -571,15 +562,7 @@ export default function QuoteDetailPage() {
                             <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                               ${Number(product.price).toFixed(2)}
                             </p>
-                            {product.options && product.options.length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                {product.options.map((option, optionIndex) => (
-                                  <p key={optionIndex} className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
-                                    ${Number(option.option_price).toFixed(2)}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
+                            {/* Options hidden here to avoid repeating */}
                           </div>
                         </td>
                         <td className="px-4 py-4 align-top text-right">
@@ -587,16 +570,7 @@ export default function QuoteDetailPage() {
                             <p className="text-sm font-medium text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                               ${((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}
                             </p>
-                            {product.options && product.options.length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                <p style={{ fontFamily: 'Albert Sans' }} className="text-[10px] text-gray-400">Incl. options:</p>
-                                {product.options.map((option, optionIndex) => (
-                                  <p key={optionIndex} className="text-xs text-gray-500 ml-2" style={{ fontFamily: 'Albert Sans' }}>
-                                    +${(Number(option.option_quantity) * Number(option.option_price)).toFixed(2)}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
+                            {/* Options hidden here to avoid repeating */}
                           </div>
                         </td>
                       </tr>
