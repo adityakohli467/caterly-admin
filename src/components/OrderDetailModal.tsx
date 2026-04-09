@@ -364,7 +364,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                 <td className="px-4 py-4 text-right">
                                   <div>
                                     <p style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
-                                      ${((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0)).toFixed(2)}
+                                      ${(Number(product.total) || ((Number(product.price) * Number(product.quantity)) + (product.options?.reduce((sum, o) => sum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0))).toFixed(2)}
                                     </p>
                                     {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                       <div className="mt-2 space-y-1">
@@ -393,9 +393,8 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-700">Sub Total</span>
                           <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-gray-900">
                             ${(order.order_products?.reduce((sum, p) => {
-                                 const baseProductTotal = Number(p.price) * Number(p.quantity);
-                                 const optionsTotal = p.options?.reduce((optSum, o) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                                 return sum + baseProductTotal + optionsTotal;
+                                 const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
+                                 return sum + productTotal;
                                }, 0) || Number(order.subtotal) || 0).toFixed(2)}
                           </span>
                         </div>
@@ -435,9 +434,8 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                         )}
                         {(() => {
                           const productSum = order.order_products?.reduce((sum: number, p: any) => {
-                            const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
-                            const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                            return sum + productTotal + optionsTotal;
+                            const productTotal = Number(p.product_total || p.total) || (Number(p.price) * Number(p.quantity));
+                            return sum + productTotal;
                           }, 0) || Number(order.subtotal) || 0;
                           const wholesaleDiscountVal = Number(order.wholesale_discount || 0);
                           const couponDiscountVal = Number(order.coupon_discount || 0);
@@ -457,9 +455,8 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                           <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-base text-gray-900">
                             ${(() => {
                               const productSum = order.order_products?.reduce((sum: number, p: any) => {
-                                const productTotal = Number(p.total) || (Number(p.price) * Number(p.quantity));
-                                const optionsTotal = p.options?.reduce((optSum: number, o: any) => optSum + (Number(o.option_price) * Number(o.option_quantity)), 0) || 0;
-                                return sum + productTotal + optionsTotal;
+                                const productTotal = Number(p.product_total || p.total) || (Number(p.price) * Number(p.quantity));
+                                return sum + productTotal;
                               }, 0) || Number(order.subtotal) || 0;
                               const deliveryVal = Number(order.delivery_fee || 0)
                               const lateVal = Number(order.late_fee || 0)
