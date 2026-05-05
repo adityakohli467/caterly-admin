@@ -93,6 +93,11 @@ export default function OrderDetailPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceEmail, setInvoiceEmail] = useState("")
+  const [showRefundModal, setShowRefundModal] = useState(false)
+  const [refundPaymentIntentId, setRefundPaymentIntentId] = useState("")
+  const [refundAmount, setRefundAmount] = useState("")
+  const [refundMaxAmount, setRefundMaxAmount] = useState(0)
+  const [processingRefund, setProcessingRefund] = useState(false)
   const [showInvoiceSuccessModal, setShowInvoiceSuccessModal] = useState(false)
 
   // Fetch order from API
@@ -273,6 +278,36 @@ export default function OrderDetailPage() {
     } finally {
       setSendingPaymentLink(false)
       setPaymentLinkEmail("")
+    }
+  }
+
+  const handleOpenRefundModal = (paymentIntentId: string, amount: number, refundedAmount: number) => {
+    setRefundPaymentIntentId(paymentIntentId)
+    const maxRefundable = amount - refundedAmount
+    setRefundMaxAmount(maxRefundable)
+    setRefundAmount(maxRefundable.toFixed(2))
+    setShowRefundModal(true)
+  }
+
+  const handleProcessRefund = async () => {
+    if (!refundPaymentIntentId) return
+    const amount = parseFloat(refundAmount)
+    if (isNaN(amount) || amount <= 0 || amount > refundMaxAmount) {
+      toast.error(`Please enter a valid amount between $0.01 and $${refundMaxAmount.toFixed(2)}`)
+      return
+    }
+
+    setProcessingRefund(true)
+    try {
+      await paymentsAPI.stripeRefund(refundPaymentIntentId, amount, 'requested_by_customer')
+      toast.success(`Refund of $${amount.toFixed(2)} processed successfully`)
+      setShowRefundModal(false)
+      queryClient.invalidateQueries({ queryKey: ['payment-history', orderId] })
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to process refund")
+    } finally {
+      setProcessingRefund(false)
     }
   }
 
@@ -971,6 +1006,21 @@ export default function OrderDetailPage() {
                         <div>Date: {new Date(payment.created_at).toLocaleString('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' })}</div>
                       </div>
                     </div>
+                    {payment.payment_status === 'succeeded' && payment.payment_gateway === 'stripe' &&
+                      parseFloat(payment.refund_amount || 0) < parseFloat(payment.amount || 0) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-[#C62828] border-[#C62828] hover:bg-[#FFEBEE]"
+                        onClick={() => handleOpenRefundModal(
+                          payment.payment_transaction_id,
+                          parseFloat(payment.amount || 0),
+                          parseFloat(payment.refund_amount || 0)
+                        )}
+                      >
+                        Refund
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1138,6 +1188,67 @@ export default function OrderDetailPage() {
               <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
                 Invoice has been sent to {invoiceEmail || 'customer'}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Refund Modal */}
+      {showRefundModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-[#FFEBEE] rounded-full flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="h-8 w-8 text-[#C62828]" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'Albert Sans' }}>
+                Process Refund
+              </h3>
+              <p className="text-sm text-gray-600" style={{ fontFamily: 'Albert Sans' }}>
+                Maximum refundable: ${refundMaxAmount.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <Label htmlFor="refundAmount" className="text-sm font-medium text-gray-700 mb-2 block">
+                Refund Amount ($)
+              </Label>
+              <Input
+                id="refundAmount"
+                type="number"
+                step="0.01"
+                min="0.01"
+                max={refundMaxAmount}
+                placeholder="0.00"
+                value={refundAmount}
+                onChange={(e) => setRefundAmount(e.target.value)}
+                className="h-11 border-gray-300"
+                style={{ fontFamily: 'Albert Sans' }}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  setShowRefundModal(false)
+                  setRefundPaymentIntentId("")
+                  setRefundAmount("")
+                }}
+                variant="outline"
+                className="flex-1 border-gray-300"
+                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                disabled={processingRefund}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleProcessRefund}
+                className="flex-1 bg-[#C62828] hover:bg-[#B71C1C] text-white"
+                style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                disabled={processingRefund || !refundAmount || parseFloat(refundAmount) <= 0}
+              >
+                {processingRefund ? 'Processing...' : 'Confirm Refund'}
+              </Button>
             </div>
           </div>
         </div>

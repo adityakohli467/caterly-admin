@@ -229,15 +229,19 @@ export const invoicesAPI = {
 }
 
 export const paymentsAPI = {
-  // Pin Payments methods
-  getPinKey: (orderId: number) => api.get(`/store/payment/${orderId}/pin-key`),
-  processCharge: (orderId: number, cardToken: string, ipAddress: string) =>
-    api.post(`/store/payment/${orderId}/charge`, { card_token: cardToken, ip_address: ipAddress }),
-  // Legacy SecurePay payment processing (redirects to payment page)
-  processPayment: (orderId: number) => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9000'
-    return `${backendUrl}/store/payment/${orderId}/process`
-  },
+  // Stripe Payment Intent
+  createIntent: (orderId: number, email?: string) =>
+    api.post("/admin/payments/create-intent", { order_id: orderId, email }),
+  // Stripe Refund
+  stripeRefund: (paymentIntentId: string, amount?: number, reason?: string) =>
+    api.post("/admin/payments/stripe-refund", { payment_intent_id: paymentIntentId, amount, reason }),
+  // Legacy refund
+  processRefund: (orderId: number, amount?: number) =>
+    api.post("/admin/payments/refund", { order_id: orderId, amount }),
+  // Send payment link
+  sendPaymentLink: (orderId: number, email?: string) =>
+    api.post(`/admin/orders/${orderId}/send-payment-link`, { email_payment: email }),
+  // Status & History
   getStatus: (orderId: number) =>
     api.get(`/admin/payments/order/${orderId}`),
   getHistory: (params?: {
