@@ -804,7 +804,6 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                   id="deliveryDate"
                   type="date"
                   value={deliveryDate || ""}
-                  min={getAUDateToday()} // Prevent selecting past dates as per Australia today
                   onChange={(e) => {
                     const newDate = e.target.value
                     console.log('Date changed to:', newDate)
