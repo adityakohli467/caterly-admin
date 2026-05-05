@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, CreditCard, Lock } from "lucide-react"
 import { toast } from "sonner"
-import { paymentsAPI } from "@/lib/api"
+// Pin Payments is deprecated - Stripe is now the primary payment gateway
 
 declare global {
   interface Window {
@@ -41,26 +41,10 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
       try {
         let key: string | null = null
 
-        // Try to get publishable key from backend first
-        try {
-          const response = await paymentsAPI.getPinKey(orderId)
-
-          if (response.data?.success && response.data?.publishable_key) {
-            key = response.data.publishable_key
-          } else {
-            // Fallback to environment variable
-            key = process.env.NEXT_PUBLIC_PINPAYMENTS_PUBLISHABLE_KEY || null
-            if (!key) {
-              throw new Error(response.data?.message || "Pin Payments not configured")
-            }
-          }
-        } catch (apiError: any) {
-          // Fallback to environment variable if backend call fails
-          key = process.env.NEXT_PUBLIC_PINPAYMENTS_PUBLISHABLE_KEY || null
-          if (!key) {
-            const errorMsg = apiError.response?.data?.message || apiError.message || "Pin Payments not configured. Please set NEXT_PUBLIC_PINPAYMENTS_PUBLISHABLE_KEY in .env.local"
-            throw new Error(errorMsg)
-          }
+        // Use environment variable for Pin Payments key (legacy - replaced by Stripe)
+        key = process.env.NEXT_PUBLIC_PINPAYMENTS_PUBLISHABLE_KEY || null
+        if (!key) {
+          throw new Error("Pin Payments not configured. Payment processing has moved to Stripe.")
         }
 
         if (!key) {
@@ -252,19 +236,11 @@ export function PinPaymentForm({ orderId, amount, onSuccess, onError }: PinPayme
         // Token created successfully, process payment
         const cardToken = result.token
 
-        // Send token to backend to create charge
-        paymentsAPI.processCharge(orderId, cardToken, ipAddress)
-          .then(() => {
-            setLoading(false)
-            toast.success("Payment processed successfully!")
-            onSuccess()
-          })
-          .catch((error: any) => {
-            setLoading(false)
-            const errorMsg = error.response?.data?.message || error.message || "Payment failed"
-            toast.error(errorMsg)
-            onError(errorMsg)
-          })
+        // Pin Payments is deprecated - Stripe is now the primary gateway
+        setLoading(false)
+        const errorMsg = "Pin Payments is no longer supported. Please use Stripe."
+        toast.error(errorMsg)
+        onError(errorMsg)
       })
     } catch (error: any) {
       setLoading(false)
