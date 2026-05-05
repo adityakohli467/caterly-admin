@@ -804,6 +804,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                   id="deliveryDate"
                   type="date"
                   value={deliveryDate || ""}
+                  min="2020-01-01"
                   onChange={(e) => {
                     const newDate = e.target.value
                     console.log('Date changed to:', newDate)
