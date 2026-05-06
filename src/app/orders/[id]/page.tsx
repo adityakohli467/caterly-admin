@@ -571,11 +571,6 @@ export default function OrderDetailPage() {
                               <p className="text-sm font-medium text-gray-900 mb-1" style={{ fontFamily: 'Albert Sans' }}>
                                 {product.product_name}
                               </p>
-                              {product.product_comment && (
-                                <p className="text-xs text-gray-600 italic mt-1" style={{ fontFamily: 'Albert Sans' }}>
-                                  Note: {product.product_comment}
-                                </p>
-                              )}
                               {product.options && product.options.filter(o => Number(o.option_price) > 0).length > 0 && (
                                 <div className="mt-2 space-y-1">
                                   <p className="text-xs text-gray-600 font-medium" style={{ fontFamily: 'Albert Sans' }}>
@@ -875,8 +870,8 @@ export default function OrderDetailPage() {
                     <p className="text-xs font-medium text-gray-500 mb-1" style={{ fontFamily: 'Albert Sans' }}>
                       Delivery Date
                     </p>
-                    <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {formatDateOnly(order.delivery_date_time)}
+                    <p className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                      {new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long' })} - {formatDateOnly(order.delivery_date_time)}
                     </p>
                   </div>
                   <div>

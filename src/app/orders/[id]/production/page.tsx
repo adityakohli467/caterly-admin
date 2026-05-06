@@ -145,7 +145,7 @@ export default function ProductionFormPage() {
             <div><strong>Name:</strong> ${order.customer_order_name || 'N/A'}</div>
             ${order.customer_order_email ? `<div><strong>Email:</strong> ${order.customer_order_email}</div>` : ''}
             ${order.customer_order_telephone ? `<div><strong>Phone:</strong> ${order.customer_order_telephone}</div>` : ''}
-            ${order.delivery_date_time ? `<div><strong>Delivery Date:</strong> ${new Date(order.delivery_date_time).toLocaleString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</div>` : ''}
+            ${order.delivery_date_time ? `<div><strong>Delivery Date:</strong> <span style="font-size: 18px; font-weight: bold;">${new Date(order.delivery_date_time).toLocaleString('en-AU', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</span></div>` : ''}
             <div><strong>Shipping Method:</strong> ${order.delivery_method === 1 || order.delivery_method === 'delivery' || order.shipping_method === 1 ? 'Delivery' : 'Pickup'}</div>
             ${order.pickup_delivery_notes ? `<div><strong>Delivery Notes:</strong> ${order.pickup_delivery_notes}</div>` : ''}
             ${order.delivery_phone ? `<div><strong>Delivery Contact:</strong> ${order.delivery_phone}</div>` : ''}
@@ -300,14 +300,14 @@ export default function ProductionFormPage() {
                       {order.delivery_date_time && (
                         <div>
                           <strong className="mr-2">Delivery Date:</strong>
-                          <span>{new Date(order.delivery_date_time).toLocaleString('en-AU', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
+                          <span className="text-lg font-bold">{new Date(order.delivery_date_time).toLocaleString('en-AU', {
                             weekday: 'long',
                             day: 'numeric',
                             month: 'short',
-                            year: 'numeric'
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
                           })}</span>
                         </div>
                       )}

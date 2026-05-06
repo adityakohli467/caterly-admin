@@ -89,7 +89,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
     if (!printWindow) return
 
     const deliveryDate = order.delivery_date_time
-      ? `${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
+      ? `${new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long' })} - ${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
       : 'N/A'
 
     const productsHtml = (order.order_products || []).map((p, i) => `
@@ -127,11 +127,12 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
             .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
             .info-item label { font-size: 11px; color: #888; display: block; }
             .info-item span { font-size: 13px; }
+            .delivery-date { font-size: 18px; font-weight: 700; color: #111; margin: 8px 0; }
           </style>
         </head>
         <body>
           <h1>Order #${order.order_id}</h1>
-          <div class="meta">Delivery: ${deliveryDate}</div>
+          <div class="delivery-date">Delivery: ${deliveryDate}</div>
           <div class="info-grid">
             <div class="info-item"><label>Customer</label><span>${order.customer_order_name || 'N/A'}</span></div>
             <div class="info-item"><label>Phone</label><span>${order.customer_order_telephone || 'N/A'}</span></div>
@@ -338,11 +339,6 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                            </div>
                                          ))}
                                       </div>
-                                    )}
-                                    {product.product_comment && (
-                                      <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 mt-1 italic">
-                                        Note: {product.product_comment}
-                                      </p>
                                     )}
                                   </div>
                                 </td>
