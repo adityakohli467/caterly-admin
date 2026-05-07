@@ -718,7 +718,7 @@ export default function OrderDetailPage() {
 
                   {(() => {
                     const netProductPrice = subtotal - wholesaleDiscount - couponDiscount
-                    const displayGstValue = Math.max(0, netProductPrice) * 0.11
+                    const displayGstValue = Math.max(0, netProductPrice) / 11
                     return (
                       <tr className="border-b border-gray-100">
                         <td colSpan={5} className="px-4 py-3 text-right">

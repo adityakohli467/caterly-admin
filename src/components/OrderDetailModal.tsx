@@ -157,7 +157,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
               
               const netProductPrice = productSum - wholesaleDiscountVal - couponDiscountVal;
               const baseTotal = productSum + deliveryFeeVal + lateFeeVal - wholesaleDiscountVal - couponDiscountVal;
-              const gstDisplay = Math.max(0, netProductPrice) * 0.11;
+              const gstDisplay = Math.max(0, netProductPrice) / 11;
               
               let rows = `<tr><td>Sub Total</td><td style="text-align:right">$${productSum.toFixed(2)}</td></tr>`;
               if (deliveryFeeVal > 0) rows += `<tr><td>Delivery Fee</td><td style="text-align:right">$${deliveryFeeVal.toFixed(2)}</td></tr>`;
@@ -436,7 +436,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                           const wholesaleDiscountVal = Number(order.wholesale_discount || 0);
                           const couponDiscountVal = Number(order.coupon_discount || 0);
                           const netProductPrice = productSum - wholesaleDiscountVal - couponDiscountVal;
-                          const gstDisplay = Math.max(0, netProductPrice) * 0.11;
+                          const gstDisplay = Math.max(0, netProductPrice) / 11;
                           return (
                             <div className="flex justify-between">
                               <span style={{ fontFamily: 'Albert Sans' }} className="text-sm text-gray-500 italic">GST Included</span>

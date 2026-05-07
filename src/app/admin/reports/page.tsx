@@ -166,7 +166,7 @@ export default function ReportsPage() {
           subtotal: Number(sub.order_total || 0) - Number(sub.delivery_fee || 0),
           delivery_fee: Number(sub.delivery_fee || 0),
           discount: 0,
-          gst: (Number(sub.order_total || 0) - Number(sub.delivery_fee || 0)) * 0.11,
+          gst: (Number(sub.order_total || 0) - Number(sub.delivery_fee || 0)) / 11,
           total: Number(sub.order_total || 0),
           order_total: Number(sub.order_total || 0),
           standing_order: sub.standing_order || 1
@@ -316,7 +316,7 @@ export default function ReportsPage() {
         
         // Calculation matching the table display (Subtotal = Total - Fees + Discounts)
         const displaySubtotal = displayTotal - deliveryFee - lateFee + discount
-        const displayGst = displaySubtotal * 0.11
+        const displayGst = displaySubtotal / 11
 
         return [
           `#${r.order_id}`,
@@ -685,7 +685,7 @@ export default function ReportsPage() {
                   // Derive subtotal: Total = Subtotal + Delivery + Late - Discount
                   // So Subtotal = Total - Delivery - Late + Discount
                   const displaySubtotal = displayTotal - deliveryFee - lateFee + discount
-                  const displayGst = displaySubtotal * 0.11
+                  const displayGst = displaySubtotal / 11
 
                   return (
                     <tr key={`${report.order_id}-${index}`} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">

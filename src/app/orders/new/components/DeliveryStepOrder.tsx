@@ -504,7 +504,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const baseTotalForGST = afterWholesaleDiscount - (appliedCoupon?.type === 'P' ? (afterWholesaleDiscount * (appliedCoupon.coupon_discount / 100)) : (appliedCoupon?.type === 'F' ? Math.min(appliedCoupon.coupon_discount, afterWholesaleDiscount) : 0))
   // GST is inclusive: calculate as 11% and display as 11% (on products only)
   const total = (afterWholesaleDiscount + deliveryFee) - couponDiscount // Total is inclusive of GST
-  const gst = Math.max(0, baseTotalForGST) * 0.11 // Calculate GST based on items only, excluding delivery fee
+  const gst = Math.max(0, baseTotalForGST) / 11 // Calculate GST based on items only, excluding delivery fee
 
   // Reactive validation: Remove coupon if it becomes invalid (e.g. quantity decreased)
   useEffect(() => {

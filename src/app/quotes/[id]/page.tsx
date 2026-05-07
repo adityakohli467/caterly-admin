@@ -251,7 +251,7 @@ export default function QuoteDetailPage() {
       const subtotal = Number(safeQuote.subtotal || 0)
       const deliveryFee = Number(safeQuote.delivery_fee || 0)
       const couponDisc = Number(safeQuote.coupon_discount || 0)
-      const gst = Number(safeQuote.gst) || parseFloat((subtotal * 0.11).toFixed(2))
+      const gst = Number(safeQuote.gst) || parseFloat((subtotal / 11).toFixed(2))
       const grandTotal = Number(safeQuote.calculated_total || safeQuote.order_total || 0)
       const quoteDate = format(new Date(), 'dd MMM yyyy')
 
@@ -657,7 +657,7 @@ export default function QuoteDetailPage() {
                     
                     const totalAmount = Number(safeQuote.calculated_total || safeQuote.order_total || (subtotal + deliveryFee + lateFee - wholesaleDiscount - couponDiscount))
                     const netProductPrice = subtotal - wholesaleDiscount - couponDiscount
-                    const displayGstValue = Math.max(0, netProductPrice) * 0.11
+                    const displayGstValue = Math.max(0, netProductPrice) / 11
                     return (
                       <>
                         <tr className="border-b border-gray-100">
