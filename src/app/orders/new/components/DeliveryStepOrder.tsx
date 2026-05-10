@@ -42,6 +42,7 @@ interface Location {
   location_id: number
   location_name: string
   pickup_address: string
+  location_status: number
 }
 
 // Sortable Product Item Component for Order Summary
@@ -341,9 +342,21 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   })
 
   const activeCoupons = couponsData?.coupons || []
-  const locations = locationsData?.locations || []
+  const locations = (locationsData?.locations || []).filter((l: Location) => l.location_status === 1)
   const companyName = companyData?.company?.company_name || ''
   const departmentName = departmentData?.department?.department_name || ''
+
+  // Reset selected location if it doesn't exist in the active locations list (e.g. deleted/inactive location from reorder)
+  useEffect(() => {
+    if (locations.length > 0 && selectedLocation > 0) {
+      const found = locations.find((l: Location) => l.location_id === selectedLocation)
+      if (!found) {
+        setSelectedLocation(0)
+        setSelectedPickupLocation(0)
+        onUpdate({ location_id: undefined })
+      }
+    }
+  }, [locations.length])
 
   // Auto-apply coupon when editing if coupon_code exists in data
   useEffect(() => {

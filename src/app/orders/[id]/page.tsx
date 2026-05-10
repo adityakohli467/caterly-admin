@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { ArrowLeft, Download, Send, DollarSign, Printer, Mail, CheckCircle } from "lucide-react"
+import { ArrowLeft, Download, Send, DollarSign, Printer, Mail, CheckCircle, Copy } from "lucide-react"
 import { format } from "date-fns"
 import api, { invoicesAPI, paymentsAPI } from "@/lib/api"
 import { PaymentProcessingModal } from "@/components/PaymentProcessingModal"
@@ -86,6 +86,7 @@ export default function OrderDetailPage() {
   const [downloadingInvoice, setDownloadingInvoice] = useState(false)
   const [printingInvoice, setPrintingInvoice] = useState(false)
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false)
+  const [copyingPaymentLink, setCopyingPaymentLink] = useState(false)
   const [sendingInvoice, setSendingInvoice] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false)
@@ -492,6 +493,34 @@ export default function OrderDetailPage() {
                 >
                   <Send className="h-3.5 w-3.5" />
                   {sendingPaymentLink ? "Sending..." : "Send Payment Link"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-gray-300 text-gray-700 hover:text-gray-900 h-9"
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                  disabled={copyingPaymentLink}
+                  onClick={async () => {
+                    if (!orderId) return
+                    setCopyingPaymentLink(true)
+                    try {
+                      const res = await api.get(`/admin/orders/${orderId}/payment-link`)
+                      if (res.data?.payment_link) {
+                        await navigator.clipboard.writeText(res.data.payment_link)
+                        toast.success("Payment link copied to clipboard")
+                      } else {
+                        toast.error("Failed to get payment link")
+                      }
+                    } catch (error: any) {
+                      console.error("Failed to copy payment link:", error)
+                      toast.error("Failed to copy payment link")
+                    } finally {
+                      setCopyingPaymentLink(false)
+                    }
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  {copyingPaymentLink ? "Copying..." : "Copy Payment Link"}
                 </Button>
                 {/* {orderId && (
                   <Button
