@@ -305,7 +305,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
-      const response = await locationsAPI.list()
+      const response = await locationsAPI.list({ limit: 100 })
       return response.data
     }
   })
@@ -342,13 +342,13 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   })
 
   const activeCoupons = couponsData?.coupons || []
-  const locations = (locationsData?.locations || []).filter((l: Location) => l.location_status === 1)
+  const locations = locationsData?.locations || []
   const companyName = companyData?.company?.company_name || ''
   const departmentName = departmentData?.department?.department_name || ''
 
-  // Reset selected location if it doesn't exist in the active locations list (e.g. deleted/inactive location from reorder)
+  // Reset selected location if it doesn't exist in the locations list (e.g. deleted/inactive location from reorder)
   useEffect(() => {
-    if (locations.length > 0 && selectedLocation > 0) {
+    if (locationsData && locations.length > 0 && selectedLocation > 0) {
       const found = locations.find((l: Location) => l.location_id === selectedLocation)
       if (!found) {
         setSelectedLocation(0)
@@ -356,7 +356,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
         onUpdate({ location_id: undefined })
       }
     }
-  }, [locations.length])
+  }, [locationsData, selectedLocation])
 
   // Auto-apply coupon when editing if coupon_code exists in data
   useEffect(() => {

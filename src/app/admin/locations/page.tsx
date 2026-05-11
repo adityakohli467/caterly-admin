@@ -65,6 +65,7 @@ export default function LocationsPage() {
       if (searchQuery) params.append("search", searchQuery)
       params.append("limit", itemsPerPage.toString())
       params.append("offset", ((currentPage - 1) * itemsPerPage).toString())
+      params.append("include_inactive", "true")
       const response = await api.get(`/admin/locations?${params.toString()}`)
       return response.data
     },

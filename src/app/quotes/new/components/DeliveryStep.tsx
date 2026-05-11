@@ -308,7 +308,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
-      const response = await locationsAPI.list()
+      const response = await locationsAPI.list({ limit: 100 })
       return response.data
     }
   })

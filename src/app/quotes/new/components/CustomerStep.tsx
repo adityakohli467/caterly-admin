@@ -125,7 +125,7 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   const { data: locationsData, isLoading: loadingLocations } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
-      const response = await locationsAPI.list()
+      const response = await locationsAPI.list({ limit: 100 })
       return response.data
     }
   })
