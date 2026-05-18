@@ -813,7 +813,6 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                   Delivery Date
                 </Label>
                 <Input
-                  key={`delivery-date-${deliveryDate || 'empty'}-${data.delivery_date_time || 'no-dt'}`}
                   id="deliveryDate"
                   type="date"
                   value={deliveryDate || ""}
