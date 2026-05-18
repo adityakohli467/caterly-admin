@@ -240,7 +240,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
     return ""
   }
 
-  const [deliveryDate, setDeliveryDate] = useState(initialDeliveryDateTime.date || "")
+  const [deliveryDate, setDeliveryDate] = useState(data.delivery_date || initialDeliveryDateTime.date || "")
   const [deliveryTime, setDeliveryTime] = useState(
     normalizeTime(data.delivery_time) || initialDeliveryDateTime.time || ""
   )
