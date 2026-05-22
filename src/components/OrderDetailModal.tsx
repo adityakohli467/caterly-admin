@@ -206,7 +206,10 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
       case 0: return "Cancelled"
       case 1: return "New"
       case 2: return "Paid"
+      case 3: return "Paid"
       case 4: return "Awaiting Approval"
+      case 5: return "Processing"
+      case 6: return "Delivered"
       case 7: return "Approved"
       case 8: return "Rejected"
       case 9: return "Modified"
@@ -218,6 +221,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
     switch (status) {
       case 1: return "bg-orange-50 text-orange-700"
       case 2: return "bg-green-50 text-green-700"
+      case 3: return "bg-green-50 text-green-700"
       case 4: return "bg-yellow-50 text-yellow-700"
       case 7: return "bg-blue-50 text-blue-700"
       case 0: return "bg-red-50 text-red-700"

@@ -53,6 +53,7 @@ interface Order {
   standing_order: number
   customer_type?: string
   user_id?: number | null
+  has_successful_payment?: boolean
 }
 
 interface Location {
@@ -611,8 +612,10 @@ export default function OrdersPage() {
     }
   }
 
-  const getStatusBadge = (status: number) => {
-    const statusInfo = orderStatusMap[status] || orderStatusMap[1]
+  const getStatusBadge = (status: number, hasSuccessfulPayment?: boolean) => {
+    // If there's a successful payment but status wasn't updated, show as Paid
+    const effectiveStatus = (hasSuccessfulPayment && status !== 2 && status !== 3 && status !== 0) ? 2 : status
+    const statusInfo = orderStatusMap[effectiveStatus] || orderStatusMap[1]
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color} border ${statusInfo.borderColor}`}>
         <span className={`w-2 h-2 ${statusInfo.color.replace('text-', 'bg-')} rounded-full`}></span>
@@ -1297,7 +1300,7 @@ export default function OrdersPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        {getStatusBadge(order.order_status)}
+                        {getStatusBadge(order.order_status, order.has_successful_payment)}
                       </td>
                       <td className="px-4 py-4">
                         <div onClick={(e) => e.stopPropagation()}>
@@ -1329,14 +1332,14 @@ export default function OrdersPage() {
                                 <DollarSign className="h-4 w-4 mr-2" />
                                 Process Payment
                               </DropdownMenuItem> */}
-{/* <DropdownMenuItem
+<DropdownMenuItem
                                 onClick={() => handleMarkAsPaid(order.order_id)}
-                                disabled={updateStatusMutation.isPending || order.order_status === 2 || order.order_status === 3}
+                                disabled={updateStatusMutation.isPending || order.order_status === 2 || order.order_status === 3 || order.has_successful_payment}
                                 className="cursor-pointer"
                               >
                                 <CheckCircle2 className="h-4 w-4 mr-2" />
                                 Mark Paid
-                              </DropdownMenuItem> */}
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDownloadOrder(order.order_id)}
                                 disabled={downloadInvoiceMutation.isPending}

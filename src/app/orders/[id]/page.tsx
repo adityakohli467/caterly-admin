@@ -76,6 +76,7 @@ interface OrderDetails {
   calculated_total?: number
   customer_type?: string
   order_status?: number
+  payment_status?: string
 }
 
 export default function OrderDetailPage() {
@@ -441,12 +442,12 @@ export default function OrderDetailPage() {
                   variant="outline"
                   className={cn(
                     "ml-2",
-                    (order.order_status === 2 || order.order_status === 3)
+                    (order.order_status === 2 || order.order_status === 3 || order.payment_status === 'paid')
                       ? "bg-green-50 text-green-700 border-green-200"
                       : "bg-red-50 text-[#C62828] border-red-100"
                   )}
                 >
-                  {(order.order_status === 2 || order.order_status === 3) ? "Paid" : "Unpaid"}
+                  {(order.order_status === 2 || order.order_status === 3 || order.payment_status === 'paid') ? "Paid" : "Unpaid"}
                 </Badge>
               )}
             </p>
@@ -482,7 +483,7 @@ export default function OrderDetailPage() {
 
           {/* Payment Section */}
           <div className="flex items-center gap-2">
-            {!(order.order_status === 2 || order.order_status === 3) && (
+            {!(order.order_status === 2 || order.order_status === 3 || order.payment_status === 'paid') && (
               <>
                 <Button
                   size="sm"

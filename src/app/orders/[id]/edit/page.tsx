@@ -138,19 +138,51 @@ export default function EditOrderPage() {
             })) || []
           })) || []
 
-          // Extract date and time directly from the raw string to avoid timezone shifts.
-          // Using new Date() would apply the browser's local timezone and change the time.
+          // Extract date and time, converting to Australian timezone if needed.
           let rawDate: string | undefined = undefined
           let rawTime: string | undefined = undefined
           if (order.delivery_date_time) {
-            // delivery_date_time may be "2026-03-20 14:30:00" or ISO "2026-03-20T14:30:00Z"
             const dtStr = order.delivery_date_time.toString()
-            const normalized = dtStr.replace('T', ' ').replace('Z', '').split('+'[0])[0]
-            const parts = normalized.split(' ')
-            rawDate = parts[0] // "2026-03-20"
-            rawTime = parts[1] ? parts[1].slice(0, 5) : undefined // "14:30"
+            // Check if the string has timezone info (Z or +offset)
+            if (dtStr.includes('Z') || /[+-]\d{2}:\d{2}/.test(dtStr)) {
+              // Convert to Australian local time using Intl
+              const d = new Date(dtStr)
+              if (!isNaN(d.getTime())) {
+                const auParts = new Intl.DateTimeFormat('en-CA', {
+                  timeZone: 'Australia/Sydney',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                }).formatToParts(d)
+                const get = (type: string) => auParts.find(p => p.type === type)?.value || ''
+                rawDate = `${get('year')}-${get('month')}-${get('day')}`
+                rawTime = `${get('hour')}:${get('minute')}`
+              }
+            } else {
+              // Naive string (no timezone) - extract literally
+              const normalized = dtStr.replace('T', ' ')
+              const parts = normalized.split(' ')
+              rawDate = parts[0] // "2026-03-20"
+              rawTime = parts[1] ? parts[1].slice(0, 5) : undefined // "14:30"
+            }
           } else if (order.delivery_date) {
-            rawDate = order.delivery_date.toString().split('T')[0]
+            const dateStr = order.delivery_date.toString()
+            if (dateStr.includes('Z') || /[+-]\d{2}:\d{2}/.test(dateStr)) {
+              const d = new Date(dateStr)
+              if (!isNaN(d.getTime())) {
+                rawDate = new Intl.DateTimeFormat('en-CA', {
+                  timeZone: 'Australia/Sydney',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                }).format(d)
+              }
+            } else {
+              rawDate = dateStr.split('T')[0]
+            }
             rawTime = order.delivery_time?.slice(0, 5)
           }
           
