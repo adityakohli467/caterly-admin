@@ -81,7 +81,8 @@ export function printTableData(pageTitle: string = "Table Data") {
   const today = new Date().toLocaleDateString('en-AU', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'Australia/Sydney'
   })
 
   // Create title and date elements

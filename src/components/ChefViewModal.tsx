@@ -102,7 +102,7 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
         if (!printWindow) return
 
         const deliveryDate = order.delivery_date_time
-            ? `${new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long' })} - ${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
+            ? `${new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long', timeZone: 'Australia/Sydney' })} - ${formatDateOnly(order.delivery_date_time)}, ${formatTimeInAU(order.delivery_date_time)}`
             : 'N/A'
 
         const productsHtml = (order.order_products || []).map((p: any, i: number) => `

@@ -136,7 +136,7 @@ export default function FeedbacksPage() {
       feedback.commenttext?.toLowerCase().includes(query) ||
       feedback.suggestions?.toLowerCase().includes(query) ||
       feedback.deliveredontime?.toLowerCase().includes(query) ||
-      (feedback.delivery_date && new Date(feedback.delivery_date).toLocaleDateString().includes(query))
+      (feedback.delivery_date && new Date(feedback.delivery_date).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }).includes(query))
     )
   })
 

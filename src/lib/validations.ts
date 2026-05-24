@@ -189,11 +189,11 @@ export const validateDate = (date: string, fieldName: string, options?: { requir
   }
   
   if (minDate && dateObj < minDate) {
-    return { valid: false, error: `${fieldName} must be after ${minDate.toLocaleDateString()}` }
+    return { valid: false, error: `${fieldName} must be after ${minDate.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })}` }
   }
   
   if (maxDate && dateObj > maxDate) {
-    return { valid: false, error: `${fieldName} must be before ${maxDate.toLocaleDateString()}` }
+    return { valid: false, error: `${fieldName} must be before ${maxDate.toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' })}` }
   }
   
   return { valid: true }

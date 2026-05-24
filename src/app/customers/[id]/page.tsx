@@ -226,7 +226,7 @@ export default function CustomerDetailPage() {
                   <span className="text-xs font-medium uppercase tracking-wider">Account Created</span>
                 </div>
                 <span className="text-xs text-gray-900 font-semibold">
-                  {customer.date_added ? new Date(customer.date_added).toLocaleDateString('en-AU') : 'Unknown'}
+                  {customer.date_added ? new Date(customer.date_added).toLocaleDateString('en-AU', { timeZone: 'Australia/Sydney' }) : 'Unknown'}
                 </span>
               </div>
               <div className="flex items-center justify-between">

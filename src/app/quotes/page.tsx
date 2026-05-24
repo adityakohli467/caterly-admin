@@ -21,7 +21,7 @@ import { format } from "date-fns"
 import { toast } from "sonner"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import { cn, formatTimeInAU } from "@/lib/utils"
+import { cn, formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import { printTableData } from "@/lib/print-utils"
 
 interface Quote {
@@ -783,7 +783,7 @@ export default function QuotesPage() {
                         letterSpacing: '0%'
                       }}>
                         {quote.delivery_date_time
-                          ? format(new Date(quote.delivery_date_time), 'dd-MM-yyyy')
+                          ? formatDateOnly(quote.delivery_date_time)
                           : 'N/A'}
                       </span>
                     </td>

@@ -226,14 +226,14 @@ export default function QuoteDetailPage() {
       // ── Delivery date / time formatting ──────────────────────────────
       const dtRaw = safeQuote.delivery_date_time
       const dtObj = dtRaw ? new Date(dtRaw) : null
-      const deliveryDay = dtObj ? format(dtObj, 'EEEE') : ''
-      const deliveryDate = dtObj ? format(dtObj, 'dd MMM yyyy') : ''
+      const deliveryDay = dtObj ? new Intl.DateTimeFormat('en-AU', { weekday: 'long', timeZone: 'Australia/Sydney' }).format(dtObj) : ''
+      const deliveryDate = dtObj ? formatDateOnly(dtRaw) : ''
 
       let deliveryTimeStr = ''
       let rawTime = safeQuote.delivery_time
       if (!rawTime && dtObj) {
-        const h = dtObj.getHours(), m = dtObj.getMinutes()
-        rawTime = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+        const timeFormatter = new Intl.DateTimeFormat('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Australia/Sydney' })
+        rawTime = timeFormatter.format(dtObj)
       }
       if (rawTime) {
         const [hh, mm] = rawTime.split(':').map(Number)
@@ -253,7 +253,7 @@ export default function QuoteDetailPage() {
       const couponDisc = Number(safeQuote.coupon_discount || 0)
       const gst = Number(safeQuote.gst) || parseFloat((subtotal / 11).toFixed(2))
       const grandTotal = Number(safeQuote.calculated_total || safeQuote.order_total || 0)
-      const quoteDate = format(new Date(), 'dd MMM yyyy')
+      const quoteDate = new Intl.DateTimeFormat('en-AU', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Australia/Sydney' }).format(new Date())
 
       // ── Products HTML ────────────────────────────────────────────────
       const rowsHTML = (safeQuote.products || []).map((p: QuoteProduct) => {
@@ -812,7 +812,7 @@ export default function QuoteDetailPage() {
                       Delivery Date
                     </p>
                     <p className="text-sm text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {format(new Date(safeQuote.delivery_date_time), 'MMMM d, yyyy')}
+                      {formatDateOnly(safeQuote.delivery_date_time)}
                     </p>
                   </div>
                   <div>

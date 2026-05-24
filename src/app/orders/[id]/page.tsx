@@ -901,7 +901,7 @@ export default function OrderDetailPage() {
                       Delivery Date
                     </p>
                     <p className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
-                      {new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long' })} - {formatDateOnly(order.delivery_date_time)}
+                      {new Date(order.delivery_date_time).toLocaleDateString('en-AU', { weekday: 'long', timeZone: 'Australia/Sydney' })} - {formatDateOnly(order.delivery_date_time)}
                     </p>
                   </div>
                   <div>

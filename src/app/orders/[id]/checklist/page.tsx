@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Printer } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { format } from "date-fns"
 import { printTableData } from "@/lib/print-utils"
-import { formatTimeInAU } from "@/lib/utils"
+import { formatDateOnly, formatTimeInAU } from "@/lib/utils"
 import {
   Accordion,
   AccordionContent,
@@ -389,7 +388,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
             <div className="flex items-start gap-2">
               <span className="text-gray-500 text-sm">📅</span>
               <p className="text-sm text-gray-700">
-                {order?.delivery_date_time ? format(new Date(order.delivery_date_time), 'dd-MM-yyyy') : 'N/A'}
+                {order?.delivery_date_time ? formatDateOnly(order.delivery_date_time) : 'N/A'}
               </p>
             </div>
             {order?.pickup_delivery_notes && (
@@ -417,7 +416,7 @@ export default function OrderChecklistPage({ params }: { params: { id: string } 
               </p>
               <p className="text-sm text-gray-700">
                 {order?.delivery_date_time 
-                  ? `${format(new Date(order.delivery_date_time), 'EEEE, do MMMM yyyy')}, ${formatTimeInAU(order.delivery_date_time)}`
+                  ? `${new Intl.DateTimeFormat('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Australia/Sydney' }).format(new Date(order.delivery_date_time))}, ${formatTimeInAU(order.delivery_date_time)}`
                   : 'N/A'}
               </p>
             </div>
