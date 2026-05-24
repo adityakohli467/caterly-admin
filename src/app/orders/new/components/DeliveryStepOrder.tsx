@@ -273,21 +273,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
       const displayMin = min.toString().padStart(2, '0')
       const value = `${hour24.toString().padStart(2, '0')}:${displayMin}`
 
-      // Check if time has passed if today is selected
-      const isToday = deliveryDate === getAUDateToday()
-      let isPassed = false
-      if (isToday) {
-        const currentHour = getAUCurrentHour()
-        const currentMin = getAUCurrentMinute()
-        if (hour24 < currentHour || (hour24 === currentHour && min <= currentMin)) {
-          isPassed = true
-        }
-      }
-
       return {
         display: `${displayHour}:${displayMin} ${ampm}`,
         value,
-        disabled: isPassed
+        disabled: false
       }
     })
   }, [deliveryDate])
