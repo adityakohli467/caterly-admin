@@ -18,6 +18,7 @@ import { Search, Printer, Plus, Edit, Trash2, AlertCircle, X, Upload, Image as I
 import { toast } from "sonner"
 import Link from "next/link"
 import { validateRequired, validateNumber, validateURL } from "@/lib/validations"
+import { compressImage } from "@/lib/compress-image"
 import { printTableData } from "@/lib/print-utils"
 
 interface ProductOption {
@@ -766,22 +767,29 @@ export default function ProductsPage() {
     // Create previews immediately (don't upload yet - will upload when saving product)
     const newPreviews: Array<{ url: string; file: File; id: string }> = []
 
-    fileArray.forEach((file) => {
+    for (const file of fileArray) {
       const validationError = validateFile(file)
       if (validationError) {
         toast.error(`${file.name}: ${validationError}`)
-        return
+        continue
+      }
+
+      // Compress images larger than 500KB
+      const processed = await compressImage(file)
+      if (processed !== file) {
+        const saved = ((file.size - processed.size) / 1024).toFixed(0)
+        toast.success(`${file.name} compressed (saved ${saved}KB)`)
       }
 
       const previewId = `preview-${Date.now()}-${Math.random()}`
-      const previewUrl = URL.createObjectURL(file)
+      const previewUrl = URL.createObjectURL(processed)
 
       newPreviews.push({
         url: previewUrl,
-        file,
+        file: processed,
         id: previewId
       })
-    })
+    }
 
     // Add previews immediately (images will be uploaded when product is saved)
     setImagePreviews(prev => [...prev, ...newPreviews])
