@@ -1579,6 +1579,14 @@ export default function ProductsPage() {
                           src={preview.url}
                           alt={`Product preview ${index + 1}`}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget
+                            // Try .webp extension if .png/.jpg fails (server stores as webp)
+                            if (!target.dataset.retried && /\.(png|jpg|jpeg)$/i.test(target.src)) {
+                              target.dataset.retried = 'true'
+                              target.src = target.src.replace(/\.(png|jpg|jpeg)$/i, '.webp')
+                            }
+                          }}
                         />
                         <button
                           type="button"
