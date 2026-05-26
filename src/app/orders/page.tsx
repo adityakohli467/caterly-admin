@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, DollarSign, ArrowUpDown, MoreVertical, Image as ImageIcon, Upload, CheckCircle2 } from "lucide-react"
+import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, DollarSign, ArrowUpDown, MoreVertical, Image as ImageIcon, Upload, CheckCircle2, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { cn, formatDateOnly, formatTimeInAU, getAUNow, getAUDateToday } from "@/lib/utils"
 import { format } from "date-fns"
@@ -1337,8 +1337,11 @@ export default function OrdersPage() {
                                 disabled={updateStatusMutation.isPending || order.order_status === 2 || order.order_status === 3 || order.has_successful_payment}
                                 className="cursor-pointer"
                               >
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Mark Paid
+                                {updateStatusMutation.isPending && updateStatusMutation.variables?.id === order.order_id ? (
+                                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Marking Paid...</>
+                                ) : (
+                                  <><CheckCircle2 className="h-4 w-4 mr-2" /> Mark Paid</>
+                                )}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDownloadOrder(order.order_id)}
