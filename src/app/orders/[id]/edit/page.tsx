@@ -31,6 +31,7 @@ export interface OrderData {
     category: string
     price: number
     quantity: number
+    comment?: string
     add_ons?: Array<{
       name: string
       price: number
@@ -130,6 +131,7 @@ export default function EditOrderPage() {
             category: 'N/A',
             price: parseFloat(product.price || 0),
             quantity: product.quantity,
+            comment: product.product_comment || product.item_comments || undefined,
             add_ons: product.options?.map((option: any) => ({
               name: `${option.option_name}: ${option.option_value}`,
               price: parseFloat(option.option_price || 0),
@@ -316,6 +318,7 @@ export default function EditOrderPage() {
           product_id: product.product_id,
           quantity: product.quantity,
           price: product.price,
+          comment: product.comment || null,
           add_ons: product.add_ons || []
         }))
       }
