@@ -99,7 +99,6 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
           ${p.product_name}
           ${p.product_description ? '<br/><small style="color:#666">' + p.product_description + '</small>' : ''}
           ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map(o => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity}, $${Number(o.option_price).toFixed(2)})`).join(', ') + '</small>' : ''}
-          ${p.product_comment ? '<br/><em>Note: ' + p.product_comment.replace(/\r\n/g, '\n').replace(/\n/g, '<br/>') + '</em>' : ''}
         </td>
         <td style="white-space:pre-line">${(p.item_comments || '-').replace(/\r\n/g, '\n').replace(/\n/g, '<br/>')}</td>
         <td style="text-align:center">${p.quantity}</td>
