@@ -524,7 +524,15 @@ export default function OrdersPage() {
   }
 
   const handleMarkAsPaid = (orderId: number) => {
-    updateStatusMutation.mutate({ id: orderId, status: 3 })
+    const toastId = toast.loading("Marking order as paid...")
+    updateStatusMutation.mutate({ id: orderId, status: 3 }, {
+      onSuccess: () => {
+        toast.dismiss(toastId)
+      },
+      onError: () => {
+        toast.dismiss(toastId)
+      }
+    })
   }
 
   const handleEmailOrder = async (order: Order) => {
