@@ -101,7 +101,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
           ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map(o => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity}, $${Number(o.option_price).toFixed(2)})`).join(', ') + '</small>' : ''}
           ${p.product_comment ? '<br/><em>Note: ' + p.product_comment + '</em>' : ''}
         </td>
-        <td>${p.item_comments || '-'}</td>
+        <td>${(p.item_comments || '-').replace(/\n/g, '<br/>')}</td>
         <td style="text-align:center">${p.quantity}</td>
         <td style="text-align:right">$${Number(p.price).toFixed(2)}</td>
         <td style="text-align:right">$${Number(p.total).toFixed(2)}</td>
@@ -353,7 +353,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                   </span>
                                 </td>
                                 <td className="px-4 py-4">
-                                  <span style={{ fontFamily: 'Albert Sans' }} className="text-sm font-medium text-orange-600">
+                                  <span style={{ fontFamily: 'Albert Sans', whiteSpace: 'pre-line' }} className="text-sm font-medium text-orange-600">
                                     {product.item_comments || '-'}
                                   </span>
                                 </td>
