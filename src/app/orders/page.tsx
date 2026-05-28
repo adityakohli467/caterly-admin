@@ -22,7 +22,7 @@ import { cn, formatDateOnly, formatTimeInAU, getAUNow, getAUDateToday } from "@/
 import { format } from "date-fns"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import { invoicesAPI, ordersAPI } from "@/lib/api"
+import { invoicesAPI, ordersAPI, paymentsAPI } from "@/lib/api"
 import { OrderDetailModal } from "@/components/OrderDetailModal"
 import { PaymentProcessingModal } from "@/components/PaymentProcessingModal"
 import { printTableData } from "@/lib/print-utils"
@@ -116,8 +116,10 @@ export default function OrdersPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null)
   const [showImageUploadModal, setShowImageUploadModal] = useState(false)
-  const [imageUploadOrderId, setImageUploadOrderId] = useState<number | null>(null)
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [showPaymentLinkModal, setShowPaymentLinkModal] = useState(false)
+    const [imageUploadOrderId, setImageUploadOrderId] = useState<number | null>(null)
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+    const [paymentLinkEmail, setPaymentLinkEmail] = useState<string>("")
   const [page, setPage] = useState(1)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
@@ -536,14 +538,33 @@ export default function OrdersPage() {
   }
 
   const handleEmailOrder = async (order: Order) => {
-    console.log("Email order:", order.order_id)
-    try {
-      await emailMutation.mutateAsync({ orderId: order.order_id })
-    } catch (error) {
-      console.error("Email error:", error)
-      // Error handled by mutation
-    }
+  // show modal for confirmation first before sending email
+    setShowPaymentLinkModal(true);
+    setPaymentLinkEmail(order.email || "")
+    setSelectedOrderId(order.order_id)
   }
+  
+  const sendPaymentLinkMutation = useMutation({
+    mutationFn: async ({ orderId, email }: { orderId: number; email?: string }) => {
+      return await paymentsAPI.sendPaymentLink(orderId, email)
+    },
+    onSuccess: () => {
+      toast.success("Payment link sent successfully")
+      setShowPaymentLinkModal(false)
+      setPaymentLinkEmail("")
+      setSelectedOrderId(null)
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to send payment link")
+    }
+  })
+
+  const handleSendPaymentLink = async () => {
+     if (!selectedOrderId) return
+     // Use the dedicated payment link endpoint which fetches fresh order data from DB
+     sendPaymentLinkMutation.mutate({ orderId: selectedOrderId, email: paymentLinkEmail || undefined })
+  }
+
 
   const handleDownloadOrder = async (orderId: number) => {
     console.log("Download order:", orderId)
@@ -1414,6 +1435,45 @@ export default function OrdersPage() {
           </p>
         </div>
       </Card>
+
+      {/* Send payment link modal */}
+      <Dialog open={showPaymentLinkModal} onOpenChange={setShowPaymentLinkModal}>
+              
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Payment Link</DialogTitle>
+            <DialogDescription>
+              Enter the customer&apos;s email address to send them a payment link for order #{selectedOrderId}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ fontFamily: 'Albert Sans' }}>
+                Customer Email
+              </label>
+              <input
+                type="email"
+                value={paymentLinkEmail}
+                onChange={(e) => setPaymentLinkEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                style={{ fontFamily: 'Albert Sans' }}
+                placeholder="Enter customer's email"
+
+              />
+
+            </div>
+            <Button
+              onClick={handleSendPaymentLink}
+              disabled={sendPaymentLinkMutation.isPending || !paymentLinkEmail} 
+              className="bg-[#C62828] hover:bg-[#B71C1C] text-white"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              {sendPaymentLinkMutation.isPending ? "Sending..." : "Send Payment Link"}
+            </Button>
+            
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
