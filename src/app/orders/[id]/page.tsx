@@ -617,7 +617,7 @@ export default function OrderDetailPage() {
                             </div>
                           </td>
                           <td className="px-4 py-4 align-top">
-                            <p className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                            <p className="text-sm text-gray-700 whitespace-pre-line" style={{ fontFamily: 'Albert Sans' }}>
                               {product.product_description || '-'}
                             </p>
                           </td>

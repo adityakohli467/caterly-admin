@@ -267,7 +267,7 @@ export default function QuoteDetailPage() {
           <tr>
             <td style="padding:10px;border-bottom:1px solid #f0f0f0;">
               <div style="font-weight:600;color:#1a1a1a;">${p.product_name}</div>
-              ${p.product_description && p.product_description !== '0' ? `<div style="color:#666;font-size:12px;margin-top:3px;">${p.product_description}</div>` : ''}
+              ${p.product_description && p.product_description !== '0' ? `<div style="color:#666;font-size:12px;margin-top:3px;white-space:pre-line">${p.product_description}</div>` : ''}
               ${p.product_comment && p.product_comment !== '0' ? `<div style="color:#888;font-size:11px;font-style:italic;margin-top:2px;">Note: ${p.product_comment}</div>` : ''}
               ${optText}
             </td>

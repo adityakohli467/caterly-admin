@@ -97,7 +97,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
         <td>${i + 1}</td>
         <td>
           ${p.product_name}
-          ${p.product_description ? '<br/><small style="color:#666">' + p.product_description + '</small>' : ''}
+          ${p.product_description ? '<br/><small style="color:#666;white-space:pre-line">' + p.product_description + '</small>' : ''}
           ${p.options && p.options.length > 0 ? '<br/><small>' + p.options.map(o => `${o.option_name}: ${o.option_value} (Qty: ${o.option_quantity}, $${Number(o.option_price).toFixed(2)})`).join(', ') + '</small>' : ''}
         </td>
         <td style="white-space:pre-line">${(p.item_comments || '-').replace(/\r\n/g, '\n').replace(/\n/g, '<br/>')}</td>
@@ -327,7 +327,7 @@ export function OrderDetailModal({ orderId, open, onOpenChange, onOrderUpdated }
                                       {product.product_name}
                                     </p>
                                     {product.product_description && (
-                                      <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 mt-1">
+                                      <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 mt-1 whitespace-pre-line">
                                         {product.product_description}
                                       </p>
                                     )}

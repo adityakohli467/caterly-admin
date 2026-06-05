@@ -253,7 +253,7 @@ export function ChefViewModal({ orderId, open, onOpenChange }: ChefViewModalProp
                                                                             {product.product_name}
                                                                         </p>
                                                                         {product.product_description && (
-                                                                            <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 mt-1">
+                                                                            <p style={{ fontFamily: 'Albert Sans' }} className="text-xs text-gray-500 mt-1 whitespace-pre-line">
                                                                                 {product.product_description}
                                                                             </p>
                                                                         )}
