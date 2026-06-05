@@ -161,14 +161,7 @@ export default function DashboardPage() {
         setPreviousStats(stats)
       }
 
-      // Guard: totalRevenue should never decrease — delivered orders still count as revenue.
-      // Persist the highest-ever revenue in localStorage so it survives page refreshes.
-      const storedMaxRevenue = parseFloat(localStorage.getItem('caterly-max-revenue') || '0')
-      const bestRevenue = Math.max(newStats.totalRevenue, storedMaxRevenue, stats?.totalRevenue ?? 0)
-      if (bestRevenue > newStats.totalRevenue) {
-        newStats.totalRevenue = bestRevenue
-      }
-      localStorage.setItem('caterly-max-revenue', String(bestRevenue))
+      // Weekly revenue resets each week — no caching needed
 
       setStats(newStats)
       setRecentOrders(response.data.recentOrders || [])
@@ -668,12 +661,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Total Revenue */}
+        {/* Weekly Revenue */}
         <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="pt-4 md:pt-6 px-4 md:px-6">
             <div className="flex items-start justify-between mb-3 md:mb-4">
               <p style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs sm:text-sm text-gray-600">
-                Total Revenue
+                Weekly Revenue
               </p>
               {stats && stats.totalRevenue > 0 && (
                 <span style={{ fontFamily: 'Albert Sans', fontWeight: 600 }} className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded-full">
