@@ -798,7 +798,7 @@ export default function OrderDetailPage() {
                 <h3 className="text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                   Order Comments
                 </h3>
-                <p className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                <p className="text-sm text-gray-700 whitespace-pre-line" style={{ fontFamily: 'Albert Sans' }}>
                   {order.order_comments || 'No comments'}
                 </p>
               </div>
