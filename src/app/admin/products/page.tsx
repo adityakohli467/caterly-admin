@@ -56,6 +56,7 @@ interface Product {
   featured_1?: boolean
   featured_2?: boolean
   show_in_storefront?: boolean
+  is_healthy_choice?: boolean
   roast_level?: string | null
   show_specifications?: boolean
   show_other_info?: boolean
@@ -76,6 +77,7 @@ export default function ProductsPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showInactiveModal, setShowInactiveModal] = useState(false)
+  const [showHealthyModal, setShowHealthyModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all")
   const searchParams = useSearchParams()
@@ -116,6 +118,7 @@ export default function ProductsPage() {
   const [featured1, setFeatured1] = useState(false)
   const [featured2, setFeatured2] = useState(false)
   const [showInStorefront, setShowInStorefront] = useState(false)
+  const [isHealthyChoice, setIsHealthyChoice] = useState(false)
 
   // Validation errors
   const [errors, setErrors] = useState<{
@@ -316,6 +319,18 @@ export default function ProductsPage() {
 
   const inactiveProducts = inactiveProductsData?.products || []
 
+  // Fetch healthy choice products
+  const { data: healthyProductsData, isLoading: loadingHealthy } = useQuery({
+    queryKey: ["healthy-products"],
+    queryFn: async () => {
+      const response = await api.get("/admin/products-new?healthy_only=true&limit=1000")
+      return response.data
+    },
+    enabled: showHealthyModal,
+  })
+
+  const healthyProducts = healthyProductsData?.products || []
+
   const handleAddProduct = () => {
     resetForm()
     setShowAddModal(true)
@@ -354,6 +369,7 @@ export default function ProductsPage() {
     setFeatured1(product.featured_1 || false)
     setFeatured2(product.featured_2 || false)
     setShowInStorefront(product.show_in_storefront || false)
+    setIsHealthyChoice(product.is_healthy_choice || false)
     setSelectedOptions(
       product.options?.map(o => ({
         option_value_id: o.option_value_id,
@@ -481,6 +497,7 @@ export default function ProductsPage() {
       featured_1: featured1,
       featured_2: featured2,
       show_in_storefront: showInStorefront,
+      is_healthy_choice: isHealthyChoice,
       options: JSON.stringify(selectedOptions.map(opt => ({
         option_value_id: opt.option_value_id,
         option_price: Number(opt.option_price || 0),
@@ -524,6 +541,7 @@ export default function ProductsPage() {
         formData.append('featured_1', featured1 ? '1' : '0')
         formData.append('featured_2', featured2 ? '1' : '0')
         formData.append('show_in_storefront', showInStorefront ? '1' : '0')
+        formData.append('is_healthy_choice', isHealthyChoice ? '1' : '0')
         formData.append('options', productData.options)
 
         // Add existing image URLs
@@ -557,6 +575,7 @@ export default function ProductsPage() {
             featured_1: featured1,
             featured_2: featured2,
             show_in_storefront: showInStorefront,
+            is_healthy_choice: isHealthyChoice,
             options: selectedOptions.map(opt => ({
               option_value_id: opt.option_value_id,
               option_price: Number(opt.option_price || 0),
@@ -614,6 +633,7 @@ export default function ProductsPage() {
           show_in_checkout: showInCheckout,
           featured_1: featured1,
           featured_2: featured2,
+          is_healthy_choice: isHealthyChoice,
           options: selectedOptions.map(opt => ({
             option_value_id: opt.option_value_id,
             option_price: Number(opt.option_price || 0),
@@ -861,6 +881,7 @@ export default function ProductsPage() {
     setFeatured1(false)
     setFeatured2(false)
     setShowInStorefront(false)
+    setIsHealthyChoice(false)
     setSelectedProduct(null)
     setErrors({})
     // Revoke all object URLs
@@ -889,6 +910,17 @@ export default function ProductsPage() {
           Product Management
         </h1>
         <div className="flex gap-3">
+          <Button
+            onClick={() => setShowHealthyModal(true)}
+            variant="outline"
+            className="border-green-300 text-green-700 hover:bg-green-50 whitespace-nowrap"
+            style={{
+              fontWeight: 600,
+              height: '54px',
+            }}
+          >
+            View Healthy Products
+          </Button>
           <Button
             onClick={() => setShowInactiveModal(true)}
             variant="outline"
@@ -1870,6 +1902,17 @@ export default function ProductsPage() {
                     Show in Storefront
                   </span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                  <input
+                    type="checkbox"
+                    checked={isHealthyChoice}
+                    onChange={(e) => setIsHealthyChoice(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                    Is Healthy Choice Product
+                  </span>
+                </label>
               </div>
             </div>
 
@@ -1972,6 +2015,83 @@ export default function ProductsPage() {
             <Button
               variant="outline"
               onClick={() => setShowInactiveModal(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Healthy Products Modal */}
+      <Dialog open={showHealthyModal} onOpenChange={setShowHealthyModal}>
+        <DialogContent className="w-[95vw] sm:w-full max-w-4xl bg-white max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" style={{ fontFamily: 'Albert Sans' }}>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-green-700">
+              Healthy Choice Products
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-4">
+            {loadingHealthy ? (
+              <div className="text-center py-8 text-gray-500">Loading healthy choice products...</div>
+            ) : healthyProducts.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No healthy choice products found.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-green-50 border-b border-green-200">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Product Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Categories
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Price
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {healthyProducts.map((product: Product) => (
+                      <tr key={product.product_id} className="border-b border-gray-100 hover:bg-green-50/50 transition-colors">
+                        <td className="px-4 py-3 text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          {product.product_name}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
+                          {product.categories && product.categories.length > 0
+                            ? product.categories.map((c: any) => c.category_name).join(", ")
+                            : "N/A"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
+                          ${parseFloat(product.product_price.toString()).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => {
+                              handleEditProduct(product)
+                              setShowHealthyModal(false)
+                            }}
+                            className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowHealthyModal(false)}
             >
               Close
             </Button>
