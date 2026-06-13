@@ -57,6 +57,7 @@ interface Product {
   featured_2?: boolean
   show_in_storefront?: boolean
   is_healthy_choice?: boolean
+  healthy_choice_color?: string | null
   roast_level?: string | null
   show_specifications?: boolean
   show_other_info?: boolean
@@ -119,6 +120,7 @@ export default function ProductsPage() {
   const [featured2, setFeatured2] = useState(false)
   const [showInStorefront, setShowInStorefront] = useState(false)
   const [isHealthyChoice, setIsHealthyChoice] = useState(false)
+  const [healthyChoiceColor, setHealthyChoiceColor] = useState<string>("")
 
   // Validation errors
   const [errors, setErrors] = useState<{
@@ -370,6 +372,7 @@ export default function ProductsPage() {
     setFeatured2(product.featured_2 || false)
     setShowInStorefront(product.show_in_storefront || false)
     setIsHealthyChoice(product.is_healthy_choice || false)
+    setHealthyChoiceColor(product.healthy_choice_color || "")
     setSelectedOptions(
       product.options?.map(o => ({
         option_value_id: o.option_value_id,
@@ -498,6 +501,7 @@ export default function ProductsPage() {
       featured_2: featured2,
       show_in_storefront: showInStorefront,
       is_healthy_choice: isHealthyChoice,
+      healthy_choice_color: healthyChoiceColor || null,
       options: JSON.stringify(selectedOptions.map(opt => ({
         option_value_id: opt.option_value_id,
         option_price: Number(opt.option_price || 0),
@@ -542,6 +546,7 @@ export default function ProductsPage() {
         formData.append('featured_2', featured2 ? '1' : '0')
         formData.append('show_in_storefront', showInStorefront ? '1' : '0')
         formData.append('is_healthy_choice', isHealthyChoice ? '1' : '0')
+        formData.append('healthy_choice_color', healthyChoiceColor || '')
         formData.append('options', productData.options)
 
         // Add existing image URLs
@@ -576,6 +581,7 @@ export default function ProductsPage() {
             featured_2: featured2,
             show_in_storefront: showInStorefront,
             is_healthy_choice: isHealthyChoice,
+            healthy_choice_color: healthyChoiceColor || null,
             options: selectedOptions.map(opt => ({
               option_value_id: opt.option_value_id,
               option_price: Number(opt.option_price || 0),
@@ -634,6 +640,7 @@ export default function ProductsPage() {
           featured_1: featured1,
           featured_2: featured2,
           is_healthy_choice: isHealthyChoice,
+          healthy_choice_color: healthyChoiceColor || null,
           options: selectedOptions.map(opt => ({
             option_value_id: opt.option_value_id,
             option_price: Number(opt.option_price || 0),
@@ -882,6 +889,7 @@ export default function ProductsPage() {
     setFeatured2(false)
     setShowInStorefront(false)
     setIsHealthyChoice(false)
+    setHealthyChoiceColor("")
     setSelectedProduct(null)
     setErrors({})
     // Revoke all object URLs
@@ -1914,6 +1922,26 @@ export default function ProductsPage() {
                   </span>
                 </label>
               </div>
+
+              {isHealthyChoice && (
+                <div className="mt-3 ml-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Health Choice Color
+                  </Label>
+                  <select
+                    value={healthyChoiceColor}
+                    onChange={(e) => setHealthyChoiceColor(e.target.value)}
+                    className="w-full h-11 mt-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"
+                    style={{ fontFamily: 'Albert Sans' }}
+                  >
+                    <option value="">Select Color</option>
+                    <option value="green">🟢 Green - Everyday choices</option>
+                    <option value="amber">🟠 Amber - Sometimes</option>
+                    <option value="red">🔴 Red - Occasional treats</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Green for everyday choices, Amber for sometimes, Red for occasional treats.</p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
