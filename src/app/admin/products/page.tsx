@@ -1935,9 +1935,9 @@ export default function ProductsPage() {
                     style={{ fontFamily: 'Albert Sans' }}
                   >
                     <option value="">Select Color</option>
-                    <option value="green">🟢 Green - Everyday choices</option>
-                    <option value="amber">🟠 Amber - Sometimes</option>
-                    <option value="red">🔴 Red - Occasional treats</option>
+                    <option value="green">🟢 Green</option>
+                    <option value="amber">🟠 Amber</option>
+                    <option value="red">🔴 Red</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-1">Green for everyday choices, Amber for sometimes, Red for occasional treats.</p>
                 </div>
