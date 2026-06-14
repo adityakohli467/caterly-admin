@@ -42,6 +42,7 @@ interface Category {
   parent_category_id?: number | null
   parent_category_name?: string | null
   sort_order?: number | null
+  is_healthy_choice?: boolean
 }
 
 // ─── Sortable Item Component for Modal ─────────────────────────────────────────
@@ -101,6 +102,7 @@ export default function CategoriesPage() {
   // Form state
   const [categoryName, setCategoryName] = useState("")
   const [parentCategoryId, setParentCategoryId] = useState<number | null>(null)
+  const [isHealthyChoice, setIsHealthyChoice] = useState(false)
   const [errors, setErrors] = useState<{ category_name?: string }>({})
 
   // ── Fetch ALL categories ─────────────────────────────────────────────────────
@@ -211,6 +213,7 @@ export default function CategoriesPage() {
   const resetForm = () => {
     setCategoryName("")
     setParentCategoryId(null)
+    setIsHealthyChoice(false)
     setIsSubcategory(false)
     setSelectedCategory(null)
     setErrors({})
@@ -222,7 +225,7 @@ export default function CategoriesPage() {
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
 
-    const data = { category_name: categoryName, parent_category_id: parentCategoryId }
+    const data = { category_name: categoryName, parent_category_id: parentCategoryId, is_healthy_choice: isHealthyChoice }
     if (selectedCategory) {
       updateCategoryMutation.mutate({ id: selectedCategory.category_id, ...data })
     } else {
@@ -234,6 +237,7 @@ export default function CategoriesPage() {
     setSelectedCategory(category)
     setCategoryName(category.category_name)
     setParentCategoryId(category.parent_category_id || null)
+    setIsHealthyChoice(category.is_healthy_choice || false)
     setIsSubcategory(true) // Always allow parent selection in edit mode
     setShowEditModal(true)
   }
@@ -339,12 +343,13 @@ export default function CategoriesPage() {
             <tr className="bg-gray-50/50 border-b border-gray-100">
               <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Category</th>
               <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Parent Category</th>
+              <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Healthy Choice</th>
               <th className="px-8 py-5 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {isLoading ? (
-              <tr><td colSpan={3} className="text-center py-10 text-gray-400">Loading categories...</td></tr>
+              <tr><td colSpan={4} className="text-center py-10 text-gray-400">Loading categories...</td></tr>
             ) : filteredCategories.map((category) => (
               <tr key={category.category_id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-8 py-5 text-sm font-medium text-gray-900 uppercase">
@@ -353,6 +358,13 @@ export default function CategoriesPage() {
                 </td>
                 <td className="px-8 py-5 text-sm text-gray-500 uppercase">
                   {category.parent_category_name || "-"}
+                </td>
+                <td className="px-8 py-5 text-sm">
+                  {category.is_healthy_choice ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Yes</span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">No</span>
+                  )}
                 </td>
                 <td className="px-8 py-5">
                   <div className="flex gap-3">
@@ -444,6 +456,18 @@ export default function CategoriesPage() {
                 </select>
               </div>
             )}
+            <div className="flex items-center gap-3">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isHealthyChoice}
+                  onChange={(e) => setIsHealthyChoice(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+              </label>
+              <Label className="text-sm font-semibold text-gray-700">Is Healthy Choice</Label>
+            </div>
             <div className="flex gap-4 pt-4">
               <Button variant="outline" onClick={() => { setShowAddModal(false); setShowEditModal(false); resetForm(); }} className="flex-1 h-12 rounded-xl">Cancel</Button>
               <Button onClick={handleSaveCategory} className="flex-1 h-12 rounded-xl bg-[#c62828] hover:bg-[#b01f1f] text-white font-semibold">
