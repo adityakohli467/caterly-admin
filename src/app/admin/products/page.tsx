@@ -1069,6 +1069,9 @@ export default function ProductsPage() {
                   Product Price
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                  Healthy
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                   Actions
                 </th>
               </tr>
@@ -1076,17 +1079,17 @@ export default function ProductsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-500">Loading products...</td>
+                  <td colSpan={8} className="text-center py-8 text-gray-500">Loading products...</td>
                 </tr>
               ) : productsError ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-red-500">
+                  <td colSpan={8} className="text-center py-8 text-red-500">
                     Error loading products. Please try again.
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-500">
+                  <td colSpan={8} className="text-center py-8 text-gray-500">
                     {searchQuery ? "No products found matching your search" : "No products found"}
                   </td>
                 </tr>
@@ -1160,6 +1163,23 @@ export default function ProductsPage() {
                         }}>
                           ${parseFloat(product.product_price.toString()).toFixed(2)}
                         </td>
+                        <td className="px-4 py-3 text-sm" style={{ fontFamily: 'Albert Sans' }}>
+                          {product.is_healthy_choice ? (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                              product.healthy_choice_color === 'green' ? 'bg-green-100 text-green-700' :
+                              product.healthy_choice_color === 'amber' ? 'bg-amber-100 text-amber-700' :
+                              product.healthy_choice_color === 'red' ? 'bg-red-100 text-red-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {product.healthy_choice_color === 'green' ? '🟢' :
+                               product.healthy_choice_color === 'amber' ? '🟠' :
+                               product.healthy_choice_color === 'red' ? '🔴' : '🟢'}
+                              {product.healthy_choice_color ? product.healthy_choice_color.charAt(0).toUpperCase() + product.healthy_choice_color.slice(1) : 'Yes'}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <button
@@ -1224,6 +1244,23 @@ export default function ProductsPage() {
                         <>
                           <td className="px-4 py-3 text-sm font-semibold text-gray-900" rowSpan={rowSpan} style={{ fontFamily: 'Albert Sans' }}>
                             ${parseFloat(product.product_price.toString()).toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-sm" rowSpan={rowSpan} style={{ fontFamily: 'Albert Sans' }}>
+                            {product.is_healthy_choice ? (
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                product.healthy_choice_color === 'green' ? 'bg-green-100 text-green-700' :
+                                product.healthy_choice_color === 'amber' ? 'bg-amber-100 text-amber-700' :
+                                product.healthy_choice_color === 'red' ? 'bg-red-100 text-red-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {product.healthy_choice_color === 'green' ? '🟢' :
+                                 product.healthy_choice_color === 'amber' ? '🟠' :
+                                 product.healthy_choice_color === 'red' ? '🔴' : '🟢'}
+                                {product.healthy_choice_color ? product.healthy_choice_color.charAt(0).toUpperCase() + product.healthy_choice_color.slice(1) : 'Yes'}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="px-4 py-3" rowSpan={rowSpan}>
                             <div className="flex items-center gap-2">
