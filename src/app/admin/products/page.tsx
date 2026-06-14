@@ -1714,6 +1714,9 @@ export default function ProductsPage() {
                     />
                     <span className="text-sm text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
                       {category.category_name}
+                      {category.is_healthy_choice && (
+                        <span className="ml-1 text-xs font-semibold text-green-600">(H)</span>
+                      )}
                     </span>
                   </label>
                 ))}
