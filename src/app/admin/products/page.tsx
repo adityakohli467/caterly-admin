@@ -1014,7 +1014,7 @@ export default function ProductsPage() {
             style={{ fontFamily: 'Albert Sans' }}
           >
             <option value="all">All Categories</option>
-            {mainCategories.map((cat: any) => (
+            {mainCategories.filter((cat: any) => !cat.is_healthy_choice).map((cat: any) => (
               <option key={cat.category_id} value={cat.category_id.toString()}>
                 {cat.category_name}
               </option>
@@ -2138,15 +2138,27 @@ export default function ProductsPage() {
                           ${parseFloat(product.product_price.toString()).toFixed(2)}
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            onClick={() => {
-                              handleEditProduct(product)
-                              setShowHealthyModal(false)
-                            }}
-                            className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          >
-                            Edit
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                handleEditProduct(product)
+                                setShowHealthyModal(false)
+                              }}
+                              className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowHealthyModal(false)
+                                handleDeleteProduct(product)
+                              }}
+                              className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
