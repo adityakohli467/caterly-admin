@@ -103,6 +103,7 @@ export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState("")
   const [parentCategoryId, setParentCategoryId] = useState<number | null>(null)
   const [isHealthyChoice, setIsHealthyChoice] = useState(false)
+  const [sortOrder, setSortOrder] = useState<string>("0")
   const [errors, setErrors] = useState<{ category_name?: string }>({})
 
   // ── Fetch ALL categories ─────────────────────────────────────────────────────
@@ -214,6 +215,7 @@ export default function CategoriesPage() {
     setCategoryName("")
     setParentCategoryId(null)
     setIsHealthyChoice(false)
+    setSortOrder("0")
     setIsSubcategory(false)
     setSelectedCategory(null)
     setErrors({})
@@ -225,7 +227,7 @@ export default function CategoriesPage() {
     setErrors(newErrors)
     if (Object.keys(newErrors).length > 0) return
 
-    const data = { category_name: categoryName, parent_category_id: parentCategoryId, is_healthy_choice: isHealthyChoice }
+    const data = { category_name: categoryName, parent_category_id: parentCategoryId, is_healthy_choice: isHealthyChoice, sort_order: parseInt(sortOrder) || 0 }
     if (selectedCategory) {
       updateCategoryMutation.mutate({ id: selectedCategory.category_id, ...data })
     } else {
@@ -238,6 +240,7 @@ export default function CategoriesPage() {
     setCategoryName(category.category_name)
     setParentCategoryId(category.parent_category_id || null)
     setIsHealthyChoice(category.is_healthy_choice || false)
+    setSortOrder(category.sort_order?.toString() || "0")
     setIsSubcategory(true) // Always allow parent selection in edit mode
     setShowEditModal(true)
   }
@@ -468,6 +471,20 @@ export default function CategoriesPage() {
               </label>
               <Label className="text-sm font-semibold text-gray-700">Is Healthy Choice</Label>
             </div>
+            {isHealthyChoice && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-700">Sort Order (Healthy Choices Page)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  placeholder="0"
+                  className="h-12 border-gray-200 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500">Lower numbers appear first on the Healthy Choices page</p>
+              </div>
+            )}
             <div className="flex gap-4 pt-4">
               <Button variant="outline" onClick={() => { setShowAddModal(false); setShowEditModal(false); resetForm(); }} className="flex-1 h-12 rounded-xl">Cancel</Button>
               <Button onClick={handleSaveCategory} className="flex-1 h-12 rounded-xl bg-[#c62828] hover:bg-[#b01f1f] text-white font-semibold">
