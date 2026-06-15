@@ -120,6 +120,9 @@ export default function OrdersPage() {
     const [imageUploadOrderId, setImageUploadOrderId] = useState<number | null>(null)
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
     const [paymentLinkEmail, setPaymentLinkEmail] = useState<string>("")
+  const [showMarkPaidModal, setShowMarkPaidModal] = useState(false)
+  const [markPaidOrderId, setMarkPaidOrderId] = useState<number | null>(null)
+  const [markPaidComment, setMarkPaidComment] = useState("")
   const [page, setPage] = useState(1)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
@@ -353,8 +356,8 @@ export default function OrdersPage() {
 
   // Update status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: number }) => {
-      await api.put(`/admin/orders/${id}/status`, { order_status: status })
+    mutationFn: async ({ id, status, comment }: { id: number; status: number; comment?: string }) => {
+      await api.put(`/admin/orders/${id}/status`, { order_status: status, comment })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
@@ -526,10 +529,20 @@ export default function OrdersPage() {
   }
 
   const handleMarkAsPaid = (orderId: number) => {
+    setMarkPaidOrderId(orderId)
+    setMarkPaidComment("")
+    setShowMarkPaidModal(true)
+  }
+
+  const handleConfirmMarkPaid = () => {
+    if (!markPaidOrderId) return
     const toastId = toast.loading("Marking order as paid...")
-    updateStatusMutation.mutate({ id: orderId, status: 3 }, {
+    updateStatusMutation.mutate({ id: markPaidOrderId, status: 3, comment: markPaidComment || undefined }, {
       onSuccess: () => {
         toast.dismiss(toastId)
+        setShowMarkPaidModal(false)
+        setMarkPaidComment("")
+        setMarkPaidOrderId(null)
       },
       onError: () => {
         toast.dismiss(toastId)
@@ -1534,6 +1547,54 @@ export default function OrdersPage() {
             >
               <Trash2 className="h-4 w-4 mr-1.5" />
               {bulkDeleteMutation.isPending ? "Deleting..." : `Delete ${selectedOrders.length} Order${selectedOrders.length !== 1 ? 's' : ''}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark as Paid Modal */}
+      <Dialog open={showMarkPaidModal} onOpenChange={(open) => { if (!open) { setShowMarkPaidModal(false); setMarkPaidComment(""); setMarkPaidOrderId(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Albert Sans', fontWeight: 700 }}>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Mark Order #{markPaidOrderId} as Paid
+              </div>
+            </DialogTitle>
+            <DialogDescription style={{ fontFamily: 'Albert Sans' }}>
+              Add a comment to record how this payment was received.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <label className="text-sm font-medium text-gray-700" style={{ fontFamily: 'Albert Sans' }}>Payment Comment</label>
+            <textarea
+              value={markPaidComment}
+              onChange={(e) => setMarkPaidComment(e.target.value)}
+              placeholder="e.g., Paid via bank transfer, Cash received, EFT confirmed..."
+              rows={3}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              style={{ fontFamily: 'Albert Sans' }}
+            />
+            <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Optional. If left empty, it will default to "Manually marked as paid by admin".</p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setShowMarkPaidModal(false); setMarkPaidComment(""); setMarkPaidOrderId(null); }}
+              disabled={updateStatusMutation.isPending}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmMarkPaid}
+              disabled={updateStatusMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-1.5" />
+              {updateStatusMutation.isPending ? "Processing..." : "Confirm Mark Paid"}
             </Button>
           </DialogFooter>
         </DialogContent>

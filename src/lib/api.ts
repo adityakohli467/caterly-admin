@@ -156,8 +156,8 @@ export const ordersAPI = {
   get: (id: number) => api.get(`/admin/orders/${id}`),
   create: (data: any) => api.post("/admin/orders", data),
   update: (id: number, data: any) => api.put(`/admin/orders/${id}`, data),
-  updateStatus: (id: number, status: number) =>
-    api.put(`/admin/orders/${id}/status`, { order_status: status }),
+  updateStatus: (id: number, status: number, comment?: string) =>
+    api.put(`/admin/orders/${id}/status`, { order_status: status, comment }),
   delete: (id: number) => api.delete(`/admin/orders/${id}`),
   stats: () => api.get("/admin/orders/stats"),
   sendEmail: (id: number, data?: { email_type?: string; custom_message?: string }) =>

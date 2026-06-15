@@ -22,6 +22,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState("process")
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [markPaidComment, setMarkPaidComment] = useState("")
 
   // Fetch order details
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
@@ -42,8 +43,8 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
 
   // Mark as paid mutation - MUST be called before any conditional returns
   const markAsPaidMutation = useMutation({
-    mutationFn: async (data: { id: number; status: number }) => {
-      return await ordersAPI.updateStatus(data.id, data.status)
+    mutationFn: async (data: { id: number; status: number; comment?: string }) => {
+      return await ordersAPI.updateStatus(data.id, data.status, data.comment)
     },
     onSuccess: () => {
       toast.success("Order marked as paid")
@@ -57,7 +58,7 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
 
   const handleMarkAsPaid = () => {
     if (!orderId) return
-    markAsPaidMutation.mutate({ id: orderId, status: 3 })
+    markAsPaidMutation.mutate({ id: orderId, status: 3, comment: markPaidComment || undefined })
   }
 
   const handlePaymentSuccess = () => {
@@ -161,6 +162,17 @@ export function PaymentProcessingModal({ orderId, onSuccess, onClose }: PaymentP
                         </div>
 
                         <div className="mt-4 pt-4 border-t">
+                          <div className="mb-3">
+                            <label className="text-xs font-medium text-gray-600 mb-1 block">Payment Comment (Optional)</label>
+                            <textarea
+                              value={markPaidComment}
+                              onChange={(e) => setMarkPaidComment(e.target.value)}
+                              placeholder="e.g., Paid via bank transfer, Cash received..."
+                              rows={2}
+                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              style={{ fontFamily: 'Albert Sans' }}
+                            />
+                          </div>
                           <Button
                             onClick={handleMarkAsPaid}
                             disabled={markAsPaidMutation.isPending}
