@@ -1563,7 +1563,7 @@ export default function OrdersPage() {
               </div>
             </DialogTitle>
             <DialogDescription style={{ fontFamily: 'Albert Sans' }}>
-              Add a comment to record how this payment was received.
+              Are you sure you want to mark this order as paid?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -1571,12 +1571,10 @@ export default function OrdersPage() {
             <textarea
               value={markPaidComment}
               onChange={(e) => setMarkPaidComment(e.target.value)}
-              placeholder="e.g., Paid via bank transfer, Cash received, EFT confirmed..."
               rows={3}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               style={{ fontFamily: 'Albert Sans' }}
             />
-            <p className="text-xs text-gray-500" style={{ fontFamily: 'Albert Sans' }}>Optional. If left empty, it will default to "Manually marked as paid by admin".</p>
           </div>
           <DialogFooter>
             <Button
