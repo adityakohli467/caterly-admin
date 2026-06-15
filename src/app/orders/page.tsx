@@ -54,6 +54,7 @@ interface Order {
   customer_type?: string
   user_id?: number | null
   has_successful_payment?: boolean
+  mark_paid_comment?: string | null
 }
 
 interface Location {
@@ -123,6 +124,9 @@ export default function OrdersPage() {
   const [showMarkPaidModal, setShowMarkPaidModal] = useState(false)
   const [markPaidOrderId, setMarkPaidOrderId] = useState<number | null>(null)
   const [markPaidComment, setMarkPaidComment] = useState("")
+  const [showViewCommentModal, setShowViewCommentModal] = useState(false)
+  const [viewCommentText, setViewCommentText] = useState("")
+  const [viewCommentOrderId, setViewCommentOrderId] = useState<number | null>(null)
   const [page, setPage] = useState(1)
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
@@ -1385,6 +1389,19 @@ export default function OrdersPage() {
                                   <><CheckCircle2 className="h-4 w-4 mr-2" /> Mark Paid</>
                                 )}
                               </DropdownMenuItem>
+                              {order.mark_paid_comment && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setViewCommentOrderId(order.order_id)
+                                    setViewCommentText(order.mark_paid_comment || "")
+                                    setShowViewCommentModal(true)
+                                  }}
+                                  className="cursor-pointer"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Payment Comment
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={() => handleDownloadOrder(order.order_id)}
                                 disabled={downloadInvoiceMutation.isPending}
@@ -1593,6 +1610,33 @@ export default function OrdersPage() {
             >
               <CheckCircle2 className="h-4 w-4 mr-1.5" />
               {updateStatusMutation.isPending ? "Processing..." : "Confirm Mark Paid"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Payment Comment Modal */}
+      <Dialog open={showViewCommentModal} onOpenChange={setShowViewCommentModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: 'Albert Sans', fontWeight: 700 }}>
+              Payment Comment - Order #{viewCommentOrderId}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-3">
+            <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+              <p className="text-sm text-gray-800" style={{ fontFamily: 'Albert Sans' }}>
+                {viewCommentText}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowViewCommentModal(false)}
+              style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
