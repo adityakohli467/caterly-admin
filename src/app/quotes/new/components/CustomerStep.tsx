@@ -113,10 +113,12 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
 
   // Always fetch ALL customers - customer is selected first, before company
   // Do NOT filter by company here, otherwise selecting company would refetch and clear the customer
+  // Pass a high limit so we don't get capped by the backend's default page size (20),
+  // which would otherwise hide customers that exist but fall outside the most recent 20.
   const { data: customersData, isLoading: loadingCustomers } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const response = await customersAPI.list({})
+      const response = await customersAPI.list({ limit: 1000 })
       return response.data
     },
   })
