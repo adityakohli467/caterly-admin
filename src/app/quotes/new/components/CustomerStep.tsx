@@ -11,6 +11,7 @@ import { ValidatedTextarea } from "@/components/ui/validated-textarea"
 import { ValidationRules } from "@/lib/validation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { companiesAPI, customersAPI, locationsAPI } from "@/lib/api"
 import { QuoteData } from "../page"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -46,6 +47,8 @@ interface Customer {
   customer_type?: string
   company_id?: number
   department_id?: number
+  archived?: boolean
+  status?: number
 }
 
 interface Location {
@@ -116,9 +119,10 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   // Pass a high limit so we don't get capped by the backend's default page size (20),
   // which would otherwise hide customers that exist but fall outside the most recent 20.
   const { data: customersData, isLoading: loadingCustomers } = useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', 'active'],
     queryFn: async () => {
-      const response = await customersAPI.list({ limit: 1000 })
+      // Only fetch active (non-deleted/non-archived) customers
+      const response = await customersAPI.list({ limit: 1000, archived: 'false' })
       return response.data
     },
   })
@@ -138,9 +142,12 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
   const departments = [...(departmentsData?.departments || [])].sort((a, b) => 
     a.department_name.localeCompare(b.department_name)
   )
-  const customers = [...(customersData?.customers || [])].sort((a, b) => 
-    a.firstname.localeCompare(b.firstname) || a.lastname.localeCompare(b.lastname)
-  )
+  const customers = [...(customersData?.customers || [])]
+    // Defensive client-side guard: never show deleted/archived customers
+    .filter((c: Customer) => !c.archived)
+    .sort((a, b) => 
+      a.firstname.localeCompare(b.firstname) || a.lastname.localeCompare(b.lastname)
+    )
   const locations = [...(locationsData?.locations || [])].sort((a, b) => 
     a.location_name.localeCompare(b.location_name)
   )
@@ -552,27 +559,21 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             Customer Name <span className="text-red-500">*</span>
           </Label>
           <div className="flex gap-2">
-            <Select
-              value={selectedCustomer.toString()}
+            <SearchableSelect
+              id="customer"
+              value={selectedCustomer ? selectedCustomer.toString() : ""}
               onValueChange={(value) => handleCustomerChange(Number(value))}
               disabled={loadingCustomers}
-            >
-              <SelectTrigger 
-                id="customer"
-                className="flex-1 h-11 border-gray-300 bg-white"
-                style={{ fontFamily: 'Albert Sans' }}
-              >
-                <SelectValue placeholder={loadingCustomers ? "Loading..." : "Enter"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Enter</SelectItem>
-                {customers.map((customer: Customer) => (
-                  <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
-                    {customer.firstname} {customer.lastname}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              loading={loadingCustomers}
+              placeholder="Enter"
+              searchPlaceholder="Search customer..."
+              emptyText="No customers found"
+              className="flex-1"
+              options={customers.map((customer: Customer) => ({
+                value: customer.customer_id.toString(),
+                label: `${customer.firstname} ${customer.lastname}`,
+              }))}
+            />
             <button
               type="button"
               onClick={() => setShowAddCustomerModalInternal(true)}
@@ -592,27 +593,21 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
             Company
           </Label>
           <div className="flex gap-2">
-            <Select
-              value={selectedCompany.toString()}
+            <SearchableSelect
+              id="company"
+              value={selectedCompany ? selectedCompany.toString() : ""}
               onValueChange={(value) => handleCompanyChange(Number(value))}
               disabled={loadingCompanies || (selectedCustomer > 0 && displayedCompanies.length === 0)}
-            >
-              <SelectTrigger 
-                id="company"
-                className="flex-1 h-11 border-gray-300 bg-white"
-                style={{ fontFamily: 'Albert Sans' }}
-              >
-                <SelectValue placeholder={loadingCompanies ? "Loading..." : "Select"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Select</SelectItem>
-                {displayedCompanies.map((company: Company) => (
-                  <SelectItem key={company.company_id} value={company.company_id.toString()}>
-                    {company.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              loading={loadingCompanies}
+              placeholder="Select"
+              searchPlaceholder="Search company..."
+              emptyText="No companies found"
+              className="flex-1"
+              options={displayedCompanies.map((company: Company) => ({
+                value: company.company_id.toString(),
+                label: company.company_name,
+              }))}
+            />
             <button
               type="button"
               onClick={() => setShowAddCompanyModal(true)}

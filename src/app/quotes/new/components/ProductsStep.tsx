@@ -221,7 +221,9 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
     }
   })
 
-  const categories = categoriesData?.categories || []
+  const categories = (categoriesData?.categories || []).filter(
+    (category: Category) => !/healthy\s*choice/i.test(category.category_name || "")
+  )
 
   // Set first category as default when categories load (only if no category is selected)
   useEffect(() => {
