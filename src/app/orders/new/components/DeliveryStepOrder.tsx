@@ -334,6 +334,10 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
   const locations = locationsData?.locations || []
   const companyName = companyData?.company?.company_name || ''
   const departmentName = departmentData?.department?.department_name || ''
+  const locationName =
+    locations.find((loc: Location) => loc.location_id === data.location_id)?.location_name ||
+    data.location ||
+    ''
 
   // Reset selected location if it doesn't exist in the locations list (e.g. deleted/inactive location from reorder)
   useEffect(() => {
@@ -774,7 +778,7 @@ export function DeliveryStep({ data, onUpdate, onSave, onBack, isSubmitting = fa
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-gray-600">📍 Location</span>
-                  <span className="text-gray-900">{data.location || "Box Hill"}</span>
+                  <span className="text-gray-900">{locationName || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-gray-600">🏷️ Customer Type</span>

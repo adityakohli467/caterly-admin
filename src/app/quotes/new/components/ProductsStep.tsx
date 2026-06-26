@@ -51,6 +51,7 @@ interface Product {
 interface Category {
   category_id: number
   category_name: string
+  is_healthy_choice?: boolean
 }
 
 interface CartProduct {
@@ -222,7 +223,11 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
   })
 
   const categories = (categoriesData?.categories || []).filter(
-    (category: Category) => !/healthy\s*choice/i.test(category.category_name || "")
+    (category: Category) =>
+      // Exclude "Healthy Choices" categories (flagged via is_healthy_choice or by name).
+      // These are duplicate variants of the regular categories and cause confusion here.
+      !category.is_healthy_choice &&
+      !/healthy\s*choice/i.test(category.category_name || "")
   )
 
   // Set first category as default when categories load (only if no category is selected)
