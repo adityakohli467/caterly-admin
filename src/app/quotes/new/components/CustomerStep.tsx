@@ -1071,11 +1071,42 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               className="border-gray-300 resize-none"
             />
 
-            {/* Company/Department Info */}
-            {selectedCompany > 0 && (
-              <div className="p-3 bg-gray-50 rounded-md">
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Company:</span> {companies.find((c: Company) => c.company_id === selectedCompany)?.company_name || "N/A"}
+            {/* Company Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">
+                  Company
+                </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddCompanyModal(true)}
+                  className="h-7 px-2 text-[#C62828] hover:text-[#B71C1C] hover:bg-[#FFEBEE]"
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add New Company
+                </Button>
+              </div>
+              <SearchableSelect
+                value={selectedCompany > 0 ? String(selectedCompany) : ""}
+                onValueChange={(value) => {
+                  const companyId = parseInt(value) || 0
+                  setSelectedCompany(companyId)
+                  setSelectedDepartment(0)
+                }}
+                options={companies.map((c: Company) => ({ value: String(c.company_id), label: c.company_name }))}
+                placeholder="Select company (optional)"
+                searchPlaceholder="Search company..."
+                emptyText="No companies found"
+                loading={loadingCompanies}
+              />
+              {selectedCompany > 0 && (
+                <p className="text-xs text-gray-500">
+                  Customer will be associated with{" "}
+                  <span className="font-medium">
+                    {companies.find((c: Company) => c.company_id === selectedCompany)?.company_name || "the selected company"}
+                  </span>
                   {selectedDepartment > 0 && (
                     <>
                       {" | "}
@@ -1083,11 +1114,9 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
                     </>
                   )}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Customer will be associated with the selected company and department
-                </p>
-              </div>
-            )}
+              )}
+            </div>
+
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
