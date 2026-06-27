@@ -961,6 +961,52 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Company Selection - kept at top so the "Add New Company" action is always visible */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">
+                  Company
+                </Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddCompanyModal(true)}
+                  className="h-7 px-2 text-[#C62828] hover:text-[#B71C1C] hover:bg-[#FFEBEE]"
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add New Company
+                </Button>
+              </div>
+              <SearchableSelect
+                value={selectedCompany > 0 ? String(selectedCompany) : ""}
+                onValueChange={(value) => {
+                  const companyId = parseInt(value) || 0
+                  setSelectedCompany(companyId)
+                  setSelectedDepartment(0)
+                }}
+                options={companies.map((c: Company) => ({ value: String(c.company_id), label: c.company_name }))}
+                placeholder="Select company (optional)"
+                searchPlaceholder="Search company..."
+                emptyText="No companies found"
+                loading={loadingCompanies}
+              />
+              {selectedCompany > 0 && (
+                <p className="text-xs text-gray-500">
+                  Customer will be associated with{" "}
+                  <span className="font-medium">
+                    {companies.find((c: Company) => c.company_id === selectedCompany)?.company_name || "the selected company"}
+                  </span>
+                  {selectedDepartment > 0 && (
+                    <>
+                      {" | "}
+                      <span className="font-medium">Department:</span> {departments.find((d: Department) => d.department_id === selectedDepartment)?.department_name || "N/A"}
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* First Name */}
               <ValidatedInput
@@ -1070,53 +1116,6 @@ export function CustomerStep({ data, onUpdate, onNext, showAddCustomerModal = fa
               rows={3}
               className="border-gray-300 resize-none"
             />
-
-            {/* Company Selection */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">
-                  Company
-                </Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAddCompanyModal(true)}
-                  className="h-7 px-2 text-[#C62828] hover:text-[#B71C1C] hover:bg-[#FFEBEE]"
-                  style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}
-                >
-                  <Plus className="h-4 w-4 mr-1" /> Add New Company
-                </Button>
-              </div>
-              <SearchableSelect
-                value={selectedCompany > 0 ? String(selectedCompany) : ""}
-                onValueChange={(value) => {
-                  const companyId = parseInt(value) || 0
-                  setSelectedCompany(companyId)
-                  setSelectedDepartment(0)
-                }}
-                options={companies.map((c: Company) => ({ value: String(c.company_id), label: c.company_name }))}
-                placeholder="Select company (optional)"
-                searchPlaceholder="Search company..."
-                emptyText="No companies found"
-                loading={loadingCompanies}
-              />
-              {selectedCompany > 0 && (
-                <p className="text-xs text-gray-500">
-                  Customer will be associated with{" "}
-                  <span className="font-medium">
-                    {companies.find((c: Company) => c.company_id === selectedCompany)?.company_name || "the selected company"}
-                  </span>
-                  {selectedDepartment > 0 && (
-                    <>
-                      {" | "}
-                      <span className="font-medium">Department:</span> {departments.find((d: Department) => d.department_id === selectedDepartment)?.department_name || "N/A"}
-                    </>
-                  )}
-                </p>
-              )}
-            </div>
-
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
