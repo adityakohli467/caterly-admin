@@ -275,11 +275,15 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
   const allProducts = productsData?.products || []
 
   // Filter products by selected category and ensure they have valid data
+  // selectedCategory === 0  -> all products
+  // selectedCategory === -1 -> products without any category (Uncategorised)
   const products = (selectedCategory === 0
     ? allProducts
-    : allProducts.filter((p: Product) =>
-      p.categories?.some(cat => cat.category_id === selectedCategory)
-    )
+    : selectedCategory === -1
+      ? allProducts.filter((p: Product) => !p.categories || p.categories.length === 0)
+      : allProducts.filter((p: Product) =>
+        p.categories?.some(cat => cat.category_id === selectedCategory)
+      )
   ).filter((p: Product) => {
     // Ensure product has required fields
     return p.product_id && p.product_name && p.product_price !== undefined && p.product_price !== null
@@ -565,6 +569,20 @@ export function ProductsStep({ data, onUpdate, onNext, onBack }: ProductsStepPro
                     {category.category_name}
                   </button>
                 ))}
+                {/* Uncategorised tab - products without any category */}
+                <button
+                  onClick={() => {
+                    setSelectedCategory(-1)
+                    setSearchQuery("") // Clear search when selecting category
+                  }}
+                  className={`px-3 py-1.5 text-xs rounded-md border transition-all ${selectedCategory === -1
+                    ? "bg-[#C62828] text-white border-[#C62828] shadow-sm"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#C62828] hover:bg-gray-50"
+                    }`}
+                  style={{ fontFamily: 'Albert Sans', fontWeight: 500 }}
+                >
+                  Uncategorised
+                </button>
               </div>
             )}
           </div>
