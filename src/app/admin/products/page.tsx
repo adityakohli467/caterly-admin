@@ -79,6 +79,7 @@ export default function ProductsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showInactiveModal, setShowInactiveModal] = useState(false)
   const [showHealthyModal, setShowHealthyModal] = useState(false)
+  const [healthySearch, setHealthySearch] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all")
   const searchParams = useSearchParams()
@@ -230,6 +231,7 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products-new"] })
+      queryClient.invalidateQueries({ queryKey: ["healthy-products"] })
       toast.success("Product created successfully!")
       setShowAddModal(false)
       resetForm()
@@ -254,6 +256,7 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products-new"] })
+      queryClient.invalidateQueries({ queryKey: ["healthy-products"] })
       toast.success("Product updated successfully!")
       setShowEditModal(false)
       resetForm()
@@ -271,6 +274,7 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products-new"] })
+      queryClient.invalidateQueries({ queryKey: ["healthy-products"] })
       toast.success("Product deleted successfully!")
       setShowDeleteModal(false)
       setSelectedProduct(null)
@@ -302,6 +306,7 @@ export default function ProductsPage() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["products-new"] })
       queryClient.invalidateQueries({ queryKey: ["inactive-products"] })
+      queryClient.invalidateQueries({ queryKey: ["healthy-products"] })
       toast.success(data.message || `Product ${variables.status === 1 ? 'activated' : 'deactivated'} successfully!`)
     },
     onError: (error: any) => {
@@ -332,6 +337,16 @@ export default function ProductsPage() {
   })
 
   const healthyProducts = healthyProductsData?.products || []
+
+  const filteredHealthyProducts = healthyProducts.filter((product: Product) => {
+    const term = healthySearch.trim().toLowerCase()
+    if (!term) return true
+    const nameMatch = product.product_name?.toLowerCase().includes(term)
+    const categoryMatch = product.categories?.some((c: any) =>
+      c.category_name?.toLowerCase().includes(term)
+    )
+    return nameMatch || categoryMatch
+  })
 
   const handleAddProduct = () => {
     resetForm()
@@ -622,6 +637,7 @@ export default function ProductsPage() {
             },
           })
           queryClient.invalidateQueries({ queryKey: ["products-new"] })
+          queryClient.invalidateQueries({ queryKey: ["healthy-products"] })
           toast.success("Product created successfully!")
           setShowAddModal(false)
           resetForm()
@@ -2091,7 +2107,7 @@ export default function ProductsPage() {
       </Dialog>
 
       {/* Healthy Products Modal */}
-      <Dialog open={showHealthyModal} onOpenChange={setShowHealthyModal}>
+      <Dialog open={showHealthyModal} onOpenChange={(open) => { setShowHealthyModal(open); if (!open) setHealthySearch("") }}>
         <DialogContent className="w-[95vw] sm:w-full max-w-4xl bg-white max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto" style={{ fontFamily: 'Albert Sans' }}>
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-green-700">
@@ -2106,6 +2122,17 @@ export default function ProductsPage() {
               <div className="text-center py-8 text-gray-500">No healthy choice products found.</div>
             ) : (
               <div className="overflow-x-auto">
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={healthySearch}
+                    onChange={(e) => setHealthySearch(e.target.value)}
+                    placeholder="Search by product name or category..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    style={{ fontFamily: 'Albert Sans' }}
+                  />
+                </div>
                 <table className="w-full">
                   <thead>
                     <tr className="bg-green-50 border-b border-green-200">
@@ -2124,7 +2151,14 @@ export default function ProductsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {healthyProducts.map((product: Product) => (
+                    {filteredHealthyProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-gray-500" style={{ fontFamily: 'Albert Sans' }}>
+                          No products match your search.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredHealthyProducts.map((product: Product) => (
                       <tr key={product.product_id} className="border-b border-gray-100 hover:bg-green-50/50 transition-colors">
                         <td className="px-4 py-3 text-gray-900" style={{ fontFamily: 'Albert Sans' }}>
                           {product.product_name}
@@ -2161,7 +2195,8 @@ export default function ProductsPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -2171,7 +2206,7 @@ export default function ProductsPage() {
           <div className="flex justify-end gap-3 mt-6">
             <Button
               variant="outline"
-              onClick={() => setShowHealthyModal(false)}
+              onClick={() => { setShowHealthyModal(false); setHealthySearch("") }}
             >
               Close
             </Button>
