@@ -2176,7 +2176,6 @@ export default function ProductsPage() {
                             <button
                               onClick={() => {
                                 handleEditProduct(product)
-                                setShowHealthyModal(false)
                               }}
                               className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded transition-colors"
                             >
