@@ -268,7 +268,7 @@ export default function QuoteDetailPage() {
             <td style="padding:10px;border-bottom:1px solid #f0f0f0;">
               <div style="font-weight:600;color:#1a1a1a;">${p.product_name}</div>
               ${p.product_description && p.product_description !== '0' ? `<div style="color:#666;font-size:12px;margin-top:3px;white-space:pre-line">${p.product_description}</div>` : ''}
-              ${p.product_comment && p.product_comment !== '0' ? `<div style="color:#888;font-size:11px;font-style:italic;margin-top:2px;">Note: ${p.product_comment}</div>` : ''}
+              ${p.product_comment && p.product_comment !== '0' ? `<div style="color:#888;font-size:11px;font-style:italic;margin-top:2px;white-space:pre-line">Note: ${p.product_comment}</div>` : ''}
               ${optText}
             </td>
             <td style="padding:10px;text-align:center;border-bottom:1px solid #f0f0f0;">${p.quantity}</td>
@@ -525,7 +525,7 @@ export default function QuoteDetailPage() {
                               {product.product_name}
                             </p>
                             {product.product_comment && product.product_comment !== '0' && (
-                              <p className="text-xs text-gray-600 italic mt-1" style={{ fontFamily: 'Albert Sans' }}>
+                              <p className="text-xs text-gray-600 italic mt-1" style={{ fontFamily: 'Albert Sans', whiteSpace: 'pre-line' }}>
                                 Note: {product.product_comment}
                               </p>
                             )}
