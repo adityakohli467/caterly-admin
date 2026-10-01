@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import api from "@/lib/api"
+import api, { settingsAPI } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, AlertCircle, CheckCircle2, ArrowRight, MapPin, ArrowUpDown, MoreVertical } from "lucide-react"
+import { Search, Calendar, Filter, Printer, Plus, Eye, Edit, FileText, Mail, RotateCcw, Trash2, AlertCircle, CheckCircle2, ArrowRight, MapPin, ArrowUpDown, MoreVertical, Copy, Download } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import DatePicker from "react-datepicker"
@@ -111,6 +111,9 @@ export default function QuotesPage() {
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [convertQuoteId, setConvertQuoteId] = useState<number | null>(null)
   const [convertQuoteName, setConvertQuoteName] = useState("")
+
+  // Download quote state
+  const [downloadingQuoteId, setDownloadingQuoteId] = useState<number | null>(null)
 
   // Fetch locations
   const { data: locationsData } = useQuery({
@@ -293,6 +296,190 @@ export default function QuotesPage() {
     setConvertQuoteId(quote.order_id)
     setConvertQuoteName(`Quote #${quote.order_id} for ${quote.firstname} ${quote.lastname}`)
     setShowConvertModal(true)
+  }
+
+  const handleReQuote = (quote: Quote) => {
+    router.push(`/quotes/new?requoteId=${quote.order_id}`)
+  }
+
+  const handleDownloadQuote = async (quote: Quote) => {
+    if (downloadingQuoteId) return
+    setDownloadingQuoteId(quote.order_id)
+    try {
+      // Fetch full quote details (list only has summary data)
+      const res = await api.get(`/admin/quotes/${quote.order_id}`)
+      const q = res.data?.quote
+      if (!q) {
+        toast.error("Quote not found")
+        return
+      }
+
+      // Fetch admin settings for header/footer branding
+      let biz: Record<string, string> = {}
+      try {
+        const settingsRes = await settingsAPI.get()
+        biz = settingsRes.data?.settings || {}
+      } catch { /* use blank fallback */ }
+
+      const companyEmail = biz.companyEmail || ''
+      const companyPhone = biz.companyPhone || ''
+      const companyAbn = biz.companyAbn || ''
+
+      // ── Delivery date / time formatting ───────────────────────────
+      const dtRaw = q.delivery_date_time
+      const dtObj = dtRaw ? new Date(dtRaw) : null
+      const deliveryDay = dtObj ? new Intl.DateTimeFormat('en-AU', { weekday: 'long', timeZone: 'Australia/Sydney' }).format(dtObj) : ''
+      const deliveryDate = dtObj ? formatDateOnly(dtRaw) : ''
+
+      let deliveryTimeStr = ''
+      let rawTime = q.delivery_time
+      if (!rawTime && dtObj) {
+        const timeFormatter = new Intl.DateTimeFormat('en-AU', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Australia/Sydney' })
+        rawTime = timeFormatter.format(dtObj)
+      }
+      if (rawTime) {
+        const [hh, mm] = rawTime.split(':').map(Number)
+        if (!isNaN(hh) && !isNaN(mm)) {
+          const h12 = hh % 12 || 12
+          const ampm = hh >= 12 ? 'PM' : 'AM'
+          deliveryTimeStr = `${String(h12).padStart(2, '0')}:${String(mm).padStart(2, '0')} ${ampm}`
+        }
+      }
+
+      // ── Delivery contact parsing ────────────────────────────
+      const [dcName = '', dcPhone = ''] = (q.delivery_contact || '').split('|').map((s: string) => s.trim())
+
+      // ── Financials ───────────────────────────────────
+      const subtotal = Number(q.subtotal || 0)
+      const deliveryFee = Number(q.delivery_fee || 0)
+      const couponDisc = Number(q.coupon_discount || 0)
+      const gst = Number(q.gst) || parseFloat((subtotal / 11).toFixed(2))
+      const grandTotal = Number(q.calculated_total || q.order_total || 0)
+      const quoteDate = new Intl.DateTimeFormat('en-AU', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Australia/Sydney' }).format(new Date())
+
+      // ── Products HTML ─────────────────────────────────
+      const rowsHTML = (q.products || []).map((p: any) => {
+        const optText = (p.options || []).map((o: any) => `
+            <div style="color:#666;font-size:11px;margin-top:2px;margin-left:10px;">
+              &bull; ${o.option_name}: ${o.option_value}${o.option_quantity > 1 ? ` (x${o.option_quantity})` : ''}
+              ${Number(o.option_price) > 0 ? ` (+${Number(o.option_price).toFixed(2)})` : ''}
+            </div>`).join('')
+
+        return `
+          <tr>
+            <td style="padding:10px;border-bottom:1px solid #f0f0f0;">
+              <div style="font-weight:600;color:#1a1a1a;">${p.product_name}</div>
+              ${p.product_description && p.product_description !== '0' ? `<div style="color:#666;font-size:12px;margin-top:3px;white-space:pre-line">${p.product_description}</div>` : ''}
+              ${p.product_comment && p.product_comment !== '0' ? `<div style="color:#888;font-size:11px;font-style:italic;margin-top:2px;white-space:pre-line">Note: ${p.product_comment}</div>` : ''}
+              ${optText}
+            </td>
+            <td style="padding:10px;text-align:center;border-bottom:1px solid #f0f0f0;">${p.quantity}</td>
+            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;">$${Number(p.price).toFixed(2)}</td>
+            <td style="padding:10px;text-align:right;border-bottom:1px solid #f0f0f0;font-weight:600;">$${(Number(p.total) || (Number(p.price) * Number(p.quantity))).toFixed(2)}</td>
+          </tr>`
+      }).join('')
+
+      // ── Full HTML template ──────────────────────────────
+      const html = `<!DOCTYPE html><html><head>
+        <meta charset="utf-8"/>
+        <title>Quote #${q.order_id}</title>
+        <style>
+          *{margin:0;padding:0;box-sizing:border-box;}
+          body{font-family:Arial,sans-serif;font-size:13px;color:#333;background:#fff;}
+          @media print{
+            body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            @page{margin:1cm;size:A4;}
+          }
+        </style>
+      </head><body><div style="padding:30px;max-width:820px;margin:0 auto;">
+
+        <!-- QUOTE BANNER -->
+        <div style="background:#C62828;color:#fff;text-align:center;padding:13px;font-size:22px;font-weight:700;letter-spacing:4px;margin-bottom:24px;">QUOTE</div>
+
+        <!-- QUOTE META + BILL TO -->
+        <div style="display:flex;justify-content:space-between;margin-bottom:22px;gap:20px;">
+          <div style="line-height:2;">
+            <div><strong>Quote Number:</strong>&nbsp;#${q.order_id}</div>
+            <div><strong>Quote Date:</strong>&nbsp;${quoteDate}</div>
+            ${deliveryDay ? `<div><strong>Delivery Day:</strong>&nbsp;${deliveryDay}</div>` : ''}
+            ${deliveryDate ? `<div><strong>Delivery Date:</strong>&nbsp;${deliveryDate}</div>` : ''}
+            ${deliveryTimeStr ? `<div><strong>Delivery Time:</strong>&nbsp;${deliveryTimeStr}</div>` : ''}
+          </div>
+          <div style="min-width:280px;">
+            <div style="color:#C62828;font-weight:700;font-size:15px;border-bottom:2px solid #C62828;padding-bottom:4px;margin-bottom:8px;">Bill To:</div>
+            <div style="font-weight:700;margin-bottom:4px;">${q.firstname || ''} ${q.lastname || ''}</div>
+            ${q.company_name ? `<div style="color:#555;">Company: ${q.company_name}</div>` : ''}
+            ${q.department_name ? `<div style="color:#555;">Department: ${q.department_name}</div>` : ''}
+            ${q.email ? `<div style="color:#555;">Email: ${q.email}</div>` : ''}
+            ${q.telephone ? `<div style="color:#555;">Phone: ${q.telephone}</div>` : ''}
+          </div>
+        </div>
+
+        <!-- DELIVERY DETAILS (separate section) -->
+        ${(q.delivery_address || dcName || dcPhone || q.delivery_details) ? `
+        <div style="background:#f8f9fa;border-left:4px solid #C62828;padding:14px 16px;margin-bottom:24px;border-radius:0 6px 6px 0;">
+          <div style="font-weight:700;color:#C62828;margin-bottom:8px;font-size:14px;">Delivery Details</div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#444;">
+            ${q.delivery_method ? `<div><strong>Method:</strong> ${q.delivery_method === 'pickup' ? 'Pick Up' : 'Delivery'}</div>` : ''}
+            ${q.delivery_address ? `<div><strong>Address:</strong> ${q.delivery_address}</div>` : ''}
+            ${dcName ? `<div><strong>Contact:</strong> ${dcName}</div>` : ''}
+            ${dcPhone ? `<div><strong>Contact Phone:</strong> ${dcPhone}</div>` : ''}
+            ${q.location_name ? `<div><strong>Location:</strong> ${q.location_name}</div>` : ''}
+            ${q.delivery_details ? `<div style="width:100%;"><strong>Notes:</strong> ${q.delivery_details}</div>` : ''}
+          </div>
+        </div>` : ''}
+
+        <!-- PRODUCTS TABLE -->
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+          <thead>
+            <tr style="background:#C62828;color:#fff;">
+              <th style="padding:12px 10px;text-align:left;">Description</th>
+              <th style="padding:12px 10px;text-align:center;">Qty</th>
+              <th style="padding:12px 10px;text-align:right;">Unit Price</th>
+              <th style="padding:12px 10px;text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+
+        <!-- TOTALS -->
+        <div style="display:flex;justify-content:flex-end;margin-bottom:28px;">
+          <div style="min-width:290px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
+            ${deliveryFee > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">Delivery Fee:</span><span>$${deliveryFee.toFixed(2)}</span></div>` : ''}
+            ${couponDisc > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#16a34a;">Discount${q.coupon_code ? ` (${q.coupon_code})` : ''}:</span><span style="color:#16a34a;">-$${couponDisc.toFixed(2)}</span></div>` : ''}
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;"><span style="color:#555;">GST Included:</span><span>$${gst.toFixed(2)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:2px solid #333;font-weight:700;font-size:15px;"><span>Total Amount:</span><span>$${grandTotal.toFixed(2)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;font-size:15px;color:#C62828;"><span>Balance Due:</span><span>$${grandTotal.toFixed(2)}</span></div>
+          </div>
+        </div>
+
+        ${q.order_comments ? `
+        <div style="margin-bottom:28px;padding:14px;background:#f8f9fa;border-radius:6px;">
+          <div style="font-weight:600;margin-bottom:6px;">Order Comments:</div>
+          <div style="color:#555;font-size:13px;">${q.order_comments}</div>
+        </div>` : ''}
+
+        <!-- FOOTER -->
+        <div style="border-top:2px solid #e5e7eb;padding-top:18px;text-align:center;font-size:12px;color:#888;">
+          <div>Thank you for your business!</div>
+          ${companyEmail || companyPhone ? `<div style="margin-top:4px;">For inquiries: ${[companyEmail, companyPhone].filter(Boolean).join(' or ')}</div>` : ''}
+          ${companyAbn ? `<div style="margin-top:2px;">${companyAbn}</div>` : ''}
+        </div>
+
+      </div><script>window.onload=function(){window.print();}<\/script></body></html>`
+
+      const pw = window.open('', '_blank')
+      if (!pw) { toast.error("Allow popups to download the quote"); return }
+      pw.document.write(html)
+      pw.document.close()
+      toast.success("Quote ready — use 'Save as PDF' in the print dialog")
+    } catch (error: any) {
+      console.error("Download quote error:", error)
+      toast.error("Failed to generate quote")
+    } finally {
+      setDownloadingQuoteId(null)
+    }
   }
 
   const handleConfirmConvert = () => {
@@ -873,6 +1060,21 @@ export default function QuotesPage() {
                             >
                               <RotateCcw className="h-4 w-4 mr-2" />
                               Refresh
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleReQuote(quote)}
+                              className="cursor-pointer"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Re-Quote
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDownloadQuote(quote)}
+                              disabled={downloadingQuoteId === quote.order_id}
+                              className="cursor-pointer"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              {downloadingQuoteId === quote.order_id ? "Preparing..." : "Download Quote"}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDeleteQuote(quote)}

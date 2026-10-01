@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { CustomerStep } from "./components/CustomerStep"
@@ -59,18 +59,87 @@ export interface QuoteData {
 export default function NewQuotePage() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const requoteId = searchParams.get("requoteId")
   const [currentStep, setCurrentStep] = useState(1)
   const [quoteData, setQuoteData] = useState<QuoteData>({
     products: [],
   })
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isReloading, setIsReloading] = useState(false)
 
   const steps = [
     { number: 1, label: "Select Customer" },
     { number: 2, label: "Select Products" },
     { number: 3, label: "Add Delivery Details" },
   ]
+
+  // Handle re-quote logic: pre-populate from an existing quote
+  useEffect(() => {
+    const fetchOriginalQuote = async () => {
+      if (!requoteId) return
+
+      setIsReloading(true)
+      try {
+        const response = await api.get(`/admin/quotes/${requoteId}`)
+        const quote = response.data.quote
+
+        if (quote) {
+          const mappedProducts = quote.products?.map((product: any) => ({
+            product_id: product.product_id,
+            name: product.product_name,
+            category: "N/A",
+            price: parseFloat(product.price || 0),
+            quantity: product.quantity,
+            comment: product.product_comment || product.comment || "",
+            add_ons: product.options?.map((option: any) => ({
+              name: `${option.option_name}: ${option.option_value}`,
+              price: parseFloat(option.option_price || 0),
+              quantity: option.option_quantity || 1,
+              option_value_id: option.option_value_id,
+            })) || [],
+          })) || []
+
+          const customerName = quote.firstname || quote.lastname
+            ? `${quote.firstname || ""} ${quote.lastname || ""}`.trim()
+            : quote.customer_name || ""
+
+          const mappedQuoteData: QuoteData = {
+            company_id: quote.company_id || undefined,
+            department_id: quote.department_id || undefined,
+            customer_id: quote.customer_id || undefined,
+            customer_name: customerName,
+            customer_type: quote.customer_type || undefined,
+            phone: quote.telephone || "",
+            email: quote.email || "",
+            location: quote.location_name || "",
+            location_id: quote.location_id || undefined,
+            products: mappedProducts,
+            delivery_address: quote.delivery_address || "",
+            delivery_fee: parseFloat(quote.delivery_fee || 0),
+            cost_center: quote.cost_center || "",
+            delivery_contact: quote.delivery_contact || "",
+            delivery_details: quote.delivery_details || "",
+            delivery_method: quote.delivery_method || "pickup",
+            account_email: quote.account_email || "",
+            order_comments: quote.order_comments || "",
+          }
+
+          setQuoteData(mappedQuoteData)
+          setCurrentStep(2) // Jump to product review step
+          toast.success("Quote details pre-populated for re-quote")
+        }
+      } catch (error) {
+        console.error("Error fetching re-quote data:", error)
+        toast.error("Failed to fetch original quote details")
+      } finally {
+        setIsReloading(false)
+      }
+    }
+
+    fetchOriginalQuote()
+  }, [requoteId])
 
   const updateQuoteData = (data: Partial<QuoteData>) => {
     setQuoteData((prev) => ({ ...prev, ...data }))
