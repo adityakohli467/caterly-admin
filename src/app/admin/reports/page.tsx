@@ -38,6 +38,9 @@ interface Report {
   standing_order?: number
 }
 
+// 2 = paid via gateway, 3 = marked paid manually
+const isPaidStatus = (status: number) => status === 2 || status === 3
+
 export default function ReportsPage() {
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -301,10 +304,10 @@ export default function ReportsPage() {
 
       const allReports = [...reportData.reports, ...mappedSubscriptions].sort((a: any, b: any) => b.order_id - a.order_id)
 
-      // 4. Generate CSV with ALL 14 columns matching the table
+      // 4. Generate CSV with ALL 15 columns matching the table
       const headers = [
         "Order ID", "Order Date", "Delivery Date", "Delivery Time", 
-        "Customer", "Type", "Company", "Department", "Status", 
+        "Customer", "Type", "Company", "Department", "Status", "Payment Status",
         "Subtotal", "Delivery Fee", "Discount", "GST", "Total"
       ]
 
@@ -328,6 +331,7 @@ export default function ReportsPage() {
           `"${String(r.company_name || r.company || "").replace(/"/g, '""')}"`,
           `"${String(r.department_name || "").replace(/"/g, '""')}"`,
           getStatusBadge(r.order_status).label,
+          isPaidStatus(r.order_status) ? "Paid" : "Unpaid",
           displaySubtotal.toFixed(2),
           deliveryFee.toFixed(2),
           discount.toFixed(2),
@@ -647,6 +651,9 @@ export default function ReportsPage() {
                   Status
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
+                  Payment Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
                   Subtotal
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700" style={{ fontFamily: 'Albert Sans', fontWeight: 600 }}>
@@ -666,11 +673,11 @@ export default function ReportsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={14} className="text-center py-8 text-gray-500">Loading reports...</td>
+                  <td colSpan={15} className="text-center py-8 text-gray-500">Loading reports...</td>
                 </tr>
               ) : reports.length === 0 ? (
                 <tr>
-                  <td colSpan={14} className="text-center py-8 text-gray-500">No reports found.</td>
+                  <td colSpan={15} className="text-center py-8 text-gray-500">No reports found.</td>
                 </tr>
               ) : (
                 reports.map((report: Report, index: number) => {
@@ -742,6 +749,17 @@ export default function ReportsPage() {
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusInfo.class}`}>
                           {statusInfo.label}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {isPaidStatus(report.order_status) ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                            Paid
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#FFEBEE] text-[#C62828]">
+                            Unpaid
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-gray-700" style={{ fontFamily: 'Albert Sans' }}>
