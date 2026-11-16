@@ -9,6 +9,10 @@
   box-sizing: border-box;
 }
 
+:root {
+  --font-albert-sans: 'Albert Sans';
+}
+
 html,
 body {
   overflow-x: hidden !important;
