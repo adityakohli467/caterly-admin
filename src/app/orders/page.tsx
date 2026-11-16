@@ -104,6 +104,7 @@ export default function OrdersPage() {
   const [dateTo, setDateTo] = useState<Date | null>(null)
   const [amountFilter, setAmountFilter] = useState("")
   const [showPaidOnly, setShowPaidOnly] = useState(false)
+  const [showUnpaidOnly, setShowUnpaidOnly] = useState(false)
   const [lateFeeAmount, setLateFeeAmount] = useState("")
 
   // UI state
@@ -265,6 +266,15 @@ export default function OrdersPage() {
       list = list.filter(o => o.order_status === 2 || o.order_status === 3)
     }
 
+    // Unpaid: not paid (2/3), no successful payment, and not cancelled (0) or rejected (8)
+    if (showUnpaidOnly) {
+      list = list.filter(o =>
+        o.order_status !== 2 && o.order_status !== 3 &&
+        o.order_status !== 0 && o.order_status !== 8 &&
+        !o.has_successful_payment
+      )
+    }
+
     // Sort the list based on sortField and sortDirection
     list.sort((a, b) => {
       let valA: any = a.order_id || 0;
@@ -411,6 +421,7 @@ export default function OrdersPage() {
     setAmountFilter("")
     setLateFeeAmount("")
     setShowPaidOnly(false)
+    setShowUnpaidOnly(false)
     setPage(1)
   }
 
@@ -857,7 +868,7 @@ export default function OrdersPage() {
           {/* Paid Orders filter */}
           <Button
             variant="outline"
-            onClick={() => setShowPaidOnly(!showPaidOnly)}
+            onClick={() => { setShowPaidOnly(!showPaidOnly); setShowUnpaidOnly(false) }}
             className={`gap-2 whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 ${showPaidOnly ? 'bg-green-50 text-green-700 border-green-400' : 'border border-gray-200 bg-white'
               }`}
             style={{
@@ -876,6 +887,30 @@ export default function OrdersPage() {
           >
             <Filter className="h-5 w-5" />
             Paid Orders
+          </Button>
+
+          {/* Unpaid Orders filter */}
+          <Button
+            variant="outline"
+            onClick={() => { setShowUnpaidOnly(!showUnpaidOnly); setShowPaidOnly(false) }}
+            className={`gap-2 whitespace-nowrap rounded-full hover:bg-gray-50 hover:text-gray-900 ${showUnpaidOnly ? 'bg-[#FFEBEE] text-[#C62828] border-[#C62828]' : 'border border-gray-200 bg-white'
+              }`}
+            style={{
+              fontFamily: 'Albert Sans',
+              fontWeight: 600,
+              height: 'auto',
+              minHeight: '48px',
+              paddingTop: '8px',
+              paddingRight: '20px',
+              paddingBottom: '8px',
+              paddingLeft: '20px',
+              borderRadius: '100px',
+              borderWidth: '1px',
+              opacity: 1
+            }}
+          >
+            <Filter className="h-5 w-5" />
+            Unpaid
           </Button>
 
           <Button
